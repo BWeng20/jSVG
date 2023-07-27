@@ -2,12 +2,13 @@ package com.bw.jtools.shape.filter;
 
 import com.bw.jtools.svg.MergeFilterNode;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Moves the source.
+ * Merges sources by painting them in the specified order to the target buffer.
  */
 public class Merge extends FilterBase
 {
@@ -23,22 +24,20 @@ public class Merge extends FilterBase
 	}
 
 	@Override
-	protected void render(PainterBuffers buffers, String targetName, List<BufferedImage> srcs, BufferedImage target, double scaleX, double scaleY)
+	protected void render(PainterBuffers buffers, String targetName, List<BufferedImage> src, BufferedImage target, double scaleX, double scaleY)
 	{
-
-		Graphics g = target.createGraphics();
+		Graphics2D g2d = (Graphics2D) target.getGraphics();
 		try
 		{
-			for (BufferedImage src : srcs)
+			for (BufferedImage s : src)
 			{
-				g.drawImage(src, 0, 0, null);
+				g2d.drawImage(s, 0, 0, null);
 			}
 		}
 		finally
 		{
-			g.dispose();
+			g2d.dispose();
 		}
-
 	}
 }
 

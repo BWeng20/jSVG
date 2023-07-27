@@ -3,12 +3,25 @@ package com.bw.jtools.svg;
 import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.ShapeGroup;
 import com.bw.jtools.shape.StyledShape;
+import com.bw.jtools.shape.filter.Composite;
+import com.bw.jtools.shape.filter.CompositeOperator;
 import com.bw.jtools.shape.filter.FilterBase;
 import com.bw.jtools.shape.filter.FilterChain;
 import com.bw.jtools.shape.filter.GaussianBlur;
+import com.bw.jtools.shape.filter.LightSource;
+import com.bw.jtools.shape.filter.LightSourceType;
 import com.bw.jtools.shape.filter.Merge;
 import com.bw.jtools.shape.filter.Nop;
 import com.bw.jtools.shape.filter.Offset;
+import com.bw.jtools.shape.filter.Composite;
+import com.bw.jtools.shape.filter.CompositeOperator;
+import com.bw.jtools.shape.filter.FilterBase;
+import com.bw.jtools.shape.filter.FilterChain;
+import com.bw.jtools.shape.filter.GaussianBlur;
+import com.bw.jtools.shape.filter.LightSource;
+import com.bw.jtools.shape.filter.LightSourceType;
+import com.bw.jtools.shape.filter.Offset;
+import com.bw.jtools.shape.filter.SpecularLighting;
 import com.bw.jtools.svg.css.CSSParser;
 import com.bw.jtools.svg.css.CssStyleSelector;
 import org.w3c.dom.Document;
@@ -479,8 +492,13 @@ public class SVGConverter
 								 case feMerge:
 									 MergeFilterPrimitive mf = (MergeFilterPrimitive) f;
 									 return new Merge(mf.nodes_, resultBuffer);
-								 case feComposite:
 								 case feSpecularLighting:
+									 SpecularLightingFilterPrimitive sl = (SpecularLightingFilterPrimitive) f;
+									 return new SpecularLighting(inBuffer, resultBuffer, sl.surfaceScale_, sl.specularConstant_,
+											 sl.specularExponent_, sl.dx_, sl.dy_, sl.light_);
+								 case feComposite:
+									 CompositeFilterPrimitive cp = (CompositeFilterPrimitive) f;
+									 return new Composite(inBuffer, resultBuffer, cp.operator_, cp.k_);
 								 default:
 									 return null;
 							 }
@@ -655,6 +673,62 @@ public class SVGConverter
 				case feOffset:
 					fp = new OffsetFilterPrimitive(w.toLength("dx"), w.toLength("dy"));
 					break;
+				case feSpecularLighting:
+				{
+					double surfaceScale = w.toPDouble("surfaceScale", 1, false);
+					double specularConstant = w.toPDouble("specularConstant", 1, false);
+					double specularExponent = w.toPDouble("specularExponent", 1, false);
+
+					List<Double> kernelUnitLength = w.toPDoubleList("kernelUnitLength", false);
+					Double dy = null;
+					Double dx = null;
+					if (!kernelUnitLength.isEmpty())
+					{
+						dx = kernelUnitLength.get(0);
+						dy = kernelUnitLength.size() > 1 ? kernelUnitLength.get(1) : dx;
+					}
+
+					final List<LightSource> lights = new ArrayList<>();
+
+					w.forSubTree(ew ->
+					{
+						LightSource source = new LightSource();
+						switch (ew.getType())
+						{
+							case feDistantLight:
+								source.type_ = LightSourceType.distant;
+								break;
+							case fePointLight:
+								source.type_ = LightSourceType.point;
+								break;
+							case feSpotLight:
+								source.type_ = LightSourceType.spot;
+								break;
+						}
+						if (source.type_ != null)
+							lights.add(source);
+					});
+					if (lights.isEmpty())
+					{
+						warn("Missing light source element for %s", w.nodeName());
+						fp = null;
+					}
+					else
+						fp = new SpecularLightingFilterPrimitive(surfaceScale, specularConstant, specularExponent, dx, dy, lights.get(0));
+				}
+				break;
+				case feComposite:
+				{
+					CompositeOperator operator = CompositeOperator.fromString(w.attr("operator", false));
+					List<Double> ks = new ArrayList<>(4);
+					for (int k = 1; k < 5; ++k)
+					{
+						Double kx = w.toDouble("k" + k, false);
+						ks.add(kx == null ? 0d : kx);
+					}
+					fp = new CompositeFilterPrimitive(operator, ks);
+				}
+				break;
 				case feMerge:
 				{
 					MergeFilterPrimitive merge = new MergeFilterPrimitive();

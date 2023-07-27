@@ -51,6 +51,7 @@ public class Context
 	 *   <li>VALUE_ANTIALIAS_OFF</li>
 	 *   <li>VALUE_ANTIALIAS_DEFAULT</li>
 	 * </ul>
+	 *
 	 * @see RenderingHints#KEY_ANTIALIASING
 	 */
 	public static Object RenderingHints_Antialiasing = RenderingHints.VALUE_ANTIALIAS_ON;
