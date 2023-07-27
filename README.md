@@ -1,0 +1,2 @@
+# jSVG
+Lightweight SVG rendering
