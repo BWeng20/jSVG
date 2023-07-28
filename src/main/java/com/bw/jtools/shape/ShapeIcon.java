@@ -17,6 +17,12 @@ public class ShapeIcon implements Icon
 	private Paint framePaint_ = Color.BLACK;
 	private final ShapePainter painter_;
 
+	/**
+	 * Creates a new Shape Icon. <br>
+	 * The shapes are drawn in the same order as added.
+	 *
+	 * @param shapes Initial shapes to draw.
+	 */
 	public ShapeIcon(Collection<AbstractShape> shapes)
 	{
 		painter_ = new ShapePainter();
@@ -26,6 +32,8 @@ public class ShapeIcon implements Icon
 
 	/**
 	 * Adds a shape.
+	 *
+	 * @param shape The shape to add.
 	 */
 	public void addShape(AbstractShape shape)
 	{

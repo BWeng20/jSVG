@@ -1,5 +1,3 @@
-
-
 package com.bw.jtools.svg;
 
 import com.bw.jtools.shape.AbstractShape;
@@ -45,7 +43,7 @@ import java.util.stream.Collectors;
 import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
 
 /**
- * Parses and converts a SVG document into Java2D-shapes plus bacis style-information (see {@link StyledShape}).<br>
+ * Parses and converts a SVG document into Java2D-shapes plus basic style-information (see {@link StyledShape}).<br>
  * <br>
  * Currently supported features:
  * <ul>
@@ -64,13 +62,12 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>clipPath (only direct use by attribute clip-path, no inheritance)</li>
  * <li>filter (partial and only simple scenarios)</li>
  * </ul>
- * As the svg elements are simply converted to Shapes, complex stuff that needs offline-rendering (like blur) can't work.
- * Some complex use-case will not work as specified. <br>
+ * As the svg elements are simply converted to Shapes, complex stuff that needs offline-rendering (like blur) can't work this way.
+ * The filter that are supported here are slow. Don't use them if you need to render fast (or use buffer).<br>
  * The SVG specification contains a lot of such case with some amounts of hints how agents should render it correctly.<br>
  * Most svg graphics doesn't use such stuff, so the conversion to Java2D shapes is the most efficient way to draw
  * simple scalable graphics (see {@link com.bw.jtools.shape.ShapePainter} and {@link com.bw.jtools.shape.ShapeIcon}).<br>
- * The basic need for thos lib was to draw icons that will look good also on high-res-screens.<br>
- * If you need a feature-complete renderer, use batik or (also not complete) SVG Salamander.
+ * For usage see the example {@link com.bw.jtools.SVGViewer}.
  */
 public class SVGConverter
 {
@@ -232,7 +229,7 @@ public class SVGConverter
 							null, null, null, null, null, null);
 
 					shapes.add(new StyledShapeInfo(w.getShape()
-												.getSegmentPath(), s, s.getPaintWrapper(),
+													.getSegmentPath(), s, s.getPaintWrapper(),
 							null, null));
 				}
 			}
@@ -294,7 +291,7 @@ public class SVGConverter
 						AffineTransform aft = AffineTransform.getTranslateInstance(x, y);
 						for (ElementInfo sinfo : usedElements)
 						{
-							sinfo.applyTransform( aft );
+							sinfo.applyTransform(aft);
 							shapes.add(sinfo);
 						}
 					}
@@ -347,7 +344,7 @@ public class SVGConverter
 	{
 		ElementWrapper w = elementCache_.getElementWrapperById(si.id_);
 
-		if ( si instanceof StyledShapeInfo)
+		if (si instanceof StyledShapeInfo)
 		{
 			StyledShapeInfo s = (StyledShapeInfo) si;
 			StyledShape sws = new StyledShape(
@@ -360,20 +357,23 @@ public class SVGConverter
 					s.aft_
 			);
 			return sws;
-		} else {
-			GroupInfo g = (GroupInfo)si;
+		}
+		else
+		{
+			GroupInfo g = (GroupInfo) si;
 			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_));
-			for ( ElementInfo e : g.shapes_)
-				gr.shapes_.add( finish(e) );
+			for (ElementInfo e : g.shapes_)
+				gr.shapes_.add(finish(e));
 			// @TODO
-			gr.units_ = new Point2D.Double(1,1);
+			gr.units_ = new Point2D.Double(1, 1);
 			return gr;
 		}
 	}
 
-	protected String mapSvgBufferName(String svgBufferName )
+	protected String mapSvgBufferName(String svgBufferName)
 	{
-		if ( StandardFilterSource.SourceGraphic.name().equals(svgBufferName))
+		if (StandardFilterSource.SourceGraphic.name()
+											  .equals(svgBufferName))
 			return FilterBase.SOURCE;
 		else
 			return svgBufferName;
@@ -383,7 +383,7 @@ public class SVGConverter
 	{
 		FilterChain filterChain;
 		String src;
-		if ( filter != null && !filter.primitives_.isEmpty())
+		if (filter != null && !filter.primitives_.isEmpty())
 		{
 			List<FilterPrimitive> primitives = filter.primitives_;
 
@@ -391,86 +391,93 @@ public class SVGConverter
 			Map<String, List<FilterPrimitive>> filterMap = new HashMap<>();
 			final String sourceGraphic = StandardFilterSource.SourceGraphic.name();
 			int sN;
-			for ( int fi = 0 ; fi <  primitives.size(); ++fi)
+			for (int fi = 0; fi < primitives.size(); ++fi)
 			{
 				FilterPrimitive fp = primitives.get(fi);
-				if ( fp.result_ == null ) fp.result_ = "FilterBuffer"+filter.id_+"-"+fi;
+				if (fp.result_ == null) fp.result_ = "FilterBuffer" + filter.id_ + "-" + fi;
 				sN = fp.numberOfInputs();
-				if ( sN > 0 )
+				if (sN > 0)
 				{
-					if ( fp.in_.isEmpty())
-						fp.in_.add( fi > 0 ? primitives.get(fi-1).result_ : sourceGraphic );
-					if ( sN > 1 && fp.in_.size() < 2 )
-						fp.in_.add( fi > 0 ? primitives.get(fi-1).result_ : sourceGraphic );
+					if (fp.in_.isEmpty())
+						fp.in_.add(fi > 0 ? primitives.get(fi - 1).result_ : sourceGraphic);
+					if (sN > 1 && fp.in_.size() < 2)
+						fp.in_.add(fi > 0 ? primitives.get(fi - 1).result_ : sourceGraphic);
 				}
-				filterMap.computeIfAbsent(fp.result_,s -> new ArrayList<>()).add(fp);
+				filterMap.computeIfAbsent(fp.result_, s -> new ArrayList<>())
+						 .add(fp);
 			}
 			// Build primary filter tree
 			List<FilterPrimitive> chain = new ArrayList<>();
 			List<String> sourcesNeeded = new ArrayList<>();
 			// Get root of primary filter tree
-			FilterPrimitive fp = primitives.get(primitives.size()-1);
+			FilterPrimitive fp = primitives.get(primitives.size() - 1);
 			// Add sources until needed sources are empty or chain is broken
-			while ( fp != null )
+			while (fp != null)
 			{
 				chain.add(0, fp);
 				sN = fp.in_.size();
 				for (int sI = 0; sI < sN; ++sI)
 					sourcesNeeded.add(fp.in_.get(sI));
 
-				if ( sourcesNeeded.isEmpty() ) break;
-				do {
+				if (sourcesNeeded.isEmpty()) break;
+				do
+				{
 					src = sourcesNeeded.remove(0);
-					if ( StandardFilterSource.fromString(src) != null)
+					if (StandardFilterSource.fromString(src) != null)
 						src = null;
-				} while ( src==null && !sourcesNeeded.isEmpty() );
-				if ( src == null )
+				} while (src == null && !sourcesNeeded.isEmpty());
+				if (src == null)
 					fp = null;
 				else
 				{
 					List<FilterPrimitive> srcList = filterMap.get(src);
-					if ( srcList == null || srcList.isEmpty())
+					if (srcList == null || srcList.isEmpty())
 						fp = null;
 					else
-						fp = srcList.remove(srcList.size()-1);
+						fp = srcList.remove(srcList.size() - 1);
 
 				}
 			}
-			if ( !sourcesNeeded.isEmpty() )
+			if (!sourcesNeeded.isEmpty())
 			{
-				warn("Filter %s has missing inputs: %s", filter.id_, sourcesNeeded.stream().collect(Collectors.joining(",")) );
+				warn("Filter %s has missing inputs: %s", filter.id_, sourcesNeeded.stream()
+																				  .collect(Collectors.joining(",")));
 			}
 
 			filterChain = new FilterChain(
-					chain.stream().map(f -> {
+					chain.stream()
+						 .map(f ->
+						 {
 
-						final String resultBuffer = mapSvgBufferName(f.result_);
-						final String inBuffer = f.in_.isEmpty() ? null : mapSvgBufferName(f.in_.get(0));
+							 final String resultBuffer = mapSvgBufferName(f.result_);
+							 final String inBuffer = f.in_.isEmpty() ? null : mapSvgBufferName(f.in_.get(0));
 
-						switch (f.type_)
-						{
-							case feGaussianBlur:
-								GaussianBlurFilterPrimitive gf = (GaussianBlurFilterPrimitive)f;
-								double stdDevX = 0;
-								double stdDevY = 0;
-								if ( !gf.stdDeviation_.isEmpty() )
-								{
-									stdDevX = gf.stdDeviation_.get(0);
-									stdDevY = ( gf.stdDeviation_.size()>1) ? gf.stdDeviation_.get(1) : stdDevX;
-								}
-								return new GaussianBlur( inBuffer,resultBuffer,
-										stdDevX, stdDevY );
-							case feOffset:
-								OffsetFilterPrimitive of = (OffsetFilterPrimitive)f;
-								return new Offset( inBuffer,resultBuffer,
-										of.dx_.toPixel(null), of.dy_.toPixel(null) );
-							case feComposite:
-							case feSpecularLighting:
-							case feMerge:
-							default:
-								return null;
-						}
-					} ).filter(Objects::nonNull).collect(Collectors.toList()));
+							 switch (f.type_)
+							 {
+								 case feGaussianBlur:
+									 GaussianBlurFilterPrimitive gf = (GaussianBlurFilterPrimitive) f;
+									 double stdDevX = 0;
+									 double stdDevY = 0;
+									 if (!gf.stdDeviation_.isEmpty())
+									 {
+										 stdDevX = gf.stdDeviation_.get(0);
+										 stdDevY = (gf.stdDeviation_.size() > 1) ? gf.stdDeviation_.get(1) : stdDevX;
+									 }
+									 return new GaussianBlur(inBuffer, resultBuffer,
+											 stdDevX, stdDevY);
+								 case feOffset:
+									 OffsetFilterPrimitive of = (OffsetFilterPrimitive) f;
+									 return new Offset(inBuffer, resultBuffer,
+											 of.dx_.toPixel(null), of.dy_.toPixel(null));
+								 case feComposite:
+								 case feSpecularLighting:
+								 case feMerge:
+								 default:
+									 return null;
+							 }
+						 })
+						 .filter(Objects::nonNull)
+						 .collect(Collectors.toList()));
 		}
 		else
 			filterChain = null;
@@ -546,9 +553,9 @@ public class SVGConverter
 					for (ElementInfo si : g)
 					{
 						// @TODO: Can Clip paths contain groups?
-						if ( si instanceof StyledShapeInfo )
+						if (si instanceof StyledShapeInfo)
 						{
-							StyledShapeInfo s = (StyledShapeInfo)si;
+							StyledShapeInfo s = (StyledShapeInfo) si;
 							if (s.clipping_ == null)
 							{
 								clipPath.append(s.shape_, false);
@@ -608,8 +615,8 @@ public class SVGConverter
 			f.height_ = w.toLength("height");
 
 			// @TODO: filterRes
-			f.filterUnits_ = Unit.fromString( w.attr("filterUnits"));
-			f.primitiveUnits_ = Unit.fromString( w.attr("primitiveUnits"));
+			f.filterUnits_ = Unit.fromString(w.attr("filterUnits"));
+			f.primitiveUnits_ = Unit.fromString(w.attr("primitiveUnits"));
 
 			f.primitives_ = new ArrayList<>();
 
@@ -617,8 +624,8 @@ public class SVGConverter
 			elementCache_.forSubTree(w.getNode(), e ->
 			{
 				FilterPrimitive fp = filterPrimitive(e);
-				if ( fp != null )
-					f.primitives_.add( fp  );
+				if (fp != null)
+					f.primitives_.add(fp);
 			});
 			return f;
 		}
@@ -628,27 +635,27 @@ public class SVGConverter
 	public FilterPrimitive filterPrimitive(ElementWrapper w)
 	{
 		Type t = w.getType();
-		if ( FilterPrimitive.isFilterPrimitive( t ) )
+		if (FilterPrimitive.isFilterPrimitive(t))
 		{
 			FilterPrimitive fp;
 			switch (t)
 			{
 				case feGaussianBlur:
-					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList("stdDeviation",  false));
+					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList("stdDeviation", false));
 					break;
 				case feOffset:
-					fp = new OffsetFilterPrimitive( w.toLength("dx"), w.toLength("dy"));
+					fp = new OffsetFilterPrimitive(w.toLength("dx"), w.toLength("dy"));
 					break;
 				case feMerge:
 				{
 					MergeFilterPrimitive merge = new MergeFilterPrimitive();
 					elementCache_.forSubTree(w.getNode(), e ->
 					{
-						if ( e.getType() == Type.feMergeNode)
+						if (e.getType() == Type.feMergeNode)
 						{
 							MergeFilterNode node = new MergeFilterNode();
 							node.id_ = e.id();
-							node.in_ = e.attr("in",false);
+							node.in_ = e.attr("in", false);
 							merge.nodes_.add(node);
 							merge.in_.add(node.in_);
 						}
@@ -661,8 +668,8 @@ public class SVGConverter
 					warn("Filter primitive %s not yet supported", t.name());
 					break;
 			}
-			if ( fp != null )
-				parseCommonFilterPrimitive(fp, w );
+			if (fp != null)
+				parseCommonFilterPrimitive(fp, w);
 			return fp;
 		}
 		else
@@ -675,18 +682,18 @@ public class SVGConverter
 					"sRGB ", MultipleGradientPaint.ColorSpaceType.SRGB,
 					"linearRGB", MultipleGradientPaint.ColorSpaceType.LINEAR_RGB);
 
-	public void parseCommonFilterPrimitive(FilterPrimitive fp, ElementWrapper w )
+	public void parseCommonFilterPrimitive(FilterPrimitive fp, ElementWrapper w)
 	{
 		String in = w.attr("in", false);
-		if( isNotEmpty(in) )
+		if (isNotEmpty(in))
 			fp.in_.add(in);
 		in = w.attr("in2", false);
-		if( isNotEmpty(in) )
+		if (isNotEmpty(in))
 			fp.in_.add(in);
 
-		String colorInterpolationFilters = w.attr( "color-interpolation-filters", true);
+		String colorInterpolationFilters = w.attr("color-interpolation-filters", true);
 		fp.colorInterpolation_ = colorInterpolationFilters == null ? MultipleGradientPaint.ColorSpaceType.LINEAR_RGB :
-					colorInterpolationTypes_.getOrDefault(colorInterpolationFilters, MultipleGradientPaint.ColorSpaceType.LINEAR_RGB);
+				colorInterpolationTypes_.getOrDefault(colorInterpolationFilters, MultipleGradientPaint.ColorSpaceType.LINEAR_RGB);
 
 		fp.x_ = w.toLength("x");
 		fp.y_ = w.toLength("y");
@@ -765,7 +772,7 @@ public class SVGConverter
 				if (!s.id_.equals(w.id()))
 					s.applyTransform(t);
 		Filter f = filter(w);
-		if ( f == null )
+		if (f == null)
 			global.addAll(shapes);
 		else
 		{
@@ -785,7 +792,8 @@ public class SVGConverter
 		Color fill = fill(w);
 		Shape clipPath = clipPath(w);
 
-		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(w.getShape().getShape(),
+		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(w.getShape()
+															   .getShape(),
 				stroke.getPaintWrapper() == null ? null : stroke,
 				stroke.getPaintWrapper(),
 				fill.getPaintWrapper(),
@@ -797,7 +805,7 @@ public class SVGConverter
 		transform(styledShapeInfo, w);
 
 		Filter f = filter(w);
-		if ( f != null )
+		if (f != null)
 		{
 			GroupInfo g = new GroupInfo(sinfo.id_, f);
 			g.shapes_.add(sinfo);

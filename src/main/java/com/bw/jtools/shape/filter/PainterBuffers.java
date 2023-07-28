@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Internal buffer-system to chain filters.<br/>
+ * Internal buffer-system to chain filters.<br>
  * Very memory consuming, ugly and slow. One reason against usage of filter at all.
  */
 public class PainterBuffers

@@ -1,5 +1,3 @@
-
-
 package com.bw.jtools.svg.css;
 
 public enum CombinatorType

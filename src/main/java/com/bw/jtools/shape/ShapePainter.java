@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Holds and paints a list of shapes.<br/>
+ * Holds and paints a list of shapes.<br>
  * <ul>
  * <li>See ShapeIcon for a usage as Icon.</li>
  * <li>See ShapePane for a usage as JComponent.</li>

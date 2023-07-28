@@ -1,5 +1,3 @@
-
-
 package com.bw.jtools.svg.css;
 
 
@@ -67,7 +65,8 @@ public final class CssStyleSelector
 					break;
 				case CLASS:
 					specificity.addClassMatch();
-					cache.forSubTree(n,elementWrapper -> {
+					cache.forSubTree(n, elementWrapper ->
+					{
 						if (elementWrapper.hasClass(s.id_))
 							apply(rule, s.combinate_, elementWrapper.getNode(), cache, specificity);
 					});

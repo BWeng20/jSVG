@@ -14,6 +14,9 @@ import java.util.Collection;
  */
 public class ShapePane extends JComponent
 {
+	/**
+	 * Creates a new ShapePane.
+	 */
 	public ShapePane()
 	{
 	}
@@ -24,7 +27,7 @@ public class ShapePane extends JComponent
 
 
 	/**
-	 * Draws a border inside the icon with the default stroke and Color.BLACK.
+	 * Draws a border inside the panel with the default stroke and Color.BLACK.
 	 */
 	public void setInlineBorder(boolean draw)
 	{
@@ -32,7 +35,7 @@ public class ShapePane extends JComponent
 	}
 
 	/**
-	 * Draws a border inside the icon with the default stroke.
+	 * Draws a border inside the panel with the default stroke.
 	 */
 	public void setInlineBorder(boolean draw, Paint color)
 	{
@@ -42,7 +45,7 @@ public class ShapePane extends JComponent
 	}
 
 	/**
-	 * Sets a new painter and (included) the shapes.
+	 * Sets a new painter, including the shapes in it.
 	 */
 	public void setPainter(ShapePainter painter)
 	{
@@ -55,6 +58,11 @@ public class ShapePane extends JComponent
 		return painter_;
 	}
 
+	/**
+	 * Replaces all shapes in the painter.
+	 *
+	 * @param shapes The new shapes.
+	 */
 	public void setShapes(Collection<AbstractShape> shapes)
 	{
 		painter_.clearShapes();
@@ -79,6 +87,11 @@ public class ShapePane extends JComponent
 	}
 
 
+	/**
+	 * Adds a hsape to the painter.
+	 *
+	 * @param shape The new shape.
+	 */
 	public void addShape(ShapeGroup shape)
 	{
 		painter_.addShape(shape);

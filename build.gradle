@@ -81,29 +81,34 @@ jar {
 publishing {
     repositories {
         maven {
-            url project.properties['publishUrl']
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
                 // Place this two variable with the correct values in your
                 // <Gradle-User-Home>/gradle.properties
-                username sonatype_username
-                password sonatype_password
+                //  ossrh_username=ID
+                //  ossrh_password=TOKEN
+                //
+                username = ossrhUsername
+                password = ossrhPassword
             }
         }
     }
     publications {
         jSVG(MavenPublication) {
-            artifactId = 'jSVG'
             from components.java
 
             artifacts = [jar, sourcesJar, javadocJar]
 
             pom {
                 name = 'jSVG'
+                artifactId = 'jSVG'
+                packaging = 'jar'
                 description = 'Draw icons and simple graphics from SVG that look great even on high-resolution screens.'
                 url = 'https://github.com/BWeng20/jSVG'
                 licenses {
                     license {
                         name = 'unlicense'
+                        url = 'https://unlicense.org'
                     }
                 }
                 developers {
@@ -114,8 +119,8 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/BWeng20/jSVG.git'
-                    developerConnection = 'scm:git:ssh://github.com:BWeng20/jSVG.git'
+                    connection = 'https://github.com:BWeng20/jSVG.git'
+                    developerConnection = 'https://github.com:BWeng20/jSVG.git'
                     url = 'https://github.com/BWeng20/jSVG'
                 }
             }
