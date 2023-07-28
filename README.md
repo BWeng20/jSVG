@@ -11,7 +11,11 @@ But I personally doesn't want to include it "only" to render icons.
 
 jSVG tries to convert SVG elements to Java2D-Shapes. This reduced the features that can be used
 a bit, but the once converted shapes render incredible fast.
-
 If you need a feature-complete renderer, use batik or (also not complete) SVG Salamander.
 
+The resulting Shapes can be painted on any Graphics2d-instance. Additional style information is handled by a specific "Painter" that sets colors, strokes etc. to match the SVG definitions. The the Java2D-shapes (and the Painter) are fully scablable, any transformation (rotation, scale, translate) can be used without losing quality. 
 
+The Painter can be called multiple times with different transformation. So the SVG can be used as parts in bigger set-ups. 
+E.g. as parts of a frame, for edge-decorations e.t.c.
+
+As the real rendering is done by the Java2d-engine this is fast enought to paint large amount of SVG elements. 
