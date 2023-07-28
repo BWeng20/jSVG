@@ -46,10 +46,6 @@ public class GaussianBlur extends FilterBaseSingleSource
 		int xOff = (targetWidth - src.getWidth()) / 2;
 		int yOff = (targetHeight - src.getHeight()) / 2;
 
-		System.out.println("Gauss target:" + targetName + " [" + targetWidth + "x" + targetHeight
-				+ "] src:[" + src.getWidth() + "x" + src.getHeight() + "] kernel:[" + kernelWidth + "x" + kernelHeight + "]");
-
-
 		float[] kernelX = new float[kernelWidth];
 		float[] kernelY = new float[kernelHeight];
 

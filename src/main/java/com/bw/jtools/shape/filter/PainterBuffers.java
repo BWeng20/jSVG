@@ -116,7 +116,6 @@ public class PainterBuffers
 			++buffersCreated_;
 			i = cfg_.createCompatibleImage((int) width, (int) height, Transparency.TRANSLUCENT);
 			buffer.put(key, i);
-			System.out.println("Buffer Created " + key + " " + width + "x" + height + " -> " + i.getWidth() + "x" + i.getHeight());
 		}
 
 
