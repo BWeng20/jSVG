@@ -85,11 +85,11 @@ publishing {
             credentials {
                 // Place this two variable with the correct values in your
                 // <Gradle-User-Home>/gradle.properties
-                //  ossrh_username=ID
-                //  ossrh_password=TOKEN
+                //  ossrhUsername=ID
+                //  ossrhPassword=TOKEN
                 //
-                username = ossrhUsername
-                password = ossrhPassword
+                username = findProperty("ossrhUsername")
+                password = findProperty("ossrhPassword")
             }
         }
     }
