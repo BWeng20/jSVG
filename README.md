@@ -7,10 +7,11 @@ can be scaled without loss in quality.
 
 Some Java apps use Apache Batik to do the same, but Batik is hugh.
 For bigger applications with interactivity in the SVG elements, batik is the best option.
-But I personally doesn't want to include it "only" to render icons.
+I had very good projects using Batik. It's a great software. But I personally doesn't want to include it "only" to render icons.
 
-jSVG tries to convert SVG elements to Java2D-Shapes. This reduced the features that can be used
+jSVG tries to convert SVG elements to Java2D-Shapes. This reduces the features that can be used
 a bit, but the once converted shapes render incredible fast.
+
 If you need a feature-complete renderer, use batik or (also not complete) SVG Salamander.
 
 The resulting Shapes can be painted on any Graphics2d-instance. Additional style information is handled by a specific "Painter" that sets colors, strokes etc. to match the SVG definitions. The Java2D-shapes (and the Painter) are fully scablable, any transformation (rotation, scale, translate) can be used without losing quality. 
@@ -23,7 +24,7 @@ As the real rendering is done by the Java2d-engine this is fast enough to paint 
 ### Example
 
 A pretty example for a SVG is the flag of San Marino. 
-It uses clipping-regions and other nasty stuff but can be 
+It uses clipping-regions and other nasty stuff, but can be 
 completely converted to Java2D-shapes.
 
 The source can be found here: https://upload.wikimedia.org/wikipedia/commons/b/b1/Flag_of_San_Marino.svg
@@ -39,6 +40,24 @@ On my 10 years old computer the shapes are drawn in ~20ms for both sizes.
 This time goes up to ~50ms for bigger sizes like 1000x1000.
 
 SVGs for icons are normally much simpler, so expect less time to draw it.
+
+### Supported features
+
+As said this is a lightweight SVG renderer, designed for High-Res icons.
+
+Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.<br>
+Usages of pixel-based filters are in any case a bad idea, because they are silly expensive to compute.
+The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow) but please don't use
+them. Safe your computing power and the planet.
+
+See the SVG example for filter-effects at W3.org https://www.w3.org/TR/SVG11/filters.html#AnExample  
+
+jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ or _feComposite_, so it look a bit simpler.
+
+![w3_filter_example.png](doc%2Fw3_filter_example.png)
+
+I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
+If somewhat doesn't work, please use the functions of your SVG-editor to simplify your drawing.
 
 ### A word about off-screen-images
 
