@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -42,6 +43,17 @@ public class Context
 	public Paint currentColor_;
 	public Paint currentBackground_;
 	private final boolean newContext_;
+
+	/**
+	 * Rendering Antialiasing mode. Can be
+	 * <ul>
+	 *   <li>VALUE_ANTIALIAS_ON</li>
+	 *   <li>VALUE_ANTIALIAS_OFF</li>
+	 *   <li>VALUE_ANTIALIAS_DEFAULT</li>
+	 * </ul>
+	 * @see RenderingHints#KEY_ANTIALIASING
+	 */
+	public static Object RenderingHints_Antialiasing = RenderingHints.VALUE_ANTIALIAS_ON;
 
 	public boolean debug_ = false;
 	/**
@@ -82,7 +94,15 @@ public class Context
 	public Context(Graphics g2D, boolean createNewContext)
 	{
 		this.newContext_ = createNewContext;
-		this.g2D_ = (Graphics2D) (createNewContext ? g2D.create() : g2D);
+		if (createNewContext)
+		{
+			this.g2D_ = (Graphics2D) g2D.create();
+			this.g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
+		}
+		else
+		{
+			this.g2D_ = (Graphics2D) g2D;
+		}
 		this.aft_ = this.g2D_.getTransform();
 		this.currentColor_ = this.g2D_.getPaint();
 	}
@@ -91,6 +111,7 @@ public class Context
 	{
 		newContext_ = true;
 		g2D_ = source.createGraphics();
+		g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
 		aft_ = ctx.aft_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;

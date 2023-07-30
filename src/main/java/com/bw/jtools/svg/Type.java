@@ -27,6 +27,7 @@ public enum Type
 	feComposite, feConvolveMatrix, feDiffuseLighting,
 	feDisplacementMap, feDropShadow, feFlood,
 	feGaussianBlur, feImage, feMerge, feMorphology, feOffset, feSpecularLighting,
+	feNop,
 	feTile, feTurbulence,
 
 	// Sub elements of feDiffuseLighting and feSpecularLighting

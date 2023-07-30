@@ -6,6 +6,8 @@ import com.bw.jtools.shape.StyledShape;
 import com.bw.jtools.shape.filter.FilterBase;
 import com.bw.jtools.shape.filter.FilterChain;
 import com.bw.jtools.shape.filter.GaussianBlur;
+import com.bw.jtools.shape.filter.Merge;
+import com.bw.jtools.shape.filter.Nop;
 import com.bw.jtools.shape.filter.Offset;
 import com.bw.jtools.svg.css.CSSParser;
 import com.bw.jtools.svg.css.CssStyleSelector;
@@ -35,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -409,41 +412,40 @@ public class SVGConverter
 			// Build primary filter tree
 			List<FilterPrimitive> chain = new ArrayList<>();
 			List<String> sourcesNeeded = new ArrayList<>();
-			// Get root of primary filter tree
-			FilterPrimitive fp = primitives.get(primitives.size() - 1);
-			// Add sources until needed sources are empty or chain is broken
-			while (fp != null)
+			// Start with root of primary filter tree
+			List<FilterPrimitive> needed = new ArrayList<>();
+			needed.add(primitives.get(primitives.size() - 1));
+			HashSet<String> provided = new HashSet<>();
+			while (!needed.isEmpty())
 			{
+				// Add sources until needed sources are empty
+				FilterPrimitive fp = needed.remove(0);
 				chain.add(0, fp);
+				provided.add(fp.result_);
 				sN = fp.in_.size();
 				for (int sI = 0; sI < sN; ++sI)
-					sourcesNeeded.add(fp.in_.get(sI));
-
-				if (sourcesNeeded.isEmpty()) break;
-				do
 				{
-					src = sourcesNeeded.remove(0);
-					if (StandardFilterSource.fromString(src) != null)
-						src = null;
-				} while (src == null && !sourcesNeeded.isEmpty());
-				if (src == null)
-					fp = null;
-				else
-				{
-					List<FilterPrimitive> srcList = filterMap.get(src);
-					if (srcList == null || srcList.isEmpty())
-						fp = null;
-					else
-						fp = srcList.remove(srcList.size() - 1);
-
+					src = fp.in_.get(sI);
+					if (StandardFilterSource.fromString(src) == null &&
+							!(provided.contains(src)))
+					{
+						List<FilterPrimitive> srcs = filterMap.get(src);
+						if (srcs == null)
+						{
+							warn("Filter %s has missing input: %s", filter.id_, src);
+						}
+						else if (!srcs.isEmpty())
+						{
+							FilterPrimitive fpN = srcs.remove(srcs.size() - 1);
+							if (fp != fpN && !(
+									chain.contains(fpN) || needed.contains(fpN)))
+							{
+								needed.add(fpN);
+							}
+						}
+					}
 				}
 			}
-			if (!sourcesNeeded.isEmpty())
-			{
-				warn("Filter %s has missing inputs: %s", filter.id_, sourcesNeeded.stream()
-																				  .collect(Collectors.joining(",")));
-			}
-
 			filterChain = new FilterChain(
 					chain.stream()
 						 .map(f ->
@@ -469,9 +471,16 @@ public class SVGConverter
 									 OffsetFilterPrimitive of = (OffsetFilterPrimitive) f;
 									 return new Offset(inBuffer, resultBuffer,
 											 of.dx_.toPixel(null), of.dy_.toPixel(null));
+								 case feNop:
+									 if (Objects.equals(inBuffer, resultBuffer))
+										 return null;
+									 else
+										 return new Nop(inBuffer, resultBuffer);
+								 case feMerge:
+									 MergeFilterPrimitive mf = (MergeFilterPrimitive) f;
+									 return new Merge(mf.nodes_, resultBuffer);
 								 case feComposite:
 								 case feSpecularLighting:
-								 case feMerge:
 								 default:
 									 return null;
 							 }
@@ -661,11 +670,14 @@ public class SVGConverter
 						}
 					});
 					fp = merge;
+					break;
 				}
-				break;
-				default:
-					fp = null;
+				case fePointLight:
 					warn("Filter primitive %s not yet supported", t.name());
+					return null;
+				default:
+					warn("Filter primitive %s not yet supported", t.name());
+					fp = new NopFilterPrimitive();
 					break;
 			}
 			if (fp != null)

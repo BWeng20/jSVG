@@ -69,9 +69,6 @@ public class GaussianBlur extends FilterBaseSingleSource
 			g2d.setBackground(new Color(255, 255, 255, 0));
 			g2d.clearRect(0, 0, buffer1.getWidth(), buffer1.getHeight());
 			g2d.drawImage(src, xOff, yOff, null);
-			// Uncomment to debug the buffer sizes:
-			g2d.setColor(Color.BLUE);
-			g2d.drawRect(1, 1, buffer1.getWidth() - 2, buffer1.getHeight() - 2);
 		}
 		finally
 		{

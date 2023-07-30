@@ -4,8 +4,8 @@ import javax.swing.Icon;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RenderingHints;
 import java.util.Collection;
 
 /**
@@ -88,24 +88,20 @@ public class ShapeIcon implements Icon
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y)
 	{
-		Context ctx = new Context(g);
+		Graphics2D g2d = (Graphics2D) g.create();
 		try
 		{
-
-			ctx.currentColor_ = c.getBackground();
-			ctx.g2D_.translate(x, y);
-			ctx.g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+			g2d.translate(x, y);
 			if (drawFrame_)
 			{
-				ctx.g2D_.setPaint(framePaint_);
-				ctx.g2D_.draw(painter_.getArea());
+				g2d.setPaint(framePaint_);
+				g2d.draw(painter_.getArea());
 			}
-			painter_.paintShapes(ctx, c.isOpaque());
+			painter_.paintShapes(g2d, c.getForeground(), c.getBackground(), c.isOpaque());
 		}
 		finally
 		{
-			ctx.dispose();
+			g2d.dispose();
 		}
 	}
 

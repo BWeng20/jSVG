@@ -118,11 +118,14 @@ public final class ShapeGroup extends AbstractShape
 						(int) (0.5 + targetPoint.getX() + image.offset_.getX()),
 						(int) (0.5 + targetPoint.getY() + image.offset_.getY()), null);
 
-				ctx.g2D_.setColor(Color.RED);
-				ctx.g2D_.drawRect(
-						(int) (0.5 + targetPoint.getX() + image.offset_.getX()),
-						(int) (0.5 + targetPoint.getY() + image.offset_.getY()),
-						image.image_.getWidth(), image.image_.getHeight());
+				if (ctx.debug_)
+				{
+					ctx.g2D_.setColor(Color.RED);
+					ctx.g2D_.drawRect(
+							(int) (0.5 + targetPoint.getX() + image.offset_.getX()),
+							(int) (0.5 + targetPoint.getY() + image.offset_.getY()),
+							image.image_.getWidth(), image.image_.getHeight());
+				}
 			}
 		}
 	}

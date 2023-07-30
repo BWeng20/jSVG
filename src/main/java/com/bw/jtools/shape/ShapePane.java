@@ -4,8 +4,8 @@ import javax.swing.JComponent;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
@@ -21,7 +21,7 @@ public class ShapePane extends JComponent
 	{
 	}
 
-	private boolean drawFrame_ = true;
+	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
 	private ShapePainter painter_ = new ShapePainter();
 
@@ -121,23 +121,15 @@ public class ShapePane extends JComponent
 			super.paintComponent(g);
 		else
 		{
-			Context ctx = new Context(g);
-			ctx.currentColor_ = getForeground();
-			ctx.currentBackground_ = getBackground();
-			try
+			Graphics2D g2d = (Graphics2D) g;
+			if (drawFrame_)
 			{
-				ctx.g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				if (drawFrame_)
-				{
-					ctx.g2D_.setPaint(framePaint_);
-					ctx.g2D_.draw(painter_.getArea());
-				}
-				painter_.paintShapes(ctx, isOpaque());
+				final Paint p = g2d.getPaint();
+				g2d.setPaint(framePaint_);
+				g2d.draw(painter_.getArea());
+				g2d.setPaint(p);
 			}
-			finally
-			{
-				ctx.dispose();
-			}
+			painter_.paintShapes(g2d, getForeground(), getBackground(), isOpaque());
 		}
 	}
 
