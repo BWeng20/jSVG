@@ -52,7 +52,7 @@ them. Safe your computing power and the planet.
 
 See the SVG example for filter-effects at W3.org https://www.w3.org/TR/SVG11/filters.html#AnExample  
 
-jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ or _feComposite_, so it look a bit simpler.
+jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ or _feComposite_, so the output looks a bit simpler.
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
