@@ -87,13 +87,19 @@ public final class StyledShape extends AbstractShape
 	@Override
 	public void paint(Context ctx)
 	{
+		Shape orgClip = null;
+
 		aftTemp_.setTransform(ctx.aft_);
 		aftTemp_.concatenate(aft_);
 
 		final Graphics2D g3D = ctx.g2D_;
 
 		g3D.setTransform(aftTemp_);
-		g3D.setClip(clipping_);
+		if (clipping_ != null)
+		{
+			orgClip = g3D.getClip();
+			g3D.clip(clipping_);
+		}
 
 		Paint p = transatePaint(ctx, fill_);
 		if (p != null)
@@ -101,8 +107,6 @@ public final class StyledShape extends AbstractShape
 			g3D.setPaint(p);
 			g3D.fill(shape_);
 		}
-
-		Composite c = g3D.getComposite();
 
 		if (paint_ != null)
 		{
@@ -112,9 +116,11 @@ public final class StyledShape extends AbstractShape
 				g3D.setPaint(p);
 				g3D.setStroke(stroke_);
 				g3D.draw(shape_);
-				g3D.setComposite(c);
 			}
 		}
+		if (clipping_ != null)
+		{
+			g3D.setClip(orgClip);
+		}
 	}
-
 }

@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
@@ -24,6 +26,26 @@ public class ShapePane extends JComponent
 	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
 	private ShapePainter painter_ = new ShapePainter();
+	private boolean mouseWheelEnabled = false;
+
+	private MouseWheelListener wheelListener = we ->
+	{
+		if (we.getWheelRotation() != 0)
+		{
+			int mod = we.getModifiersEx();
+			if ((mod & InputEvent.META_DOWN_MASK) != 0 || (mod & InputEvent.CTRL_DOWN_MASK) != 0)
+			{
+				double scale = -0.1 * we.getWheelRotation();
+				double x = getXScale() + scale;
+				double y = getYScale() + scale;
+				if (x >= 0.1 && y >= 0.1)
+				{
+					painter_.setScale(x, y);
+					refresh();
+				}
+			}
+		}
+	};
 
 
 	/**
@@ -135,7 +157,25 @@ public class ShapePane extends JComponent
 
 	private void refresh()
 	{
-		invalidate();
+		revalidate();
 		repaint();
+	}
+
+	/**
+	 * Installs a wheel-listener that zooms by mouse-wheel if Meta/Ctrl-Key is hold.
+	 *
+	 * @param wheelEnabled If true zoom by wheel is enabled.
+	 *                     If false, zoom by wheel is disabled.
+	 */
+	public void setZoomByMouseWheelEnabled(boolean wheelEnabled)
+	{
+		if (mouseWheelEnabled != wheelEnabled)
+		{
+			mouseWheelEnabled = wheelEnabled;
+			if (wheelEnabled)
+				addMouseWheelListener(wheelListener);
+			else
+				removeMouseWheelListener(wheelListener);
+		}
 	}
 }
