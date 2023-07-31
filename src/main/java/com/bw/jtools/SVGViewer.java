@@ -26,6 +26,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+/**
+ * Demonstration and Test utility to load and draw SVG files via jSVG.
+ */
 public class SVGViewer extends JFrame
 {
 	protected long timeMS = 0;

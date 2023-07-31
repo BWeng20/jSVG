@@ -4,7 +4,7 @@ import com.bw.jtools.shape.AbstractShape;
 
 /**
  * Encapsulates color and gradients definitions to adapt gradients if needed.
- * Zhe class is invariant. Any modification creates a new instance.
+ * The class is invariant. Any modification creates a new instance.
  */
 public final class PaintWrapper
 {

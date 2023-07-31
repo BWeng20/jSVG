@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
 
 /**
- * Parses and converts a SVG document into Java2D-shapes plus basic style-information (see {@link StyledShape}).<br>
+ * Parses and converts an SVG document into Java2D-shapes plus basic style-information (see {@link StyledShape}).<br>
  * <br>
  * Currently supported features:
  * <ul>
@@ -65,11 +65,12 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>clipPath (only direct use by attribute clip-path, no inheritance)</li>
  * <li>filter (partial and only simple scenarios)</li>
  * </ul>
- * As the svg elements are simply converted to Shapes, complex stuff that needs offline-rendering (like blur) can't work this way.
- * The filter that are supported here are slow. Don't use them if you need to render fast (or use buffer).<br>
- * The SVG specification contains a lot of such case with some amounts of hints how agents should render it correctly.<br>
- * Most svg graphics doesn't use such stuff, so the conversion to Java2D shapes is the most efficient way to draw
- * simple scalable graphics (see {@link com.bw.jtools.shape.ShapePainter} and {@link com.bw.jtools.shape.ShapeIcon}).<br>
+ * Filter stuff that needs offline-rendering (like blur) is very slow.
+ * Don't use them if you need to render fast (or draw to an off-screen-buffer).<br>
+ * The SVG specification contains a lot of filter cases, but most SVG graphics doesn't
+ * use such stuff. So the conversion to Java2D shapes is an efficient way to draw
+ * simple scalable graphics. Drawing these shapes is very fast. They can also be drawn with any transformation without loss in quality.<br>
+ * See {@link com.bw.jtools.shape.ShapePainter} and {@link com.bw.jtools.shape.ShapeIcon}.<br>
  * For usage see the example {@link com.bw.jtools.SVGViewer}.
  */
 public class SVGConverter
@@ -77,7 +78,7 @@ public class SVGConverter
 
 	/**
 	 * Helper method to dump SVG warnings that may need user-attention.<br>
-	 * Can be used
+	 * Can be used by other classes.
 	 */
 	public static void warn(String s, Object... params)
 	{
@@ -88,7 +89,7 @@ public class SVGConverter
 
 	/**
 	 * Helper method to dump SVG errors that may need user-attention.<br>
-	 * Can be used
+	 * Can be used by other classes.
 	 */
 	public static void error(Throwable t, String s, Object... params)
 	{
@@ -103,6 +104,10 @@ public class SVGConverter
 		}
 	}
 
+	/**
+	 * Helper method to dump SVG errors that may need user-attention.<br>
+	 * Can be used by other classes.
+	 */
 	public static void error(String s, Object... params)
 	{
 		System.err.print("SVG Error: ");
