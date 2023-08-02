@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public enum Type
 {
-	g,
+	g,a,
 	clipPath,
 	path, rect, circle, ellipse,
 	text, textPath,
