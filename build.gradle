@@ -68,9 +68,9 @@ jar {
         attributes 'Implementation-Title': 'A minimalistic SVG renderer',
                 'Implementation-Version': project.version,
                 'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})"
+                'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+                'Main-Class': 'com.bw.jtools.SVGViewer'
     }
-
     archiveBaseName = 'jSVG'
     includeEmptyDirs = false
 

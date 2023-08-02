@@ -1,4 +1,8 @@
-package com.bw.jtools.shape;
+package com.bw.jtools.ui;
+
+import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.ShapeGroup;
+import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.JComponent;
 import java.awt.Color;
