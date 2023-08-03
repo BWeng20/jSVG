@@ -1,4 +1,7 @@
-package com.bw.jtools.shape;
+package com.bw.jtools.ui;
+
+import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.Icon;
 import java.awt.Color;
@@ -13,7 +16,7 @@ import java.util.Collection;
  */
 public class ShapeIcon implements Icon
 {
-	private boolean drawFrame_ = true;
+	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
 	private final ShapePainter painter_;
 
@@ -25,9 +28,18 @@ public class ShapeIcon implements Icon
 	 */
 	public ShapeIcon(Collection<AbstractShape> shapes)
 	{
-		painter_ = new ShapePainter();
-		for (AbstractShape s : shapes)
-			addShape(s);
+		painter_ = new ShapePainter(shapes);
+	}
+
+	/**
+	 * Replaces all shapes in the painter.
+	 *
+	 * @param shapes The new shapes.
+	 */
+	public void setShapes(Collection<AbstractShape> shapes)
+	{
+		painter_.clearShapes();
+		painter_.addShapes(shapes);
 	}
 
 	/**

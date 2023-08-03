@@ -37,6 +37,7 @@ public final class StyledShapeInfo extends ElementInfo
 	public AffineTransform aft_;
 
 	public Shape clipping_;
+	public FillRule fillRule_;
 
 	/**
 	 * Constructor to initialize,

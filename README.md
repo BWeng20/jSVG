@@ -1,4 +1,4 @@
-# jSVG
+# jSVG <a href="http://www.w3.org/Graphics/SVG/" ><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo" style="height:1.5em;float:right;"/></a>
 Lightweight SVG rendering to use in SWT Components.
 
 Most Icons used are based on bitmap images that doesn't scale well 
@@ -23,7 +23,7 @@ As the real rendering is done by the Java2d-engine this is fast enough to paint 
 
 ### Example
 
-A pretty example for a SVG is the flag of San Marino. 
+A pretty example for an SVG is the flag of San Marino. 
 It uses clipping-regions and other nasty stuff, but can be 
 completely converted to Java2D-shapes.
 
@@ -39,7 +39,16 @@ So the actual amount of Java2D-primitives is a bit higher.
 On my 10 years old computer the shapes are drawn in ~20ms for both sizes.
 This time goes up to ~50ms for bigger sizes like 1000x1000.
 
+The San Mariona flag is a bit to detailed to be used as icon.
 SVGs for icons are normally much simpler, so expect less time to draw it.
+
+For a complete list of flags, to be used for icons check out 
+https://github.com/lipis/flag-icons.git
+
+The flags are available in quadratic or rectangle form.
+
+Clone the repository, then start the icon tester with argument "/lipis/flag-icons/tree/main/flags/4x3"
+to see how they look at buttons.
 
 ### Supported features
 
@@ -56,8 +65,20 @@ jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ 
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
+Some examples may not work at all. E.g. the current official svg-logo (see at the top of this page) in jSVG: 
+
+![SVG Logo Broken](doc/svg-logo-v-broken.png)
+
+For the outline of the "flower" the stroke is set on the outer &lt;g&gt;. jSVG would need to manually calculate the outline of the inner &lt;g&gt; as Shape.
+Currently, it can do such stuff.
+If you need it, let you editor calculate the outline. E.g. _Inkscape_ can do this very easily.
+
+Below the cleaned-up version of the logo at the top (after some minutes with _Inkscape_), drawn with jSVG
+
+![SVG Logo Cleaned-Up](doc/svg-logo-v-CleanedUp.png)
+
 I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
-If somewhat doesn't work, please use the functions of your SVG-editor to simplify your drawing.
+If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
 
 ### A word about off-screen-images
 
@@ -67,5 +88,10 @@ In newer Java version the app is automatically scaled and will change
 the draw-resolution on the fly if the user moves the app from on screen 
 to another. Fixed bitmaps will get blurry.
 
-Using vector graphics for the actual drawing has no issue with it. 
+Using vector graphics for the actual drawing has no issue with it.
+
+Nevertheless, ShapePointer has a method to export a BufferedImage that
+can be used this way (and can also be written to file via ImageIO). 
+The Screenshots here are produced this way.  
+
 

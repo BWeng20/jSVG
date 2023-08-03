@@ -1,12 +1,13 @@
 package com.bw.jtools.svg;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
 
-public class Marker
+public class Marker extends ElementInfo
 {
 	Rectangle2D.Double viewBox_;
 
@@ -90,4 +91,10 @@ public class Marker
 	}
 
 
+	@Override
+	public void applyTransform(AffineTransform aft)
+	{
+		for (ElementInfo e : shapes_)
+			e.applyTransform(aft);
+	}
 }

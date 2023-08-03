@@ -1,63 +1,44 @@
 package com.bw.jtools;
 
-import com.bw.jtools.shape.ShapePane;
+import com.bw.jtools.shape.ShapePainter;
 import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.svg.SVGException;
+import com.bw.jtools.ui.ShapeMultiResolutionImage;
+import com.bw.jtools.ui.ShapePane;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.WindowConstants;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 /**
- * Demonstration and Test utility to load and draw SVG files via jSVG.
+ * Demonstration- and Test-Utility to load and draw SVG files via jSVG.
  */
-public class SVGViewer extends JFrame
+public class SVGViewer extends SVGAppBase
 {
-	protected long timeMS = 0;
-	protected ShapePane pane;
+	protected ShapePane pane_;
+	protected File svgFile_;
 
-	protected JFileChooser fileChooser;
 
-	protected File svgFile;
-
-	protected JFileChooser getFileChooser()
-	{
-		if (fileChooser == null)
-		{
-			fileChooser = new JFileChooser();
-			fileChooser.setFileFilter(new FileNameExtensionFilter("SVG files", "svg"));
-			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		}
-		return fileChooser;
-	}
-
-	protected void loadSVG(File svgFile)
+	protected void loadSVG2Pane(java.nio.file.Path svgFile)
 	{
 		try
 		{
-			InputStream ips = new BufferedInputStream(new FileInputStream(svgFile));
+			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
 			SVGConverter nsvg = new SVGConverter(ips);
-			setTitle("SVG: " + svgFile);
-			this.svgFile = svgFile;
-			pane.setShapes(nsvg.getShapes());
+			pane_.setShapes(nsvg.getShapes());
 		}
 		catch (Exception err)
 		{
@@ -86,24 +67,28 @@ public class SVGViewer extends JFrame
 	 */
 	public SVGViewer(String file)
 	{
-		pane = new ShapePane();
+		pane_ = new ShapePane();
 		// ScrollPane viewport will clear on paint. No need to do it twice.
-		pane.setOpaque(false);
+		pane_.setOpaque(false);
 
 		// Activate time measurement in painter for the status bar.
-		pane.getPainter()
-			.setTimeMeasurementEnabled(true);
+		pane_.getPainter()
+			 .setTimeMeasurementEnabled(true);
 
 		if (file != null)
 		{
-			loadSVG(new File(file));
+			loadSVG2Pane(new File(file).toPath());
+		}
+		else
+		{
+			setTitle("jSVG Demonstration");
 		}
 		// Let us zoom by mouse-wheel...
-		pane.setZoomByMouseWheelEnabled(true);
+		pane_.setZoomByMouseWheelEnabled(true);
 
 		// Create layout (menu, painter pane and status bar).
 		setLayout(new BorderLayout());
-		JScrollPane sp = new JScrollPane(pane);
+		JScrollPane sp = new JScrollPane(pane_);
 		add(BorderLayout.CENTER, sp);
 
 		JTextField status = new JTextField();
@@ -112,56 +97,70 @@ public class SVGViewer extends JFrame
 		add(BorderLayout.SOUTH, status);
 
 		// Start timer to cyclic update status bar (but not for every paint!)
-		startMeasurementTimer(status);
+		startMeasurementTimer(status, pane_.getPainter());
 
 		// Create menus
 		JMenuItem loadMenuItem = new JMenuItem("Open...", KeyEvent.VK_O);
+		loadMenuItem.setToolTipText("<html>Loads an other SVG.</html>");
 		loadMenuItem.addActionListener(e ->
 		{
-			JFileChooser fs = getFileChooser();
-			if (svgFile != null)
+			JFileChooser fs = getSVGFileChooser();
+			if (svgFile_ != null)
 			{
-				fs.setCurrentDirectory(svgFile.getParentFile());
+				fs.setCurrentDirectory(svgFile_.getParentFile());
 			}
 			int returnVal = fs.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION)
 			{
-				loadSVG(fs.getSelectedFile());
+				loadSVG2Pane(fs.getSelectedFile()
+							   .toPath());
 			}
 		});
+
+		JMenuItem saveAsImageMenuItem = new JMenuItem("Save as PNG...", KeyEvent.VK_P);
+		saveAsImageMenuItem.setToolTipText("<html>Saves the SVG with the<br>current scale to a PNG image.</html>");
+		saveAsImageMenuItem.addActionListener(e ->
+		{
+			JFileChooser fs = getPNGFileChooser();
+			int returnVal = fs.showSaveDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION)
+			{
+				saveImage(fs.getSelectedFile());
+			}
+		});
+
 
 		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.add(loadMenuItem);
+		fileMenu.add(saveAsImageMenuItem);
 		menuBar.add(fileMenu);
 		setJMenuBar(menuBar);
 
+		setLocationByPlatform(true);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(400, 300));
+
+		try
+		{
+			ShapePainter svgIconPainter = new ShapePainter(
+					SVGConverter.convert(SVGViewer.class.getResourceAsStream("jSVGIcon.svg")));
+			setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
-	protected void startMeasurementTimer(JTextField status)
+	/**
+	 * Save the SVG as PNG bitmap with the current scale.
+	 *
+	 * @param pngFile The File to store to. If extension is missing or empty, ".png" is added.
+	 */
+	public void saveImage(File pngFile)
 	{
-		Timer timer = new Timer(1000, e ->
-		{
-			timeMS = pane.getPainter()
-						 .getMeasuredTimeMS();
-			Dimension r = pane.getPreferredSize();
-			status.setText(
-					String.format("Size: %d x %d, Scale %.1f x %.1f%s",
-							r.width, r.height, pane.getXScale(), pane.getYScale(),
-							((timeMS > 0) ? ", Rendered in " + Double.toString(timeMS / 1000d) + "s" : "")));
-		});
-		timer.start();
-
-		addWindowListener(new WindowAdapter()
-		{
-			@Override
-			public void windowClosed(WindowEvent e)
-			{
-				timer.stop();
-			}
-		});
-
+		saveImage(pngFile, pane_.getPainter());
 	}
+
 }

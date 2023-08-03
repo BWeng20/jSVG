@@ -28,6 +28,7 @@ public final class Path extends Parser
 		path_ = new Path2D.Double();
 		char cmd = 0;
 		double x, y;
+		double lastMx = 0, lastMy = 0;
 		do
 		{
 			consumeSeparators();
@@ -47,9 +48,13 @@ public final class Path extends Parser
 			{
 				case 'M':
 					path_.moveTo(nextXOrdinate(), nextYOrdinate());
+					lastMx = cx;
+					lastMy = cy;
 					break;
 				case 'm':
 					path_.moveTo(nextXRelative(), nextYRelative());
+					lastMx = cx;
+					lastMy = cy;
 					break;
 				case 'L':
 					path_.lineTo(nextXOrdinate(), nextYOrdinate());
@@ -131,6 +136,8 @@ public final class Path extends Parser
 				case 'Z':
 				case 'z':
 					path_.closePath();
+					cx = lastMx;
+					cy = lastMy;
 					break;
 				case 0:
 					break;

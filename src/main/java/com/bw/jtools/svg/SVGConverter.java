@@ -11,9 +11,9 @@ import com.bw.jtools.shape.filter.Nop;
 import com.bw.jtools.shape.filter.Offset;
 import com.bw.jtools.svg.css.CSSParser;
 import com.bw.jtools.svg.css.CssStyleSelector;
+import com.bw.jtools.ui.ShapeIcon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.XMLConstants;
@@ -27,6 +27,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
@@ -66,11 +67,12 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>filter (partial and only simple scenarios)</li>
  * </ul>
  * Filter stuff that needs offline-rendering (like blur) is very slow.
+ * Filter stuff that needs offline-rendering (like blur) is very slow.
  * Don't use them if you need to render fast (or draw to an off-screen-buffer).<br>
  * The SVG specification contains a lot of filter cases, but most SVG graphics doesn't
  * use such stuff. So the conversion to Java2D shapes is an efficient way to draw
  * simple scalable graphics. Drawing these shapes is very fast. They can also be drawn with any transformation without loss in quality.<br>
- * See {@link com.bw.jtools.shape.ShapePainter} and {@link com.bw.jtools.shape.ShapeIcon}.<br>
+ * See {@link com.bw.jtools.shape.ShapePainter} and {@link ShapeIcon}.<br>
  * For usage see the example {@link com.bw.jtools.SVGViewer}.
  */
 public class SVGConverter
@@ -128,7 +130,7 @@ public class SVGConverter
 	public static boolean detailedErrorInformation_ = false;
 
 	/**
-	 * Parse a SVG document and creates shapes.
+	 * Parse an SVG document and creates shapes.
 	 * After creation call {@link #getShapes()} to retrieve the resulting shapes.<br>
 	 *
 	 * @param xml The svg document.
@@ -138,6 +140,12 @@ public class SVGConverter
 		this(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 	}
 
+	/**
+	 * Parse a SVG document and creates shapes.
+	 * After creation call {@link #getShapes()} to retrieve the resulting shapes.<br>
+	 *
+	 * @param in Input-Stream to the svg document.
+	 */
 	public SVGConverter(final InputStream in) throws SVGException
 	{
 		try
@@ -179,8 +187,8 @@ public class SVGConverter
 			// @TODO patterns
 			// NodeList patterns = doc_.getElementsByTagName("pattern");
 
-			parseChildren(shapes_, doc_.getElementsByTagName("svg")
-									   .item(0));
+			parseChildren(shapes_, getCache().getElementWrapper(doc_.getElementsByTagName("svg")
+																	.item(0)));
 
 			for (ElementInfo s : shapes_)
 				finalShapes_.add(finish(s));
@@ -192,19 +200,36 @@ public class SVGConverter
 		}
 	}
 
-	private void parseChildren(List<ElementInfo> shapes, Node parent)
+	/**
+	 * Convenience replacement for <i>new SVGConverter(is).getShapes()</i>.
+	 *
+	 * @param is The insvg document.
+	 * @return The converted shapes.
+	 * @throws SVGException In case of any error.
+	 */
+	public static List<AbstractShape> convert(final InputStream is) throws SVGException
 	{
-		Node child = parent.getFirstChild();
-		while (child != null)
-		{
-			while (child != null && child.getNodeType() != Node.ELEMENT_NODE)
-				child = child.getNextSibling();
+		return new SVGConverter(is).getShapes();
+	}
 
-			if (child != null)
-			{
-				parseElement(shapes, elementCache_.getElementWrapper(child));
-				child = child.getNextSibling();
-			}
+	/**
+	 * Convenience replacement for <i>new SVGConverter(xml).getShapes()</i>.
+	 *
+	 * @param xml The svg document.
+	 * @return The converted shapes.
+	 * @throws SVGException In case of any error.
+	 */
+	public static List<AbstractShape> convert(final String xml) throws SVGException
+	{
+		return new SVGConverter(xml).getShapes();
+	}
+
+
+	private void parseChildren(List<ElementInfo> shapes, ElementWrapper parent)
+	{
+		for (ElementWrapper child : parent.getChildren())
+		{
+			parseElement(shapes, child);
 		}
 	}
 
@@ -219,8 +244,9 @@ public class SVGConverter
 		else switch (typ)
 		{
 			case g:
+			case a:
 			{
-				parseChildren(g, w.getNode());
+				parseChildren(g, w);
 				addShapeContainer(w, g, shapes);
 			}
 			break;
@@ -294,10 +320,12 @@ public class SVGConverter
 						double y = w.toPDouble("y");
 						ElementWrapper uw = refOrgW.createReferenceShadow(w);
 
-						List<ElementInfo> usedElements = new ArrayList<>();
-						parseElement(usedElements, uw);
+						// Convert elements in the target context
+						List<ElementInfo> childElements = new ArrayList<>();
+						parseElement(childElements, uw);
+
 						AffineTransform aft = AffineTransform.getTranslateInstance(x, y);
-						for (ElementInfo sinfo : usedElements)
+						for (ElementInfo sinfo : childElements)
 						{
 							sinfo.applyTransform(aft);
 							shapes.add(sinfo);
@@ -355,6 +383,13 @@ public class SVGConverter
 		if (si instanceof StyledShapeInfo)
 		{
 			StyledShapeInfo s = (StyledShapeInfo) si;
+			if (s.shape_ instanceof Path2D)
+			{
+				int windingRule = s.fillRule_ == FillRule.evenodd ? Path2D.WIND_EVEN_ODD : Path2D.WIND_NON_ZERO;
+				((Path2D) s.shape_).setWindingRule(windingRule);
+			}
+
+
 			StyledShape sws = new StyledShape(
 					s.id_,
 					s.shape_,
@@ -561,7 +596,7 @@ public class SVGConverter
 				if (shape == null)
 				{
 					List<ElementInfo> g = new ArrayList<>();
-					parseChildren(g, w.getNode());
+					parseChildren(g, w);
 
 					Path2D.Double clipPath = new Path2D.Double();
 					for (ElementInfo si : g)
@@ -602,10 +637,18 @@ public class SVGConverter
 		if (m == null)
 		{
 			ElementWrapper w = elementCache_.getElementWrapperById(id);
-			if (w != null && w.getType() != Type.marker)
+			if (w == null)
+				warn("%s is unknown", id);
+			else if (w.getType() != Type.marker)
 				warn("%s is not a marker", w.nodeName());
-			m = new Marker(w);
-			elementCache_.addMarker(id, m);
+			else
+			{
+				m = new Marker(w);
+				List<ElementInfo> shapes = new ArrayList<>();
+				parseChildren(shapes, w);
+				addShapeContainer(w, shapes, m.shapes_);
+				elementCache_.addMarker(id, m);
+			}
 		}
 		return m;
 	}
@@ -793,7 +836,8 @@ public class SVGConverter
 			global.addAll(shapes);
 		else
 		{
-			GroupInfo group = new GroupInfo(w.id(), f);
+			GroupInfo group = new GroupInfo(w.id());
+			group.filter_ = f;
 			group.shapes_.addAll(shapes);
 			global.add(group);
 		}
@@ -816,20 +860,68 @@ public class SVGConverter
 				fill.getPaintWrapper(),
 				clipPath
 		);
+		styledShapeInfo.fillRule_ = fillRule(w);
 
 		ElementInfo sinfo = styledShapeInfo;
 		sinfo.id_ = w.id();
 		transform(styledShapeInfo, w);
 
+		GroupInfo g = null;
+
 		Filter f = filter(w);
 		if (f != null)
 		{
-			GroupInfo g = new GroupInfo(sinfo.id_, f);
+			if (g == null)
+				g = new GroupInfo(sinfo.id_);
+			g.filter_ = f;
 			g.shapes_.add(sinfo);
-			return g;
 		}
-		else
-			return sinfo;
+
+		String markerMid = w.markerMid();
+		if (markerMid != null)
+		{
+			Marker mMid = getMarker(markerMid);
+			if (mMid != null)
+			{
+				if (g == null)
+				{
+					g = new GroupInfo(sinfo.id_);
+					g.shapes_.add(sinfo);
+				}
+				ElementWrapper markerElement = elementCache_.getElementWrapperById(markerMid);
+				PathIterator p = styledShapeInfo.shape_.getPathIterator(styledShapeInfo.aft_);
+				p.next();
+				double[] coords = new double[2];
+				while (!p.isDone())
+				{
+					int mode = p.currentSegment(coords);
+					p.next();
+					if (p.isDone())
+						break;
+					switch (mode)
+					{
+						case PathIterator.SEG_LINETO:
+						case PathIterator.SEG_QUADTO:
+							// Convert the marker element inside the target context
+							// and add them at the target position
+							List<ElementInfo> markerElements = new ArrayList<>();
+							parseChildren(markerElements, markerElement);
+							List<ElementInfo> targetElements = new ArrayList<>();
+							addShapeContainer(w, markerElements, targetElements);
+							AffineTransform aft = AffineTransform.getTranslateInstance(coords[0], coords[1]);
+							// @TODO angle, auto-reverse, marker-width/height, e.t.c.
+							for (ElementInfo markerEI : targetElements)
+							{
+								markerEI.applyTransform(aft);
+								g.shapes_.add(markerEI);
+							}
+							break;
+						default:
+					}
+				}
+			}
+		}
+		return g == null ? sinfo : g;
 	}
 
 	private void parseCommonGradient(Gradient g, ElementWrapper w)
@@ -865,7 +957,8 @@ public class SVGConverter
 			for (int i = 0; i < sN; ++i)
 			{
 				Element stop = (Element) stops.item(i);
-				ElementWrapper wrapper = new ElementWrapper(elementCache_, stop);
+				ElementWrapper wrapper = new ElementWrapper(elementCache_, stop, false);
+				// Shadow tree?
 
 				String offset = wrapper.attr("offset");
 				if (offset != null)
@@ -915,6 +1008,12 @@ public class SVGConverter
 		String color = w.attr("fill", true);
 		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble("fill-opacity", 1.0d, true));
 	}
+
+	protected FillRule fillRule(ElementWrapper w)
+	{
+		return FillRule.fromString(w.attr("fill-rule", true));
+	}
+
 
 	protected Stroke stroke(ElementWrapper w)
 	{

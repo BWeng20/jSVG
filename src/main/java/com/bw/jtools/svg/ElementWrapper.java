@@ -13,6 +13,7 @@ import java.awt.Shape;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,12 +28,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Holds a svg element
+ * Holds a svg element. Handles attributes.
  */
 public final class ElementWrapper
 {
 	private Map<String, StyleValue> attributes_;
 	private Map<String, String> overrides_;
+	private boolean isShadow_;
 	private Set<String> classes_;
 	private final Element node_;
 	private ElementWrapper parent_;
@@ -163,10 +165,11 @@ public final class ElementWrapper
 		return shape_;
 	}
 
-	public ElementWrapper(ElementCache cache, Element node)
+	public ElementWrapper(ElementCache cache, Element node, boolean isShadow)
 	{
 		elementCache_ = cache;
 		node_ = node;
+		isShadow_ = isShadow;
 
 		Node parentNode = node.getParentNode();
 		while (parent_ == null && parentNode != null)
@@ -243,6 +246,57 @@ public final class ElementWrapper
 		String v = node_.getAttribute("clip-path")
 						.trim();
 		if (isNotEmpty(v))
+		{
+			String ref[] = urlRef(v);
+			if (ref != null)
+				return ref[0];
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the by "marker-mid" referenced marker.
+	 *
+	 * @return Id of marker or null
+	 */
+	public String markerMid()
+	{
+		String v = attr("marker-mid", true);
+		if (isNotEmpty(v) && !"none".equals(v))
+		{
+			String ref[] = urlRef(v);
+			if (ref != null)
+				return ref[0];
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the by "marker-start" referenced marker.
+	 *
+	 * @return Id of marker or null
+	 */
+	public String markerStart()
+	{
+		String v = attr("marker-start", true);
+		if (isNotEmpty(v) && !"none".equals(v))
+		{
+			String ref[] = urlRef(v);
+			if (ref != null)
+				return ref[0];
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the by "marker-end" referenced marker.
+	 *
+	 * @return Id of marker or null
+	 */
+	public String markerEnd()
+	{
+		String v = attr("marker-end", true);
+		if (isNotEmpty(v) && !"none".equals(v))
 		{
 			String ref[] = urlRef(v);
 			if (ref != null)
@@ -472,8 +526,8 @@ public final class ElementWrapper
 	 */
 	public ElementWrapper createReferenceShadow(ElementWrapper usingElement)
 	{
-		ElementWrapper uw = new ElementWrapper(elementCache_, getNode());
-		uw.parent_ = parent_;
+		ElementWrapper uw = new ElementWrapper(elementCache_, getNode(), true);
+		uw.parent_ = usingElement;
 		String tag = uw.getTagName();
 		if (tag.equals("svg") || tag.equals("symbol"))
 		{
@@ -726,7 +780,7 @@ public final class ElementWrapper
 	 */
 	public void override(String attributeName, String value)
 	{
-		if (value != null && isEmpty(attr(attributeName)))
+		if (value != null && isEmpty(attr(attributeName, false)))
 		{
 			if (overrides_ == null)
 				overrides_ = new HashMap<>();
@@ -782,5 +836,27 @@ public final class ElementWrapper
 			sb.append(' ')
 			  .append(id);
 		return sb.toString();
+	}
+
+	public List<ElementWrapper> getChildren()
+	{
+		List<ElementWrapper> children = new ArrayList<>();
+		Node child = node_.getFirstChild();
+		while (child != null)
+		{
+			while (child != null && child.getNodeType() != Node.ELEMENT_NODE)
+				child = child.getNextSibling();
+			if (child != null)
+			{
+				ElementWrapper w = elementCache_.getElementWrapper(child);
+				if (isShadow_)
+				{
+					w = w.createReferenceShadow(this);
+				}
+				children.add(w);
+				child = child.getNextSibling();
+			}
+		}
+		return children;
 	}
 }

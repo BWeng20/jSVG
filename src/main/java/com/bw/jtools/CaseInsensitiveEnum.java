@@ -5,6 +5,7 @@ import java.util.Map;
 
 /**
  * Helper class to handle enums in a case-insensitive way.
+ *
  * @param <T> The actual Enum type.
  */
 public final class CaseInsensitiveEnum<T extends Enum>
@@ -21,6 +22,7 @@ public final class CaseInsensitiveEnum<T extends Enum>
 
 	/**
 	 * Get the matching enum value.
+	 *
 	 * @param val The value to convert.
 	 */
 	public T fromString(String val)

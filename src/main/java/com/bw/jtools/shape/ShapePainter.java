@@ -2,12 +2,14 @@ package com.bw.jtools.shape;
 
 import com.bw.jtools.svg.ShapeHelper;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -86,6 +88,15 @@ public final class ShapePainter
 		area_ = null;
 	}
 
+	public ShapePainter()
+	{
+	}
+
+	public ShapePainter(Collection<AbstractShape> shapes)
+	{
+		addShapes(shapes);
+	}
+
 	/**
 	 * Adds a shape.
 	 */
@@ -159,7 +170,10 @@ public final class ShapePainter
 			g2D.translate(offsetX_, offsetY_);
 
 		if (clearArea)
+		{
+			g2D.setPaint(lct.currentBackground_);
 			g2D.fill(area_);
+		}
 
 		lct.aft_ = lct.g2D_.getTransform();
 		for (AbstractShape shape : shapes_)
@@ -191,6 +205,56 @@ public final class ShapePainter
 			ctx.dispose();
 		}
 	}
+
+	/**
+	 * Draw the shapes to a buffered image with foreground black and background white.<br>
+	 * If no shapes are loaded, nothing is drawn and if dst is null, a one pixel wide image is created.
+	 *
+	 * @param dst If null a new buffer, compatible with the current screen is created.
+	 * @return dst or (if dst was null) a new created image.
+	 */
+	public BufferedImage paintShapedToBuffer(BufferedImage dst)
+	{
+		return paintShapedToBuffer(dst, Color.BLACK, Color.WHITE);
+	}
+
+	/**
+	 * Draw the shapes to a buffered image with foreground black and transparent background.<br>
+	 * If no shapes are loaded, nothing is drawn and if dst is null, a one pixel wide image is created.
+	 *
+	 * @param dst If null a new buffer, compatible with the current screen is created.
+	 * @return dst or (if dst was null) a new created image.
+	 */
+	public BufferedImage paintShapedToBufferTransparent(BufferedImage dst)
+	{
+		return paintShapedToBuffer(dst, Color.BLACK, new Color(0, 0, 0, 0));
+	}
+
+
+	/**
+	 * Draw the shapes to a buffered image.<br>
+	 * If no shapes are loaded, nothing is drawn and if dst is null, a one pixel wide image is created.
+	 *
+	 * @param dst        If null a new buffer, compatible with the current screen is created.
+	 * @param foreground The foreground color.
+	 * @param background The background color.
+	 * @return dst or (if dst was null) a new created image.
+	 */
+	public BufferedImage paintShapedToBuffer(BufferedImage dst, Paint foreground, Paint background)
+	{
+		if (dst == null)
+		{
+			Rectangle2D area = getArea();
+			if (area == null || area.getHeight() == 0 || area.getWidth() == 0)
+				area = new Rectangle2D.Double(0, 0, 1, 1);
+
+			dst = new BufferedImage((int) (0.5 + area.getWidth()),
+					(int) (0.5 + area.getHeight()), BufferedImage.TYPE_INT_ARGB);
+		}
+		paintShapes(dst.getGraphics(), foreground, background, true);
+		return dst;
+	}
+
 
 	/**
 	 * Paint the shapes along the outline of on other shape.<br>

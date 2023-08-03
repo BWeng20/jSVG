@@ -8,7 +8,7 @@ import java.util.List;
  * Collects all information about a group of shapes.
  * Used in case a group of shapes has a common filter.
  */
-public final class GroupInfo extends ElementInfo
+public class GroupInfo extends ElementInfo
 {
 	public List<ElementInfo> shapes_ = new ArrayList<>();
 	public Filter filter_;
@@ -16,10 +16,9 @@ public final class GroupInfo extends ElementInfo
 	/**
 	 * Constructor to initialize,
 	 */
-	public GroupInfo(String id, Filter filter)
+	public GroupInfo(String id)
 	{
 		id_ = id;
-		filter_ = filter;
 	}
 
 	@Override
