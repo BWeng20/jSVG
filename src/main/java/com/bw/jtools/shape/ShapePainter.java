@@ -103,7 +103,6 @@ public final class ShapePainter
 	public void addShape(AbstractShape shape)
 	{
 		shapes_.add(shape);
-
 		Rectangle2D transRect = shape.getTransformedBounds();
 		if (area_ == null)
 			area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());

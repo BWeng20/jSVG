@@ -1,5 +1,6 @@
 package com.bw.jtools.svg;
 
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class GroupInfo extends ElementInfo
 {
 	public List<ElementInfo> shapes_ = new ArrayList<>();
 	public Filter filter_;
+	public Shape clipPath_;
 
 	/**
 	 * Constructor to initialize,
@@ -28,4 +30,10 @@ public class GroupInfo extends ElementInfo
 			e.applyTransform(aft);
 	}
 
+	@Override
+	public void applyPostTransform(AffineTransform aft)
+	{
+		for (ElementInfo e : shapes_)
+			e.applyPostTransform(aft);
+	}
 }

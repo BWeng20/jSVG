@@ -93,12 +93,13 @@ public final class StyledShape extends AbstractShape
 
 		final Graphics2D g3D = ctx.g2D_;
 
-		g3D.setTransform(aftTemp_);
 		if (clipping_ != null)
 		{
 			orgClip = g3D.getClip();
 			g3D.clip(clipping_);
 		}
+		AffineTransform aold = g3D.getTransform();
+		g3D.setTransform(aftTemp_);
 
 		Paint p = transatePaint(ctx, fill_);
 		if (p != null)
@@ -117,6 +118,7 @@ public final class StyledShape extends AbstractShape
 				g3D.draw(shape_);
 			}
 		}
+		g3D.setTransform(aold);
 		if (clipping_ != null)
 		{
 			g3D.setClip(orgClip);

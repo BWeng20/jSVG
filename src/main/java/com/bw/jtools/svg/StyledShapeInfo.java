@@ -60,4 +60,14 @@ public final class StyledShapeInfo extends ElementInfo
 			aft_.preConcatenate(aft);
 
 	}
+
+	@Override
+	public void applyPostTransform(AffineTransform aft)
+	{
+		if (aft_ == null)
+			aft_ = new AffineTransform(aft);
+		else
+			aft_.concatenate(aft);
+
+	}
 }

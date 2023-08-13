@@ -316,8 +316,8 @@ public class SVGConverter
 					ElementWrapper refOrgW = elementCache_.getElementWrapperById(href);
 					if (refOrgW != null)
 					{
-						double x = w.toPDouble("x");
-						double y = w.toPDouble("y");
+						double x = w.toPDouble("x", false);
+						double y = w.toPDouble("y", false);
 						ElementWrapper uw = refOrgW.createReferenceShadow(w);
 
 						// Convert elements in the target context
@@ -327,7 +327,7 @@ public class SVGConverter
 						AffineTransform aft = AffineTransform.getTranslateInstance(x, y);
 						for (ElementInfo sinfo : childElements)
 						{
-							sinfo.applyTransform(aft);
+							sinfo.applyPostTransform(aft);
 							shapes.add(sinfo);
 						}
 					}
@@ -404,7 +404,7 @@ public class SVGConverter
 		else
 		{
 			GroupInfo g = (GroupInfo) si;
-			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_));
+			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_), g.clipPath_);
 			for (ElementInfo e : g.shapes_)
 				gr.shapes_.add(finish(e));
 			// @TODO
@@ -832,12 +832,25 @@ public class SVGConverter
 				if (!s.id_.equals(w.id()))
 					s.applyTransform(t);
 		Filter f = filter(w);
-		if (f == null)
-			global.addAll(shapes);
-		else
-		{
-			GroupInfo group = new GroupInfo(w.id());
+
+		GroupInfo group = null;
+
+		if (f != null) {
+			group = new GroupInfo(w.id());
 			group.filter_ = f;
+		}
+
+		Shape clipPath = clipPath(w);
+		if ( clipPath != null ) {
+			if ( group == null )
+				group = new GroupInfo(w.id());
+			group.clipPath_ = clipPath;
+		}
+
+		if ( group == null )
+		{
+			global.addAll(shapes);
+		} else {
 			group.shapes_.addAll(shapes);
 			global.add(group);
 		}
@@ -1033,7 +1046,13 @@ public class SVGConverter
 	protected Shape clipPath(ElementWrapper w)
 	{
 		// @TODO intersect inherited clip-paths.
-		return getClipPath(w.clipPath());
+		Shape clipPath = getClipPath(w.clipPath());
+		if ( clipPath != null ) {
+			AffineTransform aft = w.transform();
+			if ( aft != null )
+				clipPath = aft.createTransformedShape(clipPath);
+		}
+		return clipPath;
 	}
 
 }

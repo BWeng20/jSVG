@@ -97,4 +97,11 @@ public class Marker extends ElementInfo
 		for (ElementInfo e : shapes_)
 			e.applyTransform(aft);
 	}
+
+	@Override
+	public void applyPostTransform(AffineTransform aft)
+	{
+		for (ElementInfo e : shapes_)
+			e.applyPostTransform(aft);
+	}
 }

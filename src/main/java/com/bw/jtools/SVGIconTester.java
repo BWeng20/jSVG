@@ -53,10 +53,10 @@ import java.util.stream.Stream;
 public class SVGIconTester extends SVGAppBase
 {
 
-	Path svgPath_;
-	JPanel pane_;
+	protected Path svgPath_;
+	protected JPanel pane_;
 
-	int iconSize = 32;
+	protected int iconSize = 32;
 
 	/**
 	 * Shows a SVG file.
@@ -265,12 +265,12 @@ public class SVGIconTester extends SVGAppBase
 	{
 		if (contentViewer == null)
 		{
-
 			contentViewer = new JDialog(this);
 			contentViewer.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
 			drawPane = new ShapePane();
 			drawPane.setZoomByMouseWheelEnabled(true);
+			drawPane.setInlineBorder(true);
 
 			contentViewer.setLayout(new BorderLayout());
 			contentViewer.add(BorderLayout.CENTER, new JScrollPane(drawPane));
@@ -297,7 +297,6 @@ public class SVGIconTester extends SVGAppBase
 
 	protected void loadSVGs(Stream<Path> paths)
 	{
-
 		paths.forEach(path ->
 		{
 			final List<AbstractShape> shapes = loadSVG(path);
@@ -344,5 +343,4 @@ public class SVGIconTester extends SVGAppBase
 		revalidate();
 		pack();
 	}
-
 }

@@ -6,6 +6,7 @@ import com.bw.jtools.shape.filter.FilteredImage;
 import com.bw.jtools.shape.filter.PainterBuffers;
 
 import java.awt.Color;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -29,15 +30,17 @@ public final class ShapeGroup extends AbstractShape
 
 	private PainterBuffers buffers_;
 	private Rectangle2D transformedBounds_;
+	private Shape clipping_;
 
 
 	/**
 	 * Constructor to initialize,
 	 */
-	public ShapeGroup(String id, FilterChain filter)
+	public ShapeGroup(String id, FilterChain filter, Shape clipPath)
 	{
 		super(id);
 		this.filter_ = filter;
+		this.clipping_ = clipPath;
 	}
 
 	/**
@@ -132,8 +135,16 @@ public final class ShapeGroup extends AbstractShape
 
 	protected void paintInternal(Context ctx)
 	{
+		Shape oldClip = null;
+		if ( clipping_ != null) {
+			oldClip = ctx.g2D_.getClip();
+			ctx.g2D_.clip(clipping_);
+		}
 		for (AbstractShape shape : shapes_)
 			shape.paint(ctx);
+
+		if ( clipping_ != null)
+			ctx.g2D_.setClip(oldClip);
 	}
 
 	/**
