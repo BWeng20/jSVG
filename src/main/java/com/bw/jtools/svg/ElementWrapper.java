@@ -32,8 +32,27 @@ import java.util.stream.Collectors;
  */
 public final class ElementWrapper
 {
-	private Map<String, StyleValue> attributes_;
-	private Map<String, String> overrides_;
+	static class OverrideItem
+	{
+
+		OverrideItem(String value, boolean localAttributeAdded)
+		{
+			value_ = value;
+			localAttributeAdded_ = localAttributeAdded;
+		}
+
+		@Override
+		public String toString()
+		{
+			return localAttributeAdded_ ? value_ + "*" : value_;
+		}
+
+		final String value_;
+		final boolean localAttributeAdded_;
+	}
+
+	private Map<Attribute, StyleValue> attributes_;
+	private Map<Attribute, OverrideItem> overrides_;
 	private boolean isShadow_;
 	private Set<String> classes_;
 	private final Element node_;
@@ -180,6 +199,11 @@ public final class ElementWrapper
 		type_ = Type.valueFrom(node.getTagName());
 	}
 
+	public boolean isShadow()
+	{
+		return isShadow_;
+	}
+
 	public Type getType()
 	{
 		return type_;
@@ -200,7 +224,7 @@ public final class ElementWrapper
 		if (classes_ == null)
 		{
 			classes_ = new HashSet<>();
-			String clazz = attr("class", false);
+			String clazz = attr(Attribute.Class, false);
 			if (clazz != null)
 			{
 				Scanner s = new Scanner(clazz);
@@ -261,7 +285,7 @@ public final class ElementWrapper
 	 */
 	public String markerMid()
 	{
-		String v = attr("marker-mid", true);
+		String v = attr(Attribute.Marker_Mid, true);
 		if (isNotEmpty(v) && !"none".equals(v))
 		{
 			String ref[] = urlRef(v);
@@ -278,7 +302,7 @@ public final class ElementWrapper
 	 */
 	public String markerStart()
 	{
-		String v = attr("marker-start", true);
+		String v = attr(Attribute.Marker_Start, true);
 		if (isNotEmpty(v) && !"none".equals(v))
 		{
 			String ref[] = urlRef(v);
@@ -295,7 +319,7 @@ public final class ElementWrapper
 	 */
 	public String markerEnd()
 	{
-		String v = attr("marker-end", true);
+		String v = attr(Attribute.Marker_End, true);
 		if (isNotEmpty(v) && !"none".equals(v))
 		{
 			String ref[] = urlRef(v);
@@ -326,7 +350,7 @@ public final class ElementWrapper
 	 */
 	public double fontWeight()
 	{
-		String w = attr("font-weight", true);
+		String w = attr(Attribute.Font_Weight, true);
 		if (isEmpty(w))
 			return TextAttribute.WEIGHT_REGULAR;
 
@@ -343,9 +367,9 @@ public final class ElementWrapper
 	 *
 	 * @return The length or null if the attribute doesn't exists.
 	 */
-	public Length toLength(String attributeName)
+	public Length toLength(Attribute attribute)
 	{
-		return toLength(attributeName, false);
+		return toLength(attribute, false);
 	}
 
 	/**
@@ -353,9 +377,9 @@ public final class ElementWrapper
 	 *
 	 * @return The length or null if the attribute doesn't exists.
 	 */
-	public Length toLength(String attributeName, boolean inherited)
+	public Length toLength(Attribute attribute, boolean inherited)
 	{
-		return parseLength(attr(attributeName, inherited));
+		return parseLength(attr(attribute, inherited));
 	}
 
 
@@ -364,9 +388,9 @@ public final class ElementWrapper
 	 *
 	 * @return The double or null if the attribute doesn't exists.
 	 */
-	public Double toDouble(String attributeName)
+	public Double toDouble(Attribute attribute)
 	{
-		return convDouble(attr(attributeName, false));
+		return convDouble(attr(attribute, false));
 	}
 
 	/**
@@ -374,9 +398,9 @@ public final class ElementWrapper
 	 *
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(String attributeName)
+	public double toPDouble(Attribute attribute)
 	{
-		return toPDouble(attributeName, false);
+		return toPDouble(attribute, false);
 	}
 
 	/**
@@ -385,9 +409,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or null if the attribute doesn't exists.
 	 */
-	public Double toDouble(String attributeName, boolean inherited)
+	public Double toDouble(Attribute attribute, boolean inherited)
 	{
-		return convDouble(attr(attributeName, inherited));
+		return convDouble(attr(attribute, inherited));
 	}
 
 	/**
@@ -397,9 +421,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(String attributeName, boolean inherited)
+	public double toPDouble(Attribute attribute, boolean inherited)
 	{
-		return toPDouble(attributeName, 0d, inherited);
+		return toPDouble(attribute, 0d, inherited);
 	}
 
 	/**
@@ -408,9 +432,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(String attributeName, double defaultValue, boolean inherited)
+	public double toPDouble(Attribute attribute, double defaultValue, boolean inherited)
 	{
-		Double d = convDouble(attr(attributeName, inherited));
+		Double d = convDouble(attr(attribute, inherited));
 		return d == null ? defaultValue : d;
 	}
 
@@ -419,9 +443,9 @@ public final class ElementWrapper
 	 *
 	 * @return List, never null but possible empty.
 	 */
-	public List<Double> toPDoubleList(String attributeName, boolean inherited)
+	public List<Double> toPDoubleList(Attribute attribute, boolean inherited)
 	{
-		final String val = attr(attributeName, inherited);
+		final String val = attr(attribute, inherited);
 		LengthList l;
 		if (val != null)
 			return new LengthList(val).getLengthList()
@@ -433,9 +457,9 @@ public final class ElementWrapper
 	}
 
 
-	public LengthList toLengthList(String attributeName, boolean inherited)
+	public LengthList toLengthList(Attribute attribute, boolean inherited)
 	{
-		final String val = attr(attributeName, inherited);
+		final String val = attr(attribute, inherited);
 		LengthList l;
 		if (val != null)
 		{
@@ -502,13 +526,13 @@ public final class ElementWrapper
 	}
 
 	/**
-	 * Gets the transform on this ele.
+	 * Gets the transform on this element.
 	 */
 	public AffineTransform transform()
 	{
 		if (aft_ == null)
 		{
-			String transform = attr("transform", false);
+			String transform = attr(Attribute.Transform, false);
 			if (isNotEmpty(transform))
 				aft_ = new Transform(null, transform).getTransform();
 			else
@@ -516,6 +540,13 @@ public final class ElementWrapper
 		}
 		return aft_.isIdentity() ? null : aft_;
 	}
+
+	public void applyTransform(AffineTransform aft)
+	{
+		transform();
+		aft_.concatenate(aft);
+	}
+
 
 	/**
 	 * Creates a shadow copy of this element, copies attributes from the "usingElement" to
@@ -527,29 +558,55 @@ public final class ElementWrapper
 	public ElementWrapper createReferenceShadow(ElementWrapper usingElement)
 	{
 		ElementWrapper uw = new ElementWrapper(elementCache_, getNode(), true);
-		uw.parent_ = usingElement;
+		uw.parent_ = usingElement.parent_;
 		String tag = uw.getTagName();
 		if (tag.equals("svg") || tag.equals("symbol"))
 		{
 			// @TODO: set width and height of viewbox
 		}
 
+		// Take over overrides from using element...
+		if (usingElement.overrides_ != null)
+		{
+			for (Map.Entry<Attribute, OverrideItem> i : usingElement.overrides_.entrySet())
+			{
+				Attribute attr = i.getKey();
+				uw.override(attr, i.getValue().value_, false);
+			}
+		}
+
+		// Take over attributes of using element
 		NamedNodeMap attributes = usingElement.getNode()
 											  .getAttributes();
 		int nAttr = attributes.getLength();
 		for (int iAttr = 0; iAttr < nAttr; ++iAttr)
 		{
 			Node attrNode = attributes.item(iAttr);
-			String attrName = attrNode.getNodeName();
-			if (attrName != null)
-				uw.override(attrName, attrNode.getNodeValue());
+			Attribute attr = Attribute.valueFrom(attrNode.getNodeName());
+			if (attr != null)
+			{
+				if (attr != Attribute.Transform && attr != Attribute.X && attr != Attribute.Y)
+				{
+					if (!usingElement.isOverrideFromAttribute(attr))
+						// Add any attribute that is not already in overrides
+						uw.override(attr, attrNode.getNodeValue(), false);
+				}
+			}
 		}
-		Map<String, StyleValue> styleAttributes = usingElement.getStyleAttributes();
-		for (Map.Entry<String, StyleValue> styleAttr : styleAttributes.entrySet())
+
+		Map<Attribute, StyleValue> styleAttributes = usingElement.getStyleAttributes();
+		for (Map.Entry<Attribute, StyleValue> styleAttr : styleAttributes.entrySet())
 		{
-			String attrName = styleAttr.getKey();
-			uw.override(attrName, styleAttr.getValue().value_);
+			Attribute attr = styleAttr.getKey();
+			uw.override(attr, styleAttr.getValue().value_, false);
 		}
+		return uw;
+	}
+
+	public ElementWrapper createReferenceShadowChild(ElementWrapper parent)
+	{
+		ElementWrapper uw = new ElementWrapper(elementCache_, getNode(), true);
+		uw.parent_ = parent;
 		return uw;
 	}
 
@@ -572,8 +629,8 @@ public final class ElementWrapper
 	{
 		if (viewPort_ == null)
 		{
-			Length width = toLength("width", true);
-			Length height = toLength("height", true);
+			Length width = toLength(Attribute.Width, true);
+			Length height = toLength(Attribute.Height, true);
 
 			if (width == null) width = new Length(100, LengthUnit.px);
 			if (height == null) height = new Length(100, LengthUnit.px);
@@ -588,7 +645,7 @@ public final class ElementWrapper
 		if (!viewBoxRetrieved_)
 		{
 			viewBoxRetrieved_ = true;
-			LengthList l = toLengthList("viewBox", true);
+			LengthList l = toLengthList(Attribute.ViewBox, true);
 			if (l != null)
 			{
 				List<Length> ll = l.getLengthList();
@@ -619,8 +676,8 @@ public final class ElementWrapper
 	 */
 	protected Font font(Font defaultFont)
 	{
-		Length fontSize = toLength("font-size", true);
-		String fontFamily = attr("font-family", true);
+		Length fontSize = toLength(Attribute.FontSize, true);
+		String fontFamily = attr(Attribute.FontFamily, true);
 		double fontWeight = fontWeight();
 
 		if (fontSize == null) fontSize = new Length(12, LengthUnit.pt);
@@ -677,7 +734,7 @@ public final class ElementWrapper
 	{
 		if (opacity_ == null)
 		{
-			opacity_ = toPDouble("opacity", 1.0d, false);
+			opacity_ = toPDouble(Attribute.Opacity, 1.0d, false);
 		}
 		return opacity_.floatValue();
 	}
@@ -702,8 +759,8 @@ public final class ElementWrapper
 	{
 		if (preserveSpace_ == null)
 		{
-			final String ws = attr("white-space");
-			preserveSpace_ = "preserve".equals(attr("xml:space")) || (ws != null && ws.startsWith("pre"));
+			final String ws = attr(Attribute.WhiteSpace);
+			preserveSpace_ = "preserve".equals(attr(Attribute.XmlSpace)) || (ws != null && ws.startsWith("pre"));
 		}
 		return preserveSpace_;
 	}
@@ -713,10 +770,11 @@ public final class ElementWrapper
 	 * The value can be specified directly or via
 	 * style-attribute.
 	 */
-	public String attr(String attributeName)
+	public String attr(Attribute attribute)
 	{
-		return attr(attributeName, true);
+		return attr(attribute, true);
 	}
+
 
 	/**
 	 * Gets an attribute from this element.<br>
@@ -724,49 +782,68 @@ public final class ElementWrapper
 	 * style-attribute.<br>
 	 * Values from "style" (direct style-attribute or via style-sheet) have higher priority than attributes.
 	 *
-	 * @param inherited If true the attribute canbe inherited.
+	 * @param inherited If true the attribute can be inherited.
 	 */
-	public String attr(String attributeName, boolean inherited)
+	public String attr(Attribute attribute, boolean inherited)
 	{
-		if (overrides_ != null)
-		{
-			String ov = overrides_.get(attributeName);
-			if (isNotEmpty(ov))
-				return ov;
-		}
-		String v = getStyleValue(attributeName);
+		String r = getOverride(attribute);
+		if (isEmpty(r))
+			r = attrWithoutOverrides(attribute, inherited);
+		return r;
+	}
+
+	protected String getOverride(Attribute attribute)
+	{
+		OverrideItem i = (overrides_ != null) ? overrides_.get(attribute) : null;
+		if (i == null)
+			return null;
+		else
+			return i.value_;
+	}
+
+	protected boolean isOverrideFromAttribute(Attribute attribute)
+	{
+		OverrideItem i = (overrides_ != null) ? overrides_.get(attribute) : null;
+		return (i == null) ? false : i.localAttributeAdded_;
+
+	}
+
+	private String attrWithoutOverrides(Attribute attribute, boolean inherited)
+	{
+		String v = getStyleValue(attribute);
 		if (isEmpty(v))
 		{
-			v = node_.getAttribute(attributeName);
+			v = node_.getAttribute(attribute.xmlName());
 		}
 		if (isEmpty(v) && inherited)
 		{
-			v = inherited(attributeName);
+			v = inherited(attribute);
 			if (isNotEmpty(v))
-				attributes_.put(attributeName, new StyleValue(v, Specificity.MIN));
+				attributes_.put(attribute, new StyleValue(v, Specificity.MIN));
 		}
 		return v;
 	}
 
+
 	/**
 	 * Local style attributes have higher priority than style-sheet-values.
 	 */
-	public String getStyleValue(String attributeName)
+	public String getStyleValue(Attribute attribute)
 	{
-		StyleValue sv = getStyleAttributes().get(attributeName);
+		StyleValue sv = getStyleAttributes().get(attribute);
 		return sv == null ? null : sv.value_;
 	}
 
 	/**
 	 * Get all attributes from the local style-attribute.<br>
 	 */
-	public Map<String, StyleValue> getStyleAttributes()
+	public Map<Attribute, StyleValue> getStyleAttributes()
 	{
 		if (attributes_ == null)
 		{
-			Map<String, String> attrs = CSSParser.parseStyle(node_.getAttribute("style"));
+			Map<Attribute, String> attrs = CSSParser.parseStyle(node_.getAttribute(Attribute.Style.xmlName()));
 			attributes_ = new HashMap<>();
-			for (Map.Entry<String, String> e : attrs.entrySet())
+			for (Map.Entry<Attribute, String> e : attrs.entrySet())
 			{
 				//@TODO: Handle "!important"
 				attributes_.put(e.getKey(), new StyleValue(e.getValue(), Specificity.MAX));
@@ -778,26 +855,58 @@ public final class ElementWrapper
 	/**
 	 * Overrides an attribute.
 	 */
-	public void override(String attributeName, String value)
+	public void override(Attribute attribute, String value, boolean fromAttribute)
 	{
-		if (value != null && isEmpty(attr(attributeName, false)))
+		if (isNotEmpty(value))
 		{
-			if (overrides_ == null)
-				overrides_ = new HashMap<>();
-			overrides_.put(attributeName, value);
+			String orgValue = attrWithoutOverrides(attribute, false);
+			boolean aggregate =
+					(attribute == Attribute.X ||
+							attribute == Attribute.Y ||
+							attribute == Attribute.Transform);
+
+			if (aggregate)
+			{
+				if (overrides_ != null)
+				{
+					OverrideItem inherited = overrides_.get(attribute);
+					if (inherited != null)
+					{
+						fromAttribute = inherited.localAttributeAdded_;
+						if (fromAttribute)
+						{
+							// Values was already set from local attribute.
+							value = inherited.value_;
+						}
+					}
+				}
+				if (isNotEmpty(orgValue))
+				{
+					fromAttribute = true;
+					orgValue = null;
+				}
+			}
+
+			if (value != null && isEmpty(orgValue))
+			{
+				if (overrides_ == null)
+					overrides_ = new HashMap<>();
+				OverrideItem ovi = new OverrideItem(value, fromAttribute);
+				overrides_.put(attribute, ovi);
+			}
 		}
 	}
 
 	/**
 	 * Gets an attribute from parents.
 	 */
-	protected String inherited(String attributeName)
+	protected String inherited(Attribute attribute)
 	{
 		String v = null;
 		ElementWrapper ancestor = parent_;
 		while (v == null && ancestor != null)
 		{
-			v = ancestor.attr(attributeName);
+			v = ancestor.attr(attribute);
 			ancestor = ancestor.parent_;
 		}
 		return v;
@@ -851,7 +960,8 @@ public final class ElementWrapper
 				ElementWrapper w = elementCache_.getElementWrapper(child);
 				if (isShadow_)
 				{
-					w = w.createReferenceShadow(this);
+					w = w.createReferenceShadowChild(this);
+					w.parent_ = this;
 				}
 				children.add(w);
 				child = child.getNextSibling();

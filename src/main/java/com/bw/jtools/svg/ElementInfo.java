@@ -21,5 +21,6 @@ public abstract class ElementInfo
 	}
 
 	public abstract void applyTransform(AffineTransform aft);
+
 	public abstract void applyPostTransform(AffineTransform aft);
 }

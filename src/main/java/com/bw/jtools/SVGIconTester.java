@@ -26,7 +26,8 @@ import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -74,12 +75,11 @@ public class SVGIconTester extends SVGAppBase
 	 * Create a new SVGViewer.
 	 * Caller has to call "pack" and "setVisible".
 	 *
-	 * @param file The file to show or null.
+	 * @param path The file to show or null.
 	 */
 	public SVGIconTester(String path)
 	{
-		pane_ = new JPanel(new FlowLayout());
-		// pane_.setDoubleBuffered(false);
+		pane_ = new JPanel(new GridBagLayout());
 		if (path != null)
 		{
 			loadSVGs(path);
@@ -91,8 +91,8 @@ public class SVGIconTester extends SVGAppBase
 
 		// Create layout (menu, painter pane and status bar).
 		setLayout(new BorderLayout());
-		// JScrollPane sp = new JScrollPane(pane_);
-		add(BorderLayout.CENTER, pane_);
+		JScrollPane sp = new JScrollPane(pane_);
+		add(BorderLayout.CENTER, sp);
 
 		JTextField status = new JTextField();
 		status.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
@@ -258,47 +258,58 @@ public class SVGIconTester extends SVGAppBase
 	final static Border br = BorderFactory.createLineBorder(Color.BLACK, 1);
 	final static Insets is = new Insets(1, 1, 1, 1);
 
-	JDialog contentViewer;
-	ShapePane drawPane;
+	JDialog contentViewer_;
+	ShapePane drawPane_;
 
 	protected void showShapes(String name, List<AbstractShape> shapes)
 	{
-		if (contentViewer == null)
+		if (contentViewer_ == null)
 		{
-			contentViewer = new JDialog(this);
-			contentViewer.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+			contentViewer_ = new JDialog(this);
+			contentViewer_.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
-			drawPane = new ShapePane();
-			drawPane.setZoomByMouseWheelEnabled(true);
-			drawPane.setInlineBorder(true);
+			drawPane_ = new ShapePane();
+			drawPane_.setZoomByMouseWheelEnabled(true);
+			drawPane_.setInlineBorder(true);
 
-			contentViewer.setLayout(new BorderLayout());
-			contentViewer.add(BorderLayout.CENTER, new JScrollPane(drawPane));
-			contentViewer.setPreferredSize(new Dimension(400, 400));
+			contentViewer_.setLayout(new BorderLayout());
+			contentViewer_.add(BorderLayout.CENTER, new JScrollPane(drawPane_));
+			contentViewer_.setPreferredSize(new Dimension(400, 400));
 
-			contentViewer.pack();
-			contentViewer.setLocationRelativeTo(this);
+			contentViewer_.pack();
+			contentViewer_.setLocationRelativeTo(this);
 
 			addWindowListener(new WindowAdapter()
 			{
 				@Override
 				public void windowClosed(WindowEvent e)
 				{
-					contentViewer.setVisible(false);
-					contentViewer.dispose();
+					contentViewer_.setVisible(false);
+					contentViewer_.dispose();
 				}
 			});
 		}
-		drawPane.setShapes(shapes);
-		drawPane.setScale(1, 1);
-		contentViewer.setTitle(name);
-		contentViewer.setVisible(true);
+		drawPane_.setShapes(shapes);
+		contentViewer_.setTitle(name);
+		contentViewer_.setVisible(true);
 	}
 
 	protected void loadSVGs(Stream<Path> paths)
 	{
+		final GridBagConstraints gc = new GridBagConstraints();
+		gc.anchor = GridBagConstraints.NORTHWEST;
+		gc.fill = GridBagConstraints.NONE;
+		gc.gridy = 0;
+		gc.gridx = 0;
+
 		paths.forEach(path ->
 		{
+			if (gc.gridx >= 20)
+			{
+				gc.gridx = 0;
+				gc.gridy++;
+			}
+
 			final List<AbstractShape> shapes = loadSVG(path);
 			System.out.println("Loaded " + shapes.size() + " shapes from " + path);
 
@@ -318,7 +329,8 @@ public class SVGIconTester extends SVGAppBase
 			b.setBackground(Color.WHITE);
 			b.setPreferredSize(new Dimension(34, 34));
 			// b.setMaximumSize(new Dimension(34,34));
-			pane_.add(b);
+			pane_.add(b, gc);
+			gc.gridx++;
 		});
 	}
 
@@ -340,7 +352,6 @@ public class SVGIconTester extends SVGAppBase
 				c.setPreferredSize(new Dimension(w + 2, h + 2));
 			}
 		}
-		revalidate();
-		pack();
+		pane_.revalidate();
 	}
 }

@@ -101,7 +101,7 @@ public final class StyledShape extends AbstractShape
 		AffineTransform aold = g3D.getTransform();
 		g3D.setTransform(aftTemp_);
 
-		Paint p = transatePaint(ctx, fill_);
+		Paint p = translatePaint(ctx, fill_);
 		if (p != null)
 		{
 			g3D.setPaint(p);
@@ -110,7 +110,7 @@ public final class StyledShape extends AbstractShape
 
 		if (paint_ != null)
 		{
-			p = transatePaint(ctx, paint_);
+			p = translatePaint(ctx, paint_);
 			if (p != null)
 			{
 				g3D.setPaint(p);

@@ -1,5 +1,7 @@
 package com.bw.jtools.svg.css;
 
+import com.bw.jtools.svg.Attribute;
+
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -224,9 +226,9 @@ public class CSSParser
 	/**
 	 * Parses a style definition, e.g. "width:10px;height30px" and returns all entries as map.
 	 */
-	public static Map<String, String> parseStyle(String style)
+	public static Map<Attribute, String> parseStyle(String style)
 	{
-		Map<String, String> attrs = new HashMap<>();
+		Map<Attribute, String> attrs = new HashMap<>();
 		if (style != null && !style.isEmpty())
 		{
 			String[] stylesAr = styleSplitRegExp_.split(style);
@@ -234,8 +236,12 @@ public class CSSParser
 			{
 				final int i = s.indexOf(':');
 				if (i > 0)
-					attrs.put(s.substring(0, i)
-							   .trim(), s.substring(i + 1));
+				{
+					Attribute attr = Attribute.valueFrom(s.substring(0, i)
+														  .trim());
+					if (attr != null)
+						attrs.put(attr, s.substring(i + 1));
+				}
 			}
 		}
 		return attrs;

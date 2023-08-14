@@ -136,14 +136,15 @@ public final class ShapeGroup extends AbstractShape
 	protected void paintInternal(Context ctx)
 	{
 		Shape oldClip = null;
-		if ( clipping_ != null) {
+		if (clipping_ != null)
+		{
 			oldClip = ctx.g2D_.getClip();
 			ctx.g2D_.clip(clipping_);
 		}
 		for (AbstractShape shape : shapes_)
 			shape.paint(ctx);
 
-		if ( clipping_ != null)
+		if (clipping_ != null)
 			ctx.g2D_.setClip(oldClip);
 	}
 

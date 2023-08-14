@@ -1,9 +1,7 @@
 package com.bw.jtools;
 
-import com.bw.jtools.shape.ShapePainter;
 import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.svg.SVGException;
-import com.bw.jtools.ui.ShapeMultiResolutionImage;
 import com.bw.jtools.ui.ShapePane;
 
 import javax.swing.BorderFactory;
@@ -143,9 +141,9 @@ public class SVGViewer extends SVGAppBase
 
 		try
 		{
-			ShapePainter svgIconPainter = new ShapePainter(
-					SVGConverter.convert(SVGViewer.class.getResourceAsStream("jSVGIcon.svg")));
-			setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
+			// ShapePainter svgIconPainter = new ShapePainter(
+			// 		SVGConverter.convert(SVGViewer.class.getResourceAsStream("jSVGIcon.svg")));
+			//setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
 		}
 		catch (Exception e)
 		{

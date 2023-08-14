@@ -12,7 +12,7 @@ I had very good projects using Batik. It's a great software. But I personally do
 jSVG tries to convert SVG elements to Java2D-Shapes. This reduces the features that can be used
 a bit, but the once converted shapes render incredible fast.
 
-If you need a feature-complete renderer, use batik or (also not complete) SVG Salamander.
+If you need a feature-complete renderer, use Apache Batik or (also not complete) SVG Salamander.
 
 The resulting Shapes can be painted on any Graphics2d-instance. Additional style information is handled by a specific "Painter" that sets colors, strokes etc. to match the SVG definitions. The Java2D-shapes (and the Painter) are fully scablable, any transformation (rotation, scale, translate) can be used without losing quality. 
 
@@ -24,8 +24,7 @@ As the real rendering is done by the Java2d-engine this is fast enough to paint 
 ### Example
 
 A pretty example for an SVG is the flag of San Marino. 
-It uses clipping-regions and other nasty stuff, but can be 
-completely converted to Java2D-shapes.
+It can be completely converted to Java2D-shapes.
 
 The source can be found here: https://upload.wikimedia.org/wikipedia/commons/b/b1/Flag_of_San_Marino.svg
 
@@ -65,17 +64,7 @@ jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ 
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
-Some examples may not work at all. E.g. the current official svg-logo (see at the top of this page) in jSVG: 
-
-![SVG Logo Broken](doc/svg-logo-v-broken.png)
-
-For the outline of the "flower" the stroke is set on the outer &lt;g&gt;. jSVG would need to manually calculate the outline of the inner &lt;g&gt; as Shape.
-Currently, it can do such stuff.
-If you need it, let you editor calculate the outline. E.g. _Inkscape_ can do this very easily.
-
-Below the cleaned-up version of the logo at the top (after some minutes with _Inkscape_), drawn with jSVG
-
-![SVG Logo Cleaned-Up](doc/svg-logo-v-CleanedUp.png)
+Some examples may not work at all. 
 
 I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
 If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.

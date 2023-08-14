@@ -47,7 +47,7 @@ public abstract class AbstractShape
 	/**
 	 * Translates special paints to values.
 	 */
-	protected Paint transatePaint(Context ctx, Paint p)
+	protected Paint translatePaint(Context ctx, Paint p)
 	{
 		if (p == null)
 			return Color.BLACK;
