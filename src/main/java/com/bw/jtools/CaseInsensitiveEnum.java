@@ -3,6 +3,11 @@ package com.bw.jtools;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Helper class to handle enums in a case-insensitive way.
+ *
+ * @param <T> The actual Enum type.
+ */
 public final class CaseInsensitiveEnum<T extends Enum>
 {
 	public Map<String, T> lowerCaseMap_;
@@ -15,6 +20,11 @@ public final class CaseInsensitiveEnum<T extends Enum>
 								.toLowerCase(), gu);
 	}
 
+	/**
+	 * Get the matching enum value.
+	 *
+	 * @param val The value to convert.
+	 */
 	public T fromString(String val)
 	{
 		if (val != null)

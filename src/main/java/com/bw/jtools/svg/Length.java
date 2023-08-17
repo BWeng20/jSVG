@@ -7,8 +7,8 @@ import java.awt.Toolkit;
  */
 public final class Length
 {
-	public double value_;
-	public LengthUnit unit_;
+	public final double value_;
+	public final LengthUnit unit_;
 
 	public Length(double value, LengthUnit unit)
 	{
@@ -49,9 +49,32 @@ public final class Length
 		pixelPerPica_ = ppi / 6d;
 	}
 
+	/**
+	 * Returns a new Length that is the sum of this and v.
+	 *
+	 * @param v The other value to add.
+	 */
+	public Length add(Length v)
+	{
+		if (v != null)
+		{
+			if (v.unit_ == unit_)
+			{
+				return new Length(value_ + v.value_, unit_);
+			}
+			else
+			{
+				return new Length(toPixel(null) + v.toPixel(null), LengthUnit.px);
+			}
+		}
+		else
+			return new Length(value_, unit_);
+	}
 
 	/**
 	 * Conversion to pixel.
+	 *
+	 * @param absValue Absolute value in case length is percentage. Can be null.
 	 */
 	public double toPixel(Double absValue)
 	{
@@ -82,5 +105,15 @@ public final class Length
 				return absValue == null ? value_ : (absValue * (value_ / 100d));
 		}
 		return value_;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder(20);
+		sb.append(value_);
+		if (unit_ != null)
+			sb.append(unit_);
+		return sb.toString();
 	}
 }

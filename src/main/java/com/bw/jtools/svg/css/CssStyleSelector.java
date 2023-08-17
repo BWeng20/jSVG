@@ -1,6 +1,7 @@
 package com.bw.jtools.svg.css;
 
 
+import com.bw.jtools.svg.Attribute;
 import com.bw.jtools.svg.ElementCache;
 import com.bw.jtools.svg.ElementWrapper;
 import org.w3c.dom.Document;
@@ -107,10 +108,10 @@ public final class CssStyleSelector
 	{
 		if (w != null)
 		{
-			Map<String, StyleValue> styles = w.getStyleAttributes();
-			for (Map.Entry<String, String> entry : rule.styles_.entrySet())
+			Map<Attribute, StyleValue> styles = w.getStyleAttributes();
+			for (Map.Entry<Attribute, String> entry : rule.styles_.entrySet())
 			{
-				final String style = entry.getKey();
+				final Attribute style = entry.getKey();
 				final String value = entry.getValue();
 				StyleValue sv = styles.get(style);
 				if (sv == null)

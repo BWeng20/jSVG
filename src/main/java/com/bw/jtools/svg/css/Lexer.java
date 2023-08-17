@@ -6,9 +6,9 @@ import java.util.Arrays;
 
 /**
  * Lexer: reads characters and returns token,
- * The lexer doesn't know about datatypes like numbers. It simply tokenize the input-stream by stop-characters.
- * E.g. a floating-point-mumber "-123.3e22 will be split into a sequence of "-", "123", ".", "3", "e", "22".<br>
- * Identifiers bound by a " or ' quote are retuend as one token (also including stop characters and white-spaces).<br>
+ * The lexer doesn't know about data-types like numbers. It simply tokenizes the input-stream by stop-characters.
+ * E.g. a floating-point-number "-123.3e22 will be split into a sequence of "-", "123", ".", "3", "e", "22".<br>
+ * Identifiers bound by a " or ' quote are returned as one token (also including stop characters and white-spaces).<br>
  * E.g. 'abc,123.2 ' will be returned as one token "abc,123.2 " (without the quotes).
  */
 public class Lexer

@@ -1,7 +1,6 @@
 package com.bw.jtools.shape;
 
 import java.awt.BasicStroke;
-import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
@@ -87,34 +86,42 @@ public final class StyledShape extends AbstractShape
 	@Override
 	public void paint(Context ctx)
 	{
+		Shape orgClip = null;
+
 		aftTemp_.setTransform(ctx.aft_);
 		aftTemp_.concatenate(aft_);
 
 		final Graphics2D g3D = ctx.g2D_;
 
+		if (clipping_ != null)
+		{
+			orgClip = g3D.getClip();
+			g3D.clip(clipping_);
+		}
+		AffineTransform aold = g3D.getTransform();
 		g3D.setTransform(aftTemp_);
-		g3D.setClip(clipping_);
 
-		Paint p = transatePaint(ctx, fill_);
+		Paint p = translatePaint(ctx, fill_);
 		if (p != null)
 		{
 			g3D.setPaint(p);
 			g3D.fill(shape_);
 		}
 
-		Composite c = g3D.getComposite();
-
 		if (paint_ != null)
 		{
-			p = transatePaint(ctx, paint_);
+			p = translatePaint(ctx, paint_);
 			if (p != null)
 			{
 				g3D.setPaint(p);
 				g3D.setStroke(stroke_);
 				g3D.draw(shape_);
-				g3D.setComposite(c);
 			}
 		}
+		g3D.setTransform(aold);
+		if (clipping_ != null)
+		{
+			g3D.setClip(orgClip);
+		}
 	}
-
 }

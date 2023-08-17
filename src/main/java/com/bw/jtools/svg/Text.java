@@ -67,8 +67,8 @@ public class Text extends Parser
 		super();
 
 		// @TODO: Multiple values for x/y
-		x_ = w.toPDouble("x", false);
-		y_ = w.toPDouble("y", false);
+		x_ = w.toPDouble(Attribute.X, false);
+		y_ = w.toPDouble(Attribute.Y, false);
 
 		Rectangle2D.Double box = w.getViewPort();
 
@@ -107,10 +107,10 @@ public class Text extends Parser
 
 	protected void parseTSpan(SVGConverter svg, ElementWrapper ew, Font defaultFont, Point2D.Double pos, Rectangle2D.Double box, List<ElementInfo> shapes)
 	{
-		Length x = ew.toLength("x");
-		Length y = ew.toLength("y");
-		Length dx = ew.toLength("dx");
-		Length dy = ew.toLength("dy");
+		Length x = ew.toLength(Attribute.X);
+		Length y = ew.toLength(Attribute.Y);
+		Length dx = ew.toLength(Attribute.Dx);
+		Length dy = ew.toLength(Attribute.Dy);
 
 		// @TODO: x,y,dx,dy: can contain a list of values
 
@@ -146,19 +146,19 @@ public class Text extends Parser
 				ShapeHelper path = pw.getShape();
 				if (path == null)
 				{
-					pw.setShape(new Path(pw.attr("d", false)).getPath());
+					pw.setShape(new Path(pw.attr(Attribute.D, false)).getPath());
 					path = pw.getShape();
 				}
 				AffineTransform aft = pw.transform();
 				if (aft != null)
 					path = new ShapeHelper(aft.createTransformedShape(path.getShape()));
 
-				Double startOffset = ew.toDouble("startOffset", false);
-				Double textLength = ew.toDouble("textLength", false);
-				LengthAdjust adjust = LengthAdjust.valueFrom(ew.attr("lengthAdjust", true));
+				Double startOffset = ew.toDouble(Attribute.StartOffset, false);
+				Double textLength = ew.toDouble(Attribute.TextLength, false);
+				LengthAdjust adjust = LengthAdjust.valueFrom(ew.attr(Attribute.LengthAdjust, true));
 				// @TODO spacing
 
-				TextAnchor anchor = TextAnchor.valueFrom(ew.attr("text-anchor", true));
+				TextAnchor anchor = TextAnchor.valueFrom(ew.attr(Attribute.TextAnchor, true));
 
 				// @TODO: Adapt pos
 				ew.setShape(layoutText(ew.font(defaultFont), ew.text(), path, anchor,

@@ -1,4 +1,4 @@
-# jSVG
+# jSVG <a href="http://www.w3.org/Graphics/SVG/" ><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo" style="height:1.5em;float:right;"/></a>
 Lightweight SVG rendering to use in SWT Components.
 
 Most Icons used are based on bitmap images that doesn't scale well 
@@ -12,7 +12,7 @@ I had very good projects using Batik. It's a great software. But I personally do
 jSVG tries to convert SVG elements to Java2D-Shapes. This reduces the features that can be used
 a bit, but the once converted shapes render incredible fast.
 
-If you need a feature-complete renderer, use batik or (also not complete) SVG Salamander.
+If you need a feature-complete renderer, use Apache Batik or (also not complete) SVG Salamander.
 
 The resulting Shapes can be painted on any Graphics2d-instance. Additional style information is handled by a specific "Painter" that sets colors, strokes etc. to match the SVG definitions. The Java2D-shapes (and the Painter) are fully scablable, any transformation (rotation, scale, translate) can be used without losing quality. 
 
@@ -23,9 +23,8 @@ As the real rendering is done by the Java2d-engine this is fast enough to paint 
 
 ### Example
 
-A pretty example for a SVG is the flag of San Marino. 
-It uses clipping-regions and other nasty stuff, but can be 
-completely converted to Java2D-shapes.
+A pretty example for an SVG is the flag of San Marino. 
+It can be completely converted to Java2D-shapes.
 
 The source can be found here: https://upload.wikimedia.org/wikipedia/commons/b/b1/Flag_of_San_Marino.svg
 
@@ -39,7 +38,16 @@ So the actual amount of Java2D-primitives is a bit higher.
 On my 10 years old computer the shapes are drawn in ~20ms for both sizes.
 This time goes up to ~50ms for bigger sizes like 1000x1000.
 
+The San Mariona flag is a bit to detailed to be used as icon.
 SVGs for icons are normally much simpler, so expect less time to draw it.
+
+For a complete list of flags, to be used for icons check out 
+https://github.com/lipis/flag-icons.git
+
+The flags are available in quadratic or rectangle form.
+
+Clone the repository, then start the icon tester with argument "/lipis/flag-icons/tree/main/flags/4x3"
+to see how they look at buttons.
 
 ### Supported features
 
@@ -56,8 +64,10 @@ jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ 
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
+Some examples may not work at all. 
+
 I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
-If somewhat doesn't work, please use the functions of your SVG-editor to simplify your drawing.
+If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
 
 ### A word about off-screen-images
 
@@ -67,5 +77,10 @@ In newer Java version the app is automatically scaled and will change
 the draw-resolution on the fly if the user moves the app from on screen 
 to another. Fixed bitmaps will get blurry.
 
-Using vector graphics for the actual drawing has no issue with it. 
+Using vector graphics for the actual drawing has no issue with it.
+
+Nevertheless, ShapePointer has a method to export a BufferedImage that
+can be used this way (and can also be written to file via ImageIO). 
+The Screenshots here are produced this way.  
+
 

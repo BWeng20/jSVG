@@ -75,6 +75,8 @@ public class Parser
 		char c = nextChar();
 		if (c == '.')
 		{
+			if (r != r)
+				r = 0;
 			int oid = idx_;
 			long fract = 0;
 			while (isDigit(c = nextChar()))

@@ -1,12 +1,13 @@
 package com.bw.jtools.svg;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
 
-public class Marker
+public class Marker extends ElementInfo
 {
 	Rectangle2D.Double viewBox_;
 
@@ -42,15 +43,15 @@ public class Marker
 		viewBox_ = w.getViewBox();
 		if (viewBox_ == null) viewBox_ = new Rectangle2D.Double(0, 0, 1, 1);
 
-		refX_ = toRefLength(w.attr("refX"));
-		refY_ = toRefLength(w.attr("refY"));
+		refX_ = toRefLength(w.attr(Attribute.RefX));
+		refY_ = toRefLength(w.attr(Attribute.RefY));
 
-		Length marker = w.toLength("markerWidth");
+		Length marker = w.toLength(Attribute.MarkerWidth);
 		if (marker != null) markerWidth_ = marker.toPixel(null);
-		marker = w.toLength("markerHeight");
+		marker = w.toLength(Attribute.MarkerHeight);
 		if (marker != null) markerHeight_ = marker.toPixel(null);
 
-		String orient = w.attr("orient");
+		String orient = w.attr(Attribute.Orient);
 		if ("auto".equalsIgnoreCase(orient))
 		{
 			autoReverse_ = false;
@@ -66,7 +67,7 @@ public class Marker
 			Length orientL = w.parseLength(orient);
 			angle_ = orientL == null ? 0 : orientL.toPixel(null);
 		}
-		MarkerUnit unit = MarkerUnit.fromString(w.attr("markerUnits"));
+		MarkerUnit unit = MarkerUnit.fromString(w.attr(Attribute.MarkerUnits));
 		if (unit != null)
 			unit_ = unit;
 	}
@@ -90,4 +91,17 @@ public class Marker
 	}
 
 
+	@Override
+	public void applyTransform(AffineTransform aft)
+	{
+		for (ElementInfo e : shapes_)
+			e.applyTransform(aft);
+	}
+
+	@Override
+	public void applyPostTransform(AffineTransform aft)
+	{
+		for (ElementInfo e : shapes_)
+			e.applyPostTransform(aft);
+	}
 }

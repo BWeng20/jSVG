@@ -37,6 +37,7 @@ public final class StyledShapeInfo extends ElementInfo
 	public AffineTransform aft_;
 
 	public Shape clipping_;
+	public FillRule fillRule_;
 
 	/**
 	 * Constructor to initialize,
@@ -58,5 +59,17 @@ public final class StyledShapeInfo extends ElementInfo
 		else
 			aft_.preConcatenate(aft);
 
+	}
+
+	@Override
+	public void applyPostTransform(AffineTransform aft)
+	{
+		if (aft != null)
+		{
+			if (aft_ == null)
+				aft_ = new AffineTransform(aft);
+			else
+				aft_.concatenate(aft);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.bw.jtools.svg.css;
 
+import com.bw.jtools.svg.Attribute;
 import com.bw.jtools.svg.ElementCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,15 +47,15 @@ public class CssStyleSelectorTest
 		cssStyleSelector.apply(doc, elementCache_);
 
 		assertEquals("red", elementCache_.getElementWrapperById("r1")
-										 .attr("color"),
+										 .attr(Attribute.Color),
 				"Rectangle shall get the more specific color from tag selector");
 
 		assertEquals("blue", elementCache_.getElementWrapperById("c1")
-										  .attr("color"),
+										  .attr(Attribute.Color),
 				"Circle shall inherit parent color");
 
 		assertEquals("blue", elementCache_.getElementWrapperById("s1")
-										  .attr("color"),
+										  .attr(Attribute.Color),
 				"svg element shall get color from tag-selector.");
 	}
 
@@ -70,15 +71,15 @@ public class CssStyleSelectorTest
 		cssStyleSelector.apply(doc, elementCache_);
 
 		assertEquals("green", elementCache_.getElementWrapperById("r1")
-										   .attr("color"),
+										   .attr(Attribute.Color),
 				"Rectangle shall get the more specific color from class selector");
 
 		assertEquals("red", elementCache_.getElementWrapperById("c1")
-										 .attr("color"),
+										 .attr(Attribute.Color),
 				"Circle shall inherit parent color");
 
 		assertEquals("red", elementCache_.getElementWrapperById("s1")
-										 .attr("color"),
+										 .attr(Attribute.Color),
 				"svg element shall get color from class-selector.");
 	}
 

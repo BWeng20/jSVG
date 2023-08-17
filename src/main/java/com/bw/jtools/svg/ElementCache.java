@@ -41,7 +41,7 @@ public class ElementCache
 					((Element) node).removeAttribute("id");
 				}
 				else
-					wrapperById_.put(id, new ElementWrapper(this, (Element) node));
+					wrapperById_.put(id, new ElementWrapper(this, (Element) node, false));
 			}
 		}
 		Node next = node.getNextSibling();
@@ -61,7 +61,7 @@ public class ElementCache
 			else
 			{
 				element.setAttribute("id", id = generateId());
-				ElementWrapper ew = new ElementWrapper(this, element);
+				ElementWrapper ew = new ElementWrapper(this, element, false);
 				wrapperById_.put(id, ew);
 				return ew;
 			}
