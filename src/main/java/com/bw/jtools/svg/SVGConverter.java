@@ -187,12 +187,24 @@ public class SVGConverter
 			// @TODO patterns
 			// NodeList patterns = doc_.getElementsByTagName("pattern");
 
-			parseChildren(shapes_, getCache().getElementWrapper(doc_.getElementsByTagName("svg")
-																	.item(0)));
+			ElementWrapper svg = getCache().getElementWrapper(doc_.getElementsByTagName("svg")
+																  .item(0));
+			parseChildren(shapes_, svg);
 
 			for (ElementInfo s : shapes_)
 				finalShapes_.add(finish(s));
 
+			// If viewBox is set, greate a group and set the viewBox as clip-path.
+			// "Height" and "Width" is not supported.
+			String viewBox = svg.attr(Attribute.ViewBox);
+			if (viewBox != null)
+			{
+				Viewbox v = new Viewbox(viewBox);
+				ShapeGroup group = new ShapeGroup(svg.id(), null, v.getShape());
+				group.shapes_.addAll(finalShapes_);
+				finalShapes_.clear();
+				finalShapes_.add(group);
+			}
 		}
 		catch (Exception e)
 		{

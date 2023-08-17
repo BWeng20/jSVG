@@ -7,8 +7,8 @@ import java.awt.Toolkit;
  */
 public final class Length
 {
-	public double value_;
-	public LengthUnit unit_;
+	public final double value_;
+	public final LengthUnit unit_;
 
 	public Length(double value, LengthUnit unit)
 	{

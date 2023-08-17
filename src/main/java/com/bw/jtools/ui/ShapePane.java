@@ -5,12 +5,18 @@ import com.bw.jtools.shape.ShapeGroup;
 import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.JComponent;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
@@ -30,7 +36,8 @@ public class ShapePane extends JComponent
 	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
 	private ShapePainter painter_ = new ShapePainter();
-	private boolean mouseWheelEnabled = false;
+	private boolean mouseWheelEnabled_ = false;
+	private boolean mouseDragEnabled_ = false;
 
 	private MouseWheelListener wheelListener = we ->
 	{
@@ -47,6 +54,31 @@ public class ShapePane extends JComponent
 					painter_.setScale(x, y);
 					refresh();
 				}
+			}
+		}
+	};
+
+	private MouseAdapter dragListener = new MouseAdapter()
+	{
+		Point org = new Point(0, 0);
+
+		@Override
+		public void mousePressed(MouseEvent e)
+		{
+			org = new Point(e.getPoint());
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e)
+		{
+			JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, ShapePane.this);
+			if (viewPort != null)
+			{
+				Point p = e.getPoint();
+				int dx = org.x - p.x;
+				int dy = org.y - p.y;
+				Rectangle view = viewPort.getViewRect();
+				scrollRectToVisible(new Rectangle(view.x + dx, view.y + dy, view.width, view.height));
 			}
 		}
 	};
@@ -173,13 +205,37 @@ public class ShapePane extends JComponent
 	 */
 	public void setZoomByMouseWheelEnabled(boolean wheelEnabled)
 	{
-		if (mouseWheelEnabled != wheelEnabled)
+		if (mouseWheelEnabled_ != wheelEnabled)
 		{
-			mouseWheelEnabled = wheelEnabled;
+			mouseWheelEnabled_ = wheelEnabled;
 			if (wheelEnabled)
 				addMouseWheelListener(wheelListener);
 			else
 				removeMouseWheelListener(wheelListener);
 		}
 	}
+
+	/**
+	 * Installs a mouse-listener that drags the image inside a scroll-pane.
+	 *
+	 * @param mouseDragEnabled If true user can drag the image.
+	 */
+	public void setMouseDragEnabled(boolean mouseDragEnabled)
+	{
+		if (mouseDragEnabled_ != mouseDragEnabled)
+		{
+			mouseDragEnabled_ = mouseDragEnabled;
+			if (mouseDragEnabled_)
+			{
+				addMouseListener(dragListener);
+				addMouseMotionListener(dragListener);
+			}
+			else
+			{
+				removeMouseListener(dragListener);
+				removeMouseMotionListener(dragListener);
+			}
+		}
+	}
+
 }

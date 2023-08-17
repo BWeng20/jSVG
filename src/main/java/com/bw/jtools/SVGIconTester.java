@@ -270,6 +270,7 @@ public class SVGIconTester extends SVGAppBase
 
 			drawPane_ = new ShapePane();
 			drawPane_.setZoomByMouseWheelEnabled(true);
+			drawPane_.setMouseDragEnabled(true);
 			drawPane_.setInlineBorder(true);
 
 			contentViewer_.setLayout(new BorderLayout());

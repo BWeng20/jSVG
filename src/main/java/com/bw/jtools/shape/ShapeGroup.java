@@ -8,6 +8,7 @@ import com.bw.jtools.shape.filter.PainterBuffers;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -183,6 +184,12 @@ public final class ShapeGroup extends AbstractShape
 					transformedBounds_ = r.getBounds2D();
 				else
 					transformedBounds_.add(r);
+			}
+			if (clipping_ != null)
+			{
+				Area area = new Area(transformedBounds_);
+				area.intersect(new Area(clipping_));
+				transformedBounds_ = area.getBounds2D();
 			}
 		}
 		return transformedBounds_;
