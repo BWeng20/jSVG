@@ -77,9 +77,9 @@ In newer Java version the app is automatically scaled and will change
 the draw-resolution on the fly if the user moves the app from on screen 
 to another. Fixed bitmaps will get blurry.
 
-Using vector graphics for the actual drawing has no issue with it.
+If vector graphics are used for the drawing, this is no issue.
 
-Nevertheless, ShapePointer has a method to export a BufferedImage that
+Nevertheless, ShapePainter has a method to export a BufferedImage that
 can be used this way (and can also be written to file via ImageIO). 
 The Screenshots here are produced this way.  
 
