@@ -35,17 +35,44 @@ public final class ShapePainter
 	private double offsetX_ = 0;
 	private double offsetY_ = 0;
 
+	private double rotationAngleDegree_ = 0;
+
+	private boolean isRotationActive()
+	{
+		return (rotationAngleDegree_ < -0.1 || rotationAngleDegree_ > 0.1);
+	}
+
+	private AffineTransform getRotation()
+	{
+		if (isRotationActive())
+			return AffineTransform.getRotateInstance(Math.toRadians(rotationAngleDegree_), area_.x + (area_.width / 2),
+					area_.y + (area_.height / 2));
+		else
+			return null;
+	}
+
+
 	/**
 	 * Returns the covered area according to shapes and scale.
 	 */
 	public Rectangle2D.Double getArea()
 	{
-		if (area_ == null)
+		Rectangle2D area = area_;
+
+		if (area != null)
+		{
+			AffineTransform rotation = getRotation();
+			if (rotation != null)
+				area = rotation.createTransformedShape(area)
+							   .getBounds2D();
+		}
+
+		if (area == null)
 			return new Rectangle2D.Double(0, 0, 0, 0);
 		else if (adaptOffset_)
-			return new Rectangle2D.Double(0, 0, scaleX_ * area_.width, scaleY_ * area_.height);
+			return new Rectangle2D.Double(0, 0, scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
 		else
-			return new Rectangle2D.Double(scaleX_ * area_.x, scaleY_ * area_.y, scaleX_ * area_.width, scaleY_ * area_.height);
+			return new Rectangle2D.Double(scaleX_ * area.getX(), scaleY_ * area.getY(), scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
 	}
 
 	/**
@@ -162,9 +189,22 @@ public final class ShapePainter
 		Context lct = new Context(ctx, false);
 		final Graphics2D g2D = lct.g2D_;
 
+		final AffineTransform rotation = getRotation();
 		g2D.scale(scaleX_, scaleY_);
+
 		if (adaptOffset_)
-			g2D.translate(-area_.x, -area_.y);
+		{
+			if (rotation != null)
+			{
+				Rectangle2D a = rotation.createTransformedShape(area_)
+										.getBounds2D();
+				g2D.translate(-a.getX(), -a.getY());
+			}
+			else
+			{
+				g2D.translate(-area_.x, -area_.y);
+			}
+		}
 		else
 			g2D.translate(offsetX_, offsetY_);
 
@@ -172,6 +212,11 @@ public final class ShapePainter
 		{
 			g2D.setPaint(lct.currentBackground_);
 			g2D.fill(area_);
+		}
+
+		if (rotation != null)
+		{
+			g2D.transform(rotation);
 		}
 
 		lct.aft_ = lct.g2D_.getTransform();
@@ -365,4 +410,19 @@ public final class ShapePainter
 		return lastMSNeeded_;
 	}
 
+	/**
+	 * Gets the current rotation angle in degree.
+	 */
+	public double getRotationAngleDegree()
+	{
+		return rotationAngleDegree_;
+	}
+
+	public void setRotationAngleDegree(double angleDegree)
+	{
+		if (angleDegree != rotationAngleDegree_)
+		{
+			rotationAngleDegree_ = angleDegree;
+		}
+	}
 }

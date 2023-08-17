@@ -38,15 +38,17 @@ public class ShapePane extends JComponent
 	private ShapePainter painter_ = new ShapePainter();
 	private boolean mouseWheelEnabled_ = false;
 	private boolean mouseDragEnabled_ = false;
+	private boolean mouseRotateEnabled_ = false;
 
-	private MouseWheelListener wheelListener = we ->
+	private MouseWheelListener scaleWheelListener = we ->
 	{
-		if (we.getWheelRotation() != 0)
+		int wheel = we.getWheelRotation();
+		if (wheel != 0)
 		{
 			int mod = we.getModifiersEx();
 			if ((mod & InputEvent.META_DOWN_MASK) != 0 || (mod & InputEvent.CTRL_DOWN_MASK) != 0)
 			{
-				double scale = -0.1 * we.getWheelRotation();
+				double scale = -0.1 * wheel;
 				double x = getXScale() + scale;
 				double y = getYScale() + scale;
 				if (x >= 0.1 && y >= 0.1)
@@ -60,12 +62,12 @@ public class ShapePane extends JComponent
 
 	private MouseAdapter dragListener = new MouseAdapter()
 	{
-		Point org = new Point(0, 0);
+		Point org_ = new Point(0, 0);
 
 		@Override
 		public void mousePressed(MouseEvent e)
 		{
-			org = new Point(e.getPoint());
+			org_ = new Point(e.getPoint());
 		}
 
 		@Override
@@ -75,10 +77,25 @@ public class ShapePane extends JComponent
 			if (viewPort != null)
 			{
 				Point p = e.getPoint();
-				int dx = org.x - p.x;
-				int dy = org.y - p.y;
+				int dx = org_.x - p.x;
+				int dy = org_.y - p.y;
 				Rectangle view = viewPort.getViewRect();
 				scrollRectToVisible(new Rectangle(view.x + dx, view.y + dy, view.width, view.height));
+			}
+		}
+	};
+
+	private MouseWheelListener wheelRotateListener = we ->
+	{
+		int wheel = we.getWheelRotation();
+		if (wheel != 0)
+		{
+			int mod = we.getModifiersEx();
+			if (painter_ != null && (mod & InputEvent.SHIFT_DOWN_MASK) != 0)
+			{
+				painter_.setRotationAngleDegree((painter_.getRotationAngleDegree() + (0.5 * wheel)) % 360);
+				revalidate();
+				repaint();
 			}
 		}
 	};
@@ -168,8 +185,8 @@ public class ShapePane extends JComponent
 	@Override
 	public Dimension getPreferredSize()
 	{
-		Rectangle2D.Double area = painter_.getArea();
-		return new Dimension((int) (0.5 + area.x + area.width), (int) (0.5 + area.y + area.height));
+		Rectangle2D area = painter_.getArea();
+		return new Dimension((int) (0.5 + area.getX() + area.getWidth()), (int) (0.5 + area.getY() + area.getHeight()));
 	}
 
 	@Override
@@ -203,15 +220,15 @@ public class ShapePane extends JComponent
 	 * @param wheelEnabled If true zoom by wheel is enabled.
 	 *                     If false, zoom by wheel is disabled.
 	 */
-	public void setZoomByMouseWheelEnabled(boolean wheelEnabled)
+	public void setZoomByMetaMouseWheelEnabled(boolean wheelEnabled)
 	{
 		if (mouseWheelEnabled_ != wheelEnabled)
 		{
 			mouseWheelEnabled_ = wheelEnabled;
 			if (wheelEnabled)
-				addMouseWheelListener(wheelListener);
+				addMouseWheelListener(scaleWheelListener);
 			else
-				removeMouseWheelListener(wheelListener);
+				removeMouseWheelListener(scaleWheelListener);
 		}
 	}
 
@@ -234,6 +251,28 @@ public class ShapePane extends JComponent
 			{
 				removeMouseListener(dragListener);
 				removeMouseMotionListener(dragListener);
+			}
+		}
+	}
+
+	/**
+	 * Installs a mouse-listener that rotates by mpouse-wheel if Shift-Key is hold.
+	 *
+	 * @param rotateEnabled If true rotate by shift-mouse-wheel is enabled.
+	 *                      If false, rotate is disabled.
+	 */
+	public void setRotateByShiftMouseWheelEnabled(boolean rotateEnabled)
+	{
+		if (mouseRotateEnabled_ != rotateEnabled)
+		{
+			mouseRotateEnabled_ = rotateEnabled;
+			if (mouseRotateEnabled_)
+			{
+				addMouseWheelListener(wheelRotateListener);
+			}
+			else
+			{
+				removeMouseWheelListener(wheelRotateListener);
 			}
 		}
 	}

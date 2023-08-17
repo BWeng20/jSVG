@@ -1,11 +1,8 @@
 package com.bw.jtools;
 
 import com.bw.jtools.shape.AbstractShape;
-import com.bw.jtools.shape.ShapePainter;
-import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.svg.SVGException;
 import com.bw.jtools.ui.ShapeIcon;
-import com.bw.jtools.ui.ShapeMultiResolutionImage;
 import com.bw.jtools.ui.ShapePane;
 
 import javax.swing.BorderFactory;
@@ -154,18 +151,6 @@ public class SVGIconTester extends SVGAppBase
 		setLocationByPlatform(true);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(400, 300));
-
-		try
-		{
-			ShapePainter svgIconPainter = new ShapePainter(
-					SVGConverter.convert(SVGIconTester.class.getResourceAsStream("jSVGIcon.svg")));
-			setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
 	}
 
 	static private Pattern urlPattern = Pattern.compile("^([^:/?#]+):(//[^/?#]*)?([^?#]*)(?:\\?([^#]*))?(#.*)?");
@@ -281,7 +266,7 @@ public class SVGIconTester extends SVGAppBase
 			contentViewer_.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
 			drawPane_ = new ShapePane();
-			drawPane_.setZoomByMouseWheelEnabled(true);
+			drawPane_.setZoomByMetaMouseWheelEnabled(true);
 			drawPane_.setMouseDragEnabled(true);
 			drawPane_.setInlineBorder(true);
 
