@@ -76,8 +76,6 @@ public class SVGAppBase extends JFrame
 	/**
 	 * Create a new SVGViewer.
 	 * Caller has to call "pack" and "setVisible".
-	 *
-	 * @param file The file to show or null.
 	 */
 	public SVGAppBase()
 	{

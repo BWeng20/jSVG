@@ -34,6 +34,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
@@ -79,10 +80,13 @@ public class SVGIconTester extends SVGAppBase
 	 */
 	public SVGIconTester(String path)
 	{
+		gc.anchor = GridBagConstraints.NORTHWEST;
+		gc.fill = GridBagConstraints.NONE;
+
 		pane_ = new JPanel(new GridBagLayout());
 		if (path != null)
 		{
-			loadSVGs(path);
+			loadSVGsFromPathOrUri(path);
 		}
 		else
 		{
@@ -101,11 +105,12 @@ public class SVGIconTester extends SVGAppBase
 
 		// Create menus
 		JMenuItem loadMenuItem = new JMenuItem("Open...", KeyEvent.VK_O);
-		loadMenuItem.setToolTipText("<html>Loads other SVGs.</html>");
+		loadMenuItem.setToolTipText("<html>Loads SVGs. You can select multiple SVGs or directories.</html>");
 		loadMenuItem.addActionListener(e ->
 		{
 			JFileChooser fs = getSVGFileChooser();
 			fs.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			fs.setMultiSelectionEnabled(true);
 			if (svgPath_ != null && "file".equals(svgPath_.getFileSystem()
 														  .provider()
 														  .getScheme()))
@@ -116,7 +121,11 @@ public class SVGIconTester extends SVGAppBase
 			int returnVal = fs.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION)
 			{
-				loadSVGs(fs.getSelectedFiles());
+				gc.gridy = 0;
+				gc.gridx = 0;
+
+				pane_.removeAll();
+				loadSVGsFromFiles(fs.getSelectedFiles());
 			}
 		});
 
@@ -169,7 +178,7 @@ public class SVGIconTester extends SVGAppBase
 								.length() > 1);
 	}
 
-	protected void loadSVGs(String path)
+	protected void loadSVGsFromPathOrUri(String path)
 	{
 		try
 		{
@@ -218,7 +227,7 @@ public class SVGIconTester extends SVGAppBase
 				p = Paths.get(path);
 			}
 			if (p != null)
-				loadSVGs(p);
+				loadSVGsFromPath(p);
 		}
 		catch (Exception e)
 		{
@@ -226,7 +235,7 @@ public class SVGIconTester extends SVGAppBase
 		}
 	}
 
-	protected void loadSVGs(Path path)
+	protected void loadSVGsFromPath(Path path)
 	{
 		try
 		{
@@ -247,7 +256,7 @@ public class SVGIconTester extends SVGAppBase
 	}
 
 
-	protected void loadSVGs(File[] files)
+	protected void loadSVGsFromFiles(File[] files)
 	{
 		loadSVGs(
 				Arrays.asList(files)
@@ -260,6 +269,9 @@ public class SVGIconTester extends SVGAppBase
 
 	JDialog contentViewer_;
 	ShapePane drawPane_;
+
+	final GridBagConstraints gc = new GridBagConstraints();
+
 
 	protected void showShapes(String name, List<AbstractShape> shapes)
 	{
@@ -297,42 +309,53 @@ public class SVGIconTester extends SVGAppBase
 
 	protected void loadSVGs(Stream<Path> paths)
 	{
-		final GridBagConstraints gc = new GridBagConstraints();
-		gc.anchor = GridBagConstraints.NORTHWEST;
-		gc.fill = GridBagConstraints.NONE;
-		gc.gridy = 0;
-		gc.gridx = 0;
 
 		paths.forEach(path ->
 		{
-			if (gc.gridx >= 20)
+			if (Files.isDirectory(path))
 			{
-				gc.gridx = 0;
-				gc.gridy++;
+				try
+				{
+					loadSVGs(Files.list(path));
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
-
-			final List<AbstractShape> shapes = loadSVG(path);
-			System.out.println("Loaded " + shapes.size() + " shapes from " + path);
-
-			ShapeIcon sicon = new ShapeIcon(shapes);
-			int w = sicon.getIconWidth();
-			int h = sicon.getIconHeight();
-			// Keep Aspect ratio
-			double scale = Math.min(32.0 / w, 32.0 / h);
-			sicon.setScale(scale, scale);
-
-			JButton b = new JButton(sicon);
-			b.addActionListener(e ->
+			else
 			{
-				showShapes(path.toString(), shapes);
-			});
-			b.setOpaque(true);
-			b.setBackground(Color.WHITE);
-			b.setPreferredSize(new Dimension(34, 34));
-			// b.setMaximumSize(new Dimension(34,34));
-			pane_.add(b, gc);
-			gc.gridx++;
+				if (gc.gridx >= 20)
+				{
+					gc.gridx = 0;
+					gc.gridy++;
+				}
+
+				final List<AbstractShape> shapes = loadSVG(path);
+				System.out.println("Loaded " + shapes.size() + " shapes from " + path);
+
+				ShapeIcon sicon = new ShapeIcon(shapes);
+				int w = sicon.getIconWidth();
+				int h = sicon.getIconHeight();
+				// Keep Aspect ratio
+				double scale = Math.min(32.0 / w, 32.0 / h);
+				sicon.setScale(scale, scale);
+
+				JButton b = new JButton(sicon);
+				b.addActionListener(e ->
+				{
+					showShapes(path.toString(), shapes);
+				});
+				b.setOpaque(true);
+				b.setBackground(Color.WHITE);
+				b.setPreferredSize(new Dimension(34, 34));
+				// b.setMaximumSize(new Dimension(34,34));
+				pane_.add(b, gc);
+				gc.gridx++;
+			}
 		});
+
+		revalidate();
 	}
 
 	void setIconSize(int w, int h)
