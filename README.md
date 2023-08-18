@@ -41,13 +41,13 @@ This time goes up to ~50ms for bigger sizes like 1000x1000.
 The San Mariona flag is a bit to detailed to be used as icon.
 SVGs for icons are normally much simpler, so expect less time to draw it.
 
-For a complete list of flags, to be used for icons check out 
-https://github.com/lipis/flag-icons.git
+For a collection of flags, that can be used for icons, check out 
+https://github.com/hampusborgos/country-flags
 
-The flags are available in quadratic or rectangle form.
-
-Clone the repository, then start the icon tester with argument "/lipis/flag-icons/tree/main/flags/4x3"
+Clone one the repository, then start the icon tester and select the svg directories
 to see how they look at buttons.
+
+
 
 ### Supported features
 

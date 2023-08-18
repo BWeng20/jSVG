@@ -10,8 +10,6 @@ Simple Example:
 
 This SVG ![Arrow.svg](Arrow.svg) is drawn along a rectangle:
 
-
-
-To draw the SVG the base-position and the tangent angle along the outline is needed. Both are calculated by the help class 
+To draw the SVG the base-position and the tangent angle along the outline is needed. Both values are calculated by the helper class 
 [ShapeHelper.pointAtLength](../src/main/java/com/bw/jtools/svg/ShapeHelper.java).
 
