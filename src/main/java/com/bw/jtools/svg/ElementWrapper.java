@@ -151,14 +151,14 @@ public final class ElementWrapper
 	/**
 	 * Converts a number or length value to double.
 	 */
-	protected static Double convDouble(String val)
+	protected static Double convDouble(String val, double absVal)
 	{
 		if (isNotEmpty(val))
 			try
 			{
 				Matcher m = unitRegExp_.matcher(val);
 				if (m.matches())
-					return new Length(parseDouble(m.group(1)), LengthUnit.fromString(m.group(2))).toPixel(null);
+					return new Length(parseDouble(m.group(1)), LengthUnit.fromString(m.group(2))).toPixel(absVal);
 				else
 					return parseDouble(val);
 			}
@@ -358,7 +358,7 @@ public final class ElementWrapper
 									   .toLowerCase());
 		if (pref != null)
 			return pref;
-		Double d = convDouble(w);
+		Double d = convDouble(w, 1);
 		return (d == null) ? TextAttribute.WEIGHT_REGULAR : (d * FONT_WEIGHT_FACTOR);
 	}
 
@@ -388,9 +388,9 @@ public final class ElementWrapper
 	 *
 	 * @return The double or null if the attribute doesn't exists.
 	 */
-	public Double toDouble(Attribute attribute)
+	public Double toDouble(Attribute attribute, double absVal)
 	{
-		return convDouble(attr(attribute, false));
+		return convDouble(attr(attribute, false), absVal);
 	}
 
 	/**
@@ -398,9 +398,9 @@ public final class ElementWrapper
 	 *
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(Attribute attribute)
+	public double toPDouble(Attribute attribute, double absVal)
 	{
-		return toPDouble(attribute, false);
+		return toPDouble(attribute, absVal,false);
 	}
 
 	/**
@@ -409,9 +409,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or null if the attribute doesn't exists.
 	 */
-	public Double toDouble(Attribute attribute, boolean inherited)
+	public Double toDouble(Attribute attribute, double absVal, boolean inherited)
 	{
-		return convDouble(attr(attribute, inherited));
+		return convDouble(attr(attribute, inherited), absVal);
 	}
 
 	/**
@@ -421,9 +421,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(Attribute attribute, boolean inherited)
+	public double toPDouble(Attribute attribute, double absVal, boolean inherited)
 	{
-		return toPDouble(attribute, 0d, inherited);
+		return toPDouble(attribute, 0d, absVal, inherited);
 	}
 
 	/**
@@ -432,9 +432,9 @@ public final class ElementWrapper
 	 * @param inherited If true and the attribute doesn't exists also the parent nodes are scanned.
 	 * @return The double or 0 if the attribute doesn't exists.
 	 */
-	public double toPDouble(Attribute attribute, double defaultValue, boolean inherited)
+	public double toPDouble(Attribute attribute, double defaultValue, double absVal, boolean inherited)
 	{
-		Double d = convDouble(attr(attribute, inherited));
+		Double d = convDouble(attr(attribute, inherited), absVal);
 		return d == null ? defaultValue : d;
 	}
 
@@ -443,14 +443,14 @@ public final class ElementWrapper
 	 *
 	 * @return List, never null but possible empty.
 	 */
-	public List<Double> toPDoubleList(Attribute attribute, boolean inherited)
+	public List<Double> toPDoubleList(Attribute attribute, final double absVal, boolean inherited)
 	{
 		final String val = attr(attribute, inherited);
 		LengthList l;
 		if (val != null)
 			return new LengthList(val).getLengthList()
 									  .stream()
-									  .map(length -> length.value_)
+									  .map(length -> length.toPixel(absVal))
 									  .collect(Collectors.toList());
 		else
 			return Collections.emptyList();
@@ -472,9 +472,9 @@ public final class ElementWrapper
 		return l;
 	}
 
-	public static double convPDouble(String value)
+	public static double convPDouble(String value, double absVal)
 	{
-		Double d = convDouble(value);
+		Double d = convDouble(value, absVal);
 		return d == null ? 0d : d;
 	}
 
@@ -625,17 +625,42 @@ public final class ElementWrapper
 		return viewPortLength_;
 	}
 
+	public double getViewPortWidth() {
+		if (viewPort_ == null) getViewPort();
+		return viewPort_.width;
+	}
+
+	public double getViewPortHeight() {
+		if (viewPort_ == null) getViewPort();
+		return viewPort_.height;
+	}
+
+
 	public Rectangle2D.Double getViewPort()
 	{
 		if (viewPort_ == null)
 		{
+			Length x = toLength(Attribute.X, true);
+			Length y = toLength(Attribute.Y, true);
 			Length width = toLength(Attribute.Width, true);
 			Length height = toLength(Attribute.Height, true);
+
+			String viewBox = attr(Attribute.ViewBox, true);
+			if ( viewBox != null) {
+				Viewbox vb = new Viewbox(viewBox);
+				if ( width == null ) width = vb.width;
+				if ( height == null ) height = vb.height;
+			}
+
+			if (x == null) x = new Length(0, LengthUnit.px);
+			if (y == null) y = new Length(0, LengthUnit.px);
 
 			if (width == null) width = new Length(100, LengthUnit.px);
 			if (height == null) height = new Length(100, LengthUnit.px);
 
-			viewPort_ = new Rectangle2D.Double(0, 0, width.toPixel(null), height.toPixel(null));
+			Double absW = ( parent_ != null ) ? parent_.getViewPortWidth() : null;
+			Double absH = ( parent_ != null ) ? parent_.getViewPortHeight() : null;
+			viewPort_ = new Rectangle2D.Double( x.toPixel(absW), y.toPixel(absH),width.toPixel(absW), height.toPixel(absH));
 		}
 		return viewPort_;
 	}
@@ -734,7 +759,7 @@ public final class ElementWrapper
 	{
 		if (opacity_ == null)
 		{
-			opacity_ = toPDouble(Attribute.Opacity, 1.0d, false);
+			opacity_ = toPDouble(Attribute.Opacity, 1.0d, 1.0d, false);
 		}
 		return opacity_.floatValue();
 	}

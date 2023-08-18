@@ -58,7 +58,6 @@ public final class StyledShapeInfo extends ElementInfo
 			aft_ = new AffineTransform(aft);
 		else
 			aft_.preConcatenate(aft);
-
 	}
 
 	@Override

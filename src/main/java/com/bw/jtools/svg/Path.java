@@ -121,13 +121,13 @@ public final class Path extends Parser
 
 				// arc
 				case 'A':
-					arc(nextDouble(), nextDouble(), nextDouble(), nextNumber() == 1, nextNumber() == 1,
+					arc(nextDouble(), nextDouble(), nextDouble(), nextFlag(), nextFlag(),
 							cx, cy, x = nextDouble(), y = nextDouble());
 					cx = x;
 					cy = y;
 					break;
 				case 'a':
-					arc(nextDouble(), nextDouble(), nextDouble(), nextNumber() == 1, nextNumber() == 1,
+					arc(nextDouble(), nextDouble(), nextDouble(), nextFlag(), nextFlag(),
 							cx, cy, x = nextXRelativeStay(), y = nextYRelativeStay());
 					cx = x;
 					cy = y;

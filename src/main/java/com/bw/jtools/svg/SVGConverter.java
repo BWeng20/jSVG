@@ -284,12 +284,12 @@ public class SVGConverter
 			{
 				if (w.getShape() == null)
 				{
-					float x = (float) w.toPDouble(Attribute.X);
-					float y = (float) w.toPDouble(Attribute.Y);
-					float width = (float) w.toPDouble(Attribute.Width);
-					float height = (float) w.toPDouble(Attribute.Height);
-					Double rx = w.toDouble(Attribute.Rx, false);
-					Double ry = w.toDouble(Attribute.Ry, false);
+					float x = (float) w.toPDouble(Attribute.X, w.getViewPortWidth());
+					float y = (float) w.toPDouble(Attribute.Y, w.getViewPortHeight());
+					float width = (float) w.toPDouble(Attribute.Width, w.getViewPortWidth());
+					float height = (float) w.toPDouble(Attribute.Height, w.getViewPortHeight());
+					Double rx = w.toDouble(Attribute.Rx, w.getViewPortWidth(), false);
+					Double ry = w.toDouble(Attribute.Ry, w.getViewPortHeight(), false);
 
 					RectangularShape rec;
 
@@ -305,10 +305,10 @@ public class SVGConverter
 			break;
 			case ellipse:
 			{
-				float cx = (float) w.toPDouble(Attribute.Cx, false);
-				float cy = (float) w.toPDouble(Attribute.Cy, false);
-				float rx = (float) w.toPDouble(Attribute.Rx, false);
-				float ry = (float) w.toPDouble(Attribute.Ry, false);
+				float cx = (float) w.toPDouble(Attribute.Cx, w.getViewPortWidth(), false);
+				float cy = (float) w.toPDouble(Attribute.Cy, w.getViewPortHeight(),false);
+				float rx = (float) w.toPDouble(Attribute.Rx, w.getViewPortWidth(),false);
+				float ry = (float) w.toPDouble(Attribute.Ry, w.getViewPortHeight(), false);
 
 				w.setShape(new Ellipse2D.Double(cx - rx, cy - ry, 2d * rx, 2d * ry));
 				shapes.add(createShapeInfo(w));
@@ -366,9 +366,9 @@ public class SVGConverter
 			break;
 			case circle:
 			{
-				double x1 = w.toPDouble(Attribute.Cx);
-				double y1 = w.toPDouble(Attribute.Cy);
-				double r = w.toPDouble(Attribute.R);
+				double x1 = w.toPDouble(Attribute.Cx, w.getViewPortWidth());
+				double y1 = w.toPDouble(Attribute.Cy, w.getViewPortHeight());
+				double r = w.toPDouble(Attribute.R, w.getViewPortLength());
 
 				w.setShape(new Ellipse2D.Double(x1 - r, y1 - r, 2 * r, 2 * r));
 				shapes.add(createShapeInfo(w));
@@ -376,10 +376,10 @@ public class SVGConverter
 			break;
 			case line:
 			{
-				double x1 = w.toPDouble(Attribute.X1);
-				double y1 = w.toPDouble(Attribute.Y1);
-				double x2 = w.toPDouble(Attribute.X2);
-				double y2 = w.toPDouble(Attribute.Y2);
+				double x1 = w.toPDouble(Attribute.X1, w.getViewPortWidth());
+				double y1 = w.toPDouble(Attribute.Y1, w.getViewPortHeight());
+				double x2 = w.toPDouble(Attribute.X2, w.getViewPortWidth());
+				double y2 = w.toPDouble(Attribute.Y2, w.getViewPortHeight());
 
 				w.setShape(new Line2D.Double(x1, y1, x2, y2));
 				shapes.add(createShapeInfo(w));
@@ -728,7 +728,7 @@ public class SVGConverter
 			switch (t)
 			{
 				case feGaussianBlur:
-					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList(Attribute.StdDeviation, false));
+					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList(Attribute.StdDeviation, w.getViewPortLength(), false));
 					break;
 				case feOffset:
 					fp = new OffsetFilterPrimitive(w.toLength(Attribute.Dx), w.toLength(Attribute.Dy));
@@ -866,7 +866,9 @@ public class SVGConverter
 			final String wid = w.id();
 			for (ElementInfo s : shapes)
 				if (!s.id_.equals(wid))
+				{
 					s.applyTransform(t);
+				}
 		}
 		addShapeContainerWithoutTranform(w, shapes, global);
 	}
@@ -1022,11 +1024,7 @@ public class SVGConverter
 				String offset = wrapper.attr(Attribute.Offset);
 				if (offset != null)
 				{
-					offset = offset.trim();
-					if (offset.endsWith("%"))
-						f = (float) ElementWrapper.convPDouble(offset.substring(0, offset.length() - 1)) / 100f;
-					else
-						f = (float) ElementWrapper.convPDouble(offset);
+					f = (float) ElementWrapper.convPDouble(offset, 1);
 					if (f < 0)
 						f = 0;
 					else if (f > 1.0f)
@@ -1044,7 +1042,7 @@ public class SVGConverter
 				g.fractions_[i] = f;
 
 				final Color cp = new Color(this, wrapper.attr(Attribute.StopColor),
-						wrapper.toPDouble(Attribute.StopOpacity, 1d, false));
+						wrapper.toPDouble(Attribute.StopOpacity, 1d, 1d, false));
 				PaintWrapper pw = cp.getPaintWrapper();
 				g.colors_[i] = (pw != null && pw.getColor() != null) ? pw.getColor() : java.awt.Color.BLACK;
 			}
@@ -1065,7 +1063,7 @@ public class SVGConverter
 	protected Color fill(ElementWrapper w)
 	{
 		String color = w.attr(Attribute.Fill, true);
-		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble(Attribute.FillOpacity, 1.0d, true));
+		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble(Attribute.FillOpacity, 1.0d, 1.0d, true));
 	}
 
 	protected FillRule fillRule(ElementWrapper w)
@@ -1078,13 +1076,15 @@ public class SVGConverter
 	{
 		Stroke stroke = new Stroke(
 				new Color(this, w.attr(Attribute.Stroke, true),
-						w.effectiveOpacity() * w.toPDouble(Attribute.Stroke_Opacity, 1.0d, true)),
+						w.effectiveOpacity() * w.toPDouble(Attribute.Stroke_Opacity, 1.0d, 1.0d, true)),
 				w.toLength(Attribute.Stroke_Width, true),
 				w.toLengthList(Attribute.Stroke_DashArray, true),
-				w.toDouble(Attribute.Stroke_DashOffset, true),
+				// @TODO: relative widths
+				w.toDouble(Attribute.Stroke_DashOffset, 1, true),
 				LineCap.fromString(w.attr(Attribute.Stroke_LineCap, true)),
 				LineJoin.fromString(w.attr(Attribute.Stroke_LineJoin, true)),
-				w.toDouble(Attribute.Stroke_MiterLimit, true)
+				// @TODO: relative limits?
+				w.toDouble(Attribute.Stroke_MiterLimit, 1, true)
 		);
 		return stroke;
 	}
