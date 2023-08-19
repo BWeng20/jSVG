@@ -48,12 +48,14 @@ Clone one the repository, then start the icon tester and select the svg director
 to see how they look at buttons.
 
 
-
 ### Supported features
 
 As said this is a lightweight SVG renderer, designed for High-Res icons.
 
-Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.<br>
+Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.
+
+#### Filters
+
 Usages of pixel-based filters are in any case a bad idea, because they are silly expensive to compute.
 The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow) but please don't use
 them. Safe your computing power and the planet.
@@ -69,9 +71,21 @@ Some examples may not work at all.
 I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
 If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
 
+#### Clipping
+
+Some SVG may use clip-paths to "cut" away parts for the shapes. 
+Java2Ds "clip" doesn't support anti-aliasing for that (the so-called "soft clipping"). The clip-edges 
+will get jagged.
+
+The image below shows a rendered circle on the left and the result of a clip-path with the same circle on the right.  
+
+![clip-path-antialiasing.png](doc%2Fclip-path-antialiasing.png)
+
+You can use your SVG editor to create a normal path from the clipped result.
+
 ### A word about off-screen-images
 
-Theoretically such SVG can be drawn to an off-screen-buffer in a fixed size
+Theoretically the SVG can be drawn to an off-screen-buffer in a fixed size
 and then re-used. In __multi-display-scenarios this may fail__.
 In newer Java version the app is automatically scaled and will change 
 the draw-resolution on the fly if the user moves the app from on screen 
