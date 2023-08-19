@@ -11,6 +11,7 @@ public abstract class ElementInfo
 	 * Id to identify the shape in the some document.
 	 */
 	public String id_;
+	public AffineTransform aft_;
 
 
 	/**
@@ -20,7 +21,23 @@ public abstract class ElementInfo
 	{
 	}
 
-	public abstract void applyTransform(AffineTransform aft);
+	public void applyTransform(AffineTransform aft)
+	{
+		if (aft_ == null)
+			aft_ = new AffineTransform(aft);
+		else
+			aft_.preConcatenate(aft);
+	}
 
-	public abstract void applyPostTransform(AffineTransform aft);
+	public void applyPostTransform(AffineTransform aft)
+	{
+		if (aft != null)
+		{
+			if (aft_ == null)
+				aft_ = new AffineTransform(aft);
+			else
+				aft_.concatenate(aft);
+		}
+	}
+
 }

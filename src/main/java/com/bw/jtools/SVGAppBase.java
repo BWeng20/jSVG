@@ -177,6 +177,7 @@ public class SVGAppBase extends JFrame
 
 	protected void setAppIcon()
 	{
+		if ( false)
 		try
 		{
 			ShapePainter svgIconPainter = new ShapePainter(

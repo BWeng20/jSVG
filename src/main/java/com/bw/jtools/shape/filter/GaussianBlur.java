@@ -1,8 +1,11 @@
 package com.bw.jtools.shape.filter;
 
+import com.bw.jtools.shape.Context;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
@@ -62,6 +65,7 @@ public class GaussianBlur extends FilterBaseSingleSource
 		ConvolveOp vBlur = new ConvolveOp(new Kernel(1, kernelHeight, kernelY), ConvolveOp.EDGE_NO_OP, null);
 
 		Graphics2D g2d = buffer1.createGraphics();
+		Context.initGraphics( g2d );
 		try
 		{
 			// The filter will not expand the edges as needed if used on source directly.

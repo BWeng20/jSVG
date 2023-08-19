@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -295,10 +296,13 @@ public final class ShapePainter
 			dst = new BufferedImage((int) (0.5 + area.getWidth()),
 					(int) (0.5 + area.getHeight()), BufferedImage.TYPE_INT_ARGB);
 		}
-		paintShapes(dst.getGraphics(), foreground, background, true);
+
+		Graphics2D g2d = dst.createGraphics();
+		Context.initGraphics(g2d);
+
+		paintShapes(g2d, foreground, background, true);
 		return dst;
 	}
-
 
 	/**
 	 * Paint the shapes along the outline of on other shape.<br>

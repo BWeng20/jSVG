@@ -1,6 +1,7 @@
 package com.bw.jtools.ui;
 
 import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.Context;
 import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.Icon;
@@ -9,6 +10,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.util.Collection;
 
 /**
@@ -103,6 +105,7 @@ public class ShapeIcon implements Icon
 		Graphics2D g2d = (Graphics2D) g.create();
 		try
 		{
+			Context.initGraphics(g2d);
 			g2d.translate(x, y);
 			if (drawFrame_)
 			{

@@ -6,6 +6,7 @@ import com.bw.jtools.shape.filter.FilteredImage;
 import com.bw.jtools.shape.filter.PainterBuffers;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
@@ -37,11 +38,12 @@ public final class ShapeGroup extends AbstractShape
 	/**
 	 * Constructor to initialize,
 	 */
-	public ShapeGroup(String id, FilterChain filter, Shape clipPath)
+	public ShapeGroup(String id, FilterChain filter, Shape clipPath, AffineTransform aft)
 	{
 		super(id);
 		this.filter_ = filter;
 		this.clipping_ = clipPath;
+		this.aft_ = aft;
 	}
 
 	/**
@@ -136,17 +138,27 @@ public final class ShapeGroup extends AbstractShape
 
 	protected void paintInternal(Context ctx)
 	{
-		Shape oldClip = null;
+		final Graphics2D g3D = ctx.g2D_;
+
+		aftTemp_.setTransform(ctx.aft_);
+		if ( aft_ != null )
+			aftTemp_.concatenate(aft_);
+
+		Shape orgClip = null;
 		if (clipping_ != null)
 		{
-			oldClip = ctx.g2D_.getClip();
+			orgClip = ctx.g2D_.getClip();
 			ctx.g2D_.clip(clipping_);
 		}
+		AffineTransform aold = g3D.getTransform();
+		g3D.setTransform(aftTemp_);
+
 		for (AbstractShape shape : shapes_)
 			shape.paint(ctx);
 
+		g3D.setTransform(aold);
 		if (clipping_ != null)
-			ctx.g2D_.setClip(oldClip);
+			ctx.g2D_.setClip(orgClip);
 	}
 
 	/**

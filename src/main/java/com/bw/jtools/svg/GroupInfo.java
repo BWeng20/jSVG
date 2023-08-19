@@ -23,17 +23,4 @@ public class GroupInfo extends ElementInfo
 		id_ = id;
 	}
 
-	@Override
-	public void applyTransform(AffineTransform aft)
-	{
-		for (ElementInfo e : shapes_)
-			e.applyTransform(aft);
-	}
-
-	@Override
-	public void applyPostTransform(AffineTransform aft)
-	{
-		for (ElementInfo e : shapes_)
-			e.applyPostTransform(aft);
-	}
 }

@@ -1,6 +1,7 @@
 package com.bw.jtools.ui;
 
 import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.Context;
 import com.bw.jtools.shape.ShapeGroup;
 import com.bw.jtools.shape.ShapePainter;
 
@@ -14,6 +15,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -197,6 +199,8 @@ public class ShapePane extends JComponent
 		else
 		{
 			Graphics2D g2d = (Graphics2D) g;
+			Context.initGraphics(g2d);
+
 			if (drawFrame_)
 			{
 				final Paint p = g2d.getPaint();

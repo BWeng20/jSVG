@@ -200,7 +200,7 @@ public class SVGConverter
 			if (viewBox != null)
 			{
 				Viewbox v = new Viewbox(viewBox);
-				ShapeGroup group = new ShapeGroup(svg.id(), null, v.getShape());
+				ShapeGroup group = new ShapeGroup(svg.id(), null, v.getShape(), null);
 				group.shapes_.addAll(finalShapes_);
 				finalShapes_.clear();
 				finalShapes_.add(group);
@@ -355,7 +355,9 @@ public class SVGConverter
 						if (aft != null)
 						{
 							for (ElementInfo s : childElements)
+							{
 								s.applyTransform(aft);
+							}
 						}
 
 
@@ -419,7 +421,6 @@ public class SVGConverter
 				((Path2D) s.shape_).setWindingRule(windingRule);
 			}
 
-
 			StyledShape sws = new StyledShape(
 					s.id_,
 					s.shape_,
@@ -434,7 +435,7 @@ public class SVGConverter
 		else
 		{
 			GroupInfo g = (GroupInfo) si;
-			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_), g.clipPath_);
+			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_), g.clipPath_, g.aft_);
 			for (ElementInfo e : g.shapes_)
 				gr.shapes_.add(finish(e));
 			// @TODO

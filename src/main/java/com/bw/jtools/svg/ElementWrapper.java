@@ -267,8 +267,7 @@ public final class ElementWrapper
 	 */
 	public String clipPath()
 	{
-		String v = node_.getAttribute("clip-path")
-						.trim();
+		String v = attr(Attribute.ClipPath,false).trim();
 		if (isNotEmpty(v))
 		{
 			String ref[] = urlRef(v);

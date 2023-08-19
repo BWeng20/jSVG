@@ -22,18 +22,6 @@ public class Context
 	public Paint currentBackground_;
 	private final boolean newContext_;
 
-	/**
-	 * Rendering Antialiasing mode. Can be
-	 * <ul>
-	 *   <li>VALUE_ANTIALIAS_ON</li>
-	 *   <li>VALUE_ANTIALIAS_OFF</li>
-	 *   <li>VALUE_ANTIALIAS_DEFAULT</li>
-	 * </ul>
-	 *
-	 * @see RenderingHints#KEY_ANTIALIASING
-	 */
-	public static Object RenderingHints_Antialiasing = RenderingHints.VALUE_ANTIALIAS_ON;
-
 	public boolean debug_ = false;
 	/**
 	 * Stroke for debug lines.
@@ -44,6 +32,8 @@ public class Context
 	 */
 	public static Paint debugPaint_ = Color.RED;
 
+	public static Object renderingHint_Antialias_ = RenderingHints.VALUE_ANTIALIAS_ON;
+
 
 	public Context(Context ctx)
 	{
@@ -53,7 +43,12 @@ public class Context
 	public Context(Context ctx, boolean createNewContext)
 	{
 		newContext_ = createNewContext;
-		g2D_ = createNewContext ? (Graphics2D) ctx.g2D_.create() : ctx.g2D_;
+		if ( createNewContext )
+		{
+			this.g2D_ = (Graphics2D) ctx.g2D_.create();
+		}
+		else
+			this.g2D_ = ctx.g2D_;
 		aft_ = ctx.aft_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
@@ -71,7 +66,6 @@ public class Context
 		if (createNewContext)
 		{
 			this.g2D_ = (Graphics2D) g2D.create();
-			this.g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
 		}
 		else
 		{
@@ -85,11 +79,20 @@ public class Context
 	{
 		newContext_ = true;
 		g2D_ = source.createGraphics();
-		g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
+		initGraphics(g2D_);
+
 		aft_ = ctx.aft_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
 		debug_ = ctx.debug_;
+	}
+
+	/**
+	 * Sets rendering hints.
+	 */
+	public static void initGraphics(Graphics2D g2d)
+	{
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, Context.renderingHint_Antialias_);
 	}
 
 	public void dispose()
