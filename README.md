@@ -1,5 +1,9 @@
 # jSVG <a href="http://www.w3.org/Graphics/SVG/" ><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo" style="height:1.5em;float:right;"/></a>
-Lightweight SVG rendering to use in SWT Components.
+Lightweight SVG rendering to use in Java UI Widgets. 
+
+Some re-usable widgets and examples are provided for Swing. 
+However, since the base technology behind it is Java2D, it should work with
+any framework that uses Java Graphics2D like AWT, SWT. 
 
 Most Icons used are based on bitmap images that doesn't scale well 
 on HiDPI displays. Most web applications use SVG for icons as they 
@@ -54,6 +58,9 @@ As said this is a lightweight SVG renderer, designed for High-Res icons.
 
 Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.
 
+I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!).
+If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
+
 #### Filters
 
 Usages of pixel-based filters are in any case a bad idea, because they are silly expensive to compute.
@@ -66,10 +73,7 @@ jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ 
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
-Some examples may not work at all. 
-
-I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
-If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
+And some examples may not work at all. 
 
 #### Clipping
 
