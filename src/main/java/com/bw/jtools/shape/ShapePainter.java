@@ -121,8 +121,13 @@ public final class ShapePainter
 	public final void setShape(AbstractShape shape)
 	{
 		shape_ = shape;
-		Rectangle2D transRect = shape.getTransformedBounds();
-		area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());
+		if ( shape != null )
+		{
+			Rectangle2D transRect = shape.getTransformedBounds();
+			area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());
+		}
+		else
+			area_ = null;
 	}
 
 
