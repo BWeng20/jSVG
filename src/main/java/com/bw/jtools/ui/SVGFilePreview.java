@@ -13,7 +13,6 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -33,7 +32,7 @@ public class SVGFilePreview extends JLabel implements PropertyChangeListener
 
 	public SVGFilePreview(JFileChooser chooser)
 	{
-		icon_ = new ShapeIcon(Collections.EMPTY_LIST);
+		icon_ = new ShapeIcon(null);
 		chooser.addPropertyChangeListener(this);
 		chooser.setAccessory(this);
 		Font f = getFont();
@@ -70,7 +69,7 @@ public class SVGFilePreview extends JLabel implements PropertyChangeListener
 					{
 						Dimension d = getSize();
 						SVGConverter svg = new SVGConverter(new BufferedInputStream(fis));
-						icon_.setShapes(svg.getShapes());
+						icon_.setShape(svg.getShape());
 						icon_.setScale(1, 1);
 						Rectangle2D fileArea = icon_.getPainter()
 													.getArea();

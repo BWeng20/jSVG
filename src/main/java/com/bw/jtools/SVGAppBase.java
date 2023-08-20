@@ -4,6 +4,7 @@ import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.ShapePainter;
 import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.ui.SVGFilePreview;
+import com.bw.jtools.ui.ShapeMultiResolutionImage;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -19,8 +20,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * Base class for the Demonstration- and Test-Utilities in jSVG.
@@ -32,18 +32,19 @@ public class SVGAppBase extends JFrame
 	protected JFileChooser svgFileChooser;
 	protected JFileChooser pngFileChooser;
 
-	protected List<AbstractShape> loadSVG(java.nio.file.Path svgFile)
+
+	protected AbstractShape loadSVG(java.nio.file.Path svgFile)
 	{
 		try
 		{
 			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
 			SVGConverter nsvg = new SVGConverter(ips);
-			return nsvg.getShapes();
+			return nsvg.getShape();
 		}
 		catch (Exception err)
 		{
 			err.printStackTrace();
-			return Collections.emptyList();
+			return null;
 		}
 	}
 
@@ -76,11 +77,10 @@ public class SVGAppBase extends JFrame
 	/**
 	 * Create a new SVGViewer.
 	 * Caller has to call "pack" and "setVisible".
-	 *
-	 * @param file The file to show or null.
 	 */
 	public SVGAppBase()
 	{
+		setAppIcon();
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class SVGAppBase extends JFrame
 		if (pngFile != null)
 		{
 			BufferedImage image = painter
-					.paintShapedToBufferTransparent(null);
+					.paintShapeToBufferTransparent(null);
 			if (image != null)
 			{
 				try
@@ -126,6 +126,9 @@ public class SVGAppBase extends JFrame
 
 	protected Timer measurementTimer_;
 
+	private String lastStatus_;
+	private int lastStatusCount_ = 0;
+
 	protected void startMeasurementTimer(JTextField status, final ShapePainter painter)
 	{
 		if (measurementTimer_ == null)
@@ -145,14 +148,42 @@ public class SVGAppBase extends JFrame
 		}
 		measurementTimer_ = new Timer(1000, e ->
 		{
-			timeMS = painter
-					.getMeasuredTimeMS();
+			timeMS = painter.getMeasuredTimeMS();
 			Rectangle2D r = painter.getArea();
-			status.setText(
-					String.format("Size: %d x %d, Scale %.1f x %.1f%s",
-							(int) r.getWidth(), (int) r.getHeight(), painter.getXScale(), painter.getYScale(),
-							((timeMS > 0) ? ", Rendered in " + Double.toString(timeMS / 1000d) + "s" : "")));
+
+			String statusText = String.format("Size: %d x %d, Scale %.1f x %.1f, Rotation %.1f\u00B0%s",
+					(int) r.getWidth(), (int) r.getHeight(), painter.getXScale(), painter.getYScale(), painter.getRotationAngleDegree(),
+					((timeMS > 0) ? ", Rendered in " + Double.toString(timeMS / 1000d) + "s" : ""));
+
+			if (Objects.equals(lastStatus_, statusText))
+			{
+				++lastStatusCount_;
+				if (lastStatusCount_ == 5)
+				{
+					status.setText("Use the Mouse-Wheel +Meta/Ctrl to scale, +Shift to rotate.");
+				}
+			}
+			else
+			{
+				lastStatusCount_ = 0;
+				lastStatus_ = statusText;
+				status.setText(statusText);
+			}
 		});
 		measurementTimer_.start();
+	}
+
+	protected void setAppIcon()
+	{
+		try
+		{
+			ShapePainter svgIconPainter = new ShapePainter(
+					SVGConverter.convert(SVGIconTester.class.getResourceAsStream("SVGIcon.svg")));
+			setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

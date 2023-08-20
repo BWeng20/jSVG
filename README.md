@@ -1,5 +1,9 @@
 # jSVG <a href="http://www.w3.org/Graphics/SVG/" ><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo" style="height:1.5em;float:right;"/></a>
-Lightweight SVG rendering to use in SWT Components.
+Lightweight SVG rendering to use in Java UI Widgets. 
+
+Some re-usable widgets and examples are provided for Swing. 
+However, since the base technology behind it is Java2D, it should work with
+any framework that uses Java Graphics2D like AWT, SWT. 
 
 Most Icons used are based on bitmap images that doesn't scale well 
 on HiDPI displays. Most web applications use SVG for icons as they 
@@ -41,19 +45,24 @@ This time goes up to ~50ms for bigger sizes like 1000x1000.
 The San Mariona flag is a bit to detailed to be used as icon.
 SVGs for icons are normally much simpler, so expect less time to draw it.
 
-For a complete list of flags, to be used for icons check out 
-https://github.com/lipis/flag-icons.git
+For a collection of flags, that can be used for icons, check out 
+https://github.com/hampusborgos/country-flags
 
-The flags are available in quadratic or rectangle form.
-
-Clone the repository, then start the icon tester with argument "/lipis/flag-icons/tree/main/flags/4x3"
+Clone one the repository, then start the icon tester and select the svg directories
 to see how they look at buttons.
+
 
 ### Supported features
 
 As said this is a lightweight SVG renderer, designed for High-Res icons.
 
-Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.<br>
+Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.
+
+I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!).
+If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
+
+#### Filters
+
 Usages of pixel-based filters are in any case a bad idea, because they are silly expensive to compute.
 The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow) but please don't use
 them. Safe your computing power and the planet.
@@ -64,22 +73,31 @@ jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ 
 
 ![w3_filter_example.png](doc%2Fw3_filter_example.png)
 
-Some examples may not work at all. 
+And some examples may not work at all. 
 
-I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!). 
-If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
+#### Clipping
+
+Some SVG may use clip-paths to "cut" away parts for the shapes. 
+Java2Ds "clip" doesn't support anti-aliasing for that (the so-called "soft clipping"). The clip-edges 
+will get jagged.
+
+The image below shows a rendered circle on the left and the result of a clip-path with the same circle on the right.  
+
+![clip-path-antialiasing.png](doc%2Fclip-path-antialiasing.png)
+
+You can use your SVG editor to create a normal path from the clipped result.
 
 ### A word about off-screen-images
 
-Theoretically such SVG can be drawn to an off-screen-buffer in a fixed size
+Theoretically the SVG can be drawn to an off-screen-buffer in a fixed size
 and then re-used. In __multi-display-scenarios this may fail__.
 In newer Java version the app is automatically scaled and will change 
 the draw-resolution on the fly if the user moves the app from on screen 
 to another. Fixed bitmaps will get blurry.
 
-Using vector graphics for the actual drawing has no issue with it.
+If vector graphics are used for the drawing, this is no issue.
 
-Nevertheless, ShapePointer has a method to export a BufferedImage that
+Nevertheless, ShapePainter has a method to export a BufferedImage that
 can be used this way (and can also be written to file via ImageIO). 
 The Screenshots here are produced this way.  
 

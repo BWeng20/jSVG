@@ -36,7 +36,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -118,7 +117,7 @@ public class SVGConverter
 	}
 
 	private final List<ElementInfo> shapes_ = new ArrayList<>();
-	private final List<AbstractShape> finalShapes_ = new ArrayList<>();
+	private ShapeGroup finalShape_;
 	private Map<String, Gradient> paintServer_ = new HashMap<>();
 	private Map<String, PaintWrapper> paints_ = new HashMap<>();
 	private Font defaultFont_ = Font.decode("Arial-PLAIN-12");
@@ -191,20 +190,18 @@ public class SVGConverter
 																  .item(0));
 			parseChildren(shapes_, svg);
 
-			for (ElementInfo s : shapes_)
-				finalShapes_.add(finish(s));
+			// Create a enclosing group and set the viewBox as clip-path.
+			// "Height" and "Width" is currently not supported.
 
-			// If viewBox is set, greate a group and set the viewBox as clip-path.
-			// "Height" and "Width" is not supported.
 			String viewBox = svg.attr(Attribute.ViewBox);
-			if (viewBox != null)
-			{
-				Viewbox v = new Viewbox(viewBox);
-				ShapeGroup group = new ShapeGroup(svg.id(), null, v.getShape());
-				group.shapes_.addAll(finalShapes_);
-				finalShapes_.clear();
-				finalShapes_.add(group);
-			}
+
+			finalShape_ = new ShapeGroup(svg.id(), null, (viewBox == null) ? null : new Viewbox(viewBox).getShape(), null);
+
+			for (ElementInfo s : shapes_)
+				finalShape_.shapes_.add(finish(s));
+
+			shapes_.clear();
+
 		}
 		catch (Exception e)
 		{
@@ -219,9 +216,9 @@ public class SVGConverter
 	 * @return The converted shapes.
 	 * @throws SVGException In case of any error.
 	 */
-	public static List<AbstractShape> convert(final InputStream is) throws SVGException
+	public static AbstractShape convert(final InputStream is) throws SVGException
 	{
-		return new SVGConverter(is).getShapes();
+		return new SVGConverter(is).getShape();
 	}
 
 	/**
@@ -231,9 +228,9 @@ public class SVGConverter
 	 * @return The converted shapes.
 	 * @throws SVGException In case of any error.
 	 */
-	public static List<AbstractShape> convert(final String xml) throws SVGException
+	public static AbstractShape convert(final String xml) throws SVGException
 	{
-		return new SVGConverter(xml).getShapes();
+		return new SVGConverter(xml).getShape();
 	}
 
 
@@ -249,7 +246,6 @@ public class SVGConverter
 	{
 		final String e = w.getTagName();
 		Type typ = w.getType();
-		List<ElementInfo> g = new ArrayList<>();
 
 		if (typ == null)
 			warn("Unknown command %s", e);
@@ -258,8 +254,9 @@ public class SVGConverter
 			case g:
 			case a:
 			{
+				List<ElementInfo> g = new ArrayList<>();
 				parseChildren(g, w);
-				addShapeContainer(w, g, shapes);
+				addShapeGroup(w, g, shapes);
 			}
 			break;
 			case path:
@@ -284,12 +281,18 @@ public class SVGConverter
 			{
 				if (w.getShape() == null)
 				{
-					float x = (float) w.toPDouble(Attribute.X);
-					float y = (float) w.toPDouble(Attribute.Y);
-					float width = (float) w.toPDouble(Attribute.Width);
-					float height = (float) w.toPDouble(Attribute.Height);
-					Double rx = w.toDouble(Attribute.Rx, false);
-					Double ry = w.toDouble(Attribute.Ry, false);
+					float x = (float) w.toPDouble(Attribute.X, w.getParent()
+																.getViewPortWidth());
+					float y = (float) w.toPDouble(Attribute.Y, w.getParent()
+																.getViewPortHeight());
+					float width = (float) w.toPDouble(Attribute.Width, w.getParent()
+																		.getViewPortWidth());
+					float height = (float) w.toPDouble(Attribute.Height, w.getParent()
+																		  .getViewPortHeight());
+					Double rx = w.toDouble(Attribute.Rx, w.getParent()
+														  .getViewPortWidth(), false);
+					Double ry = w.toDouble(Attribute.Ry, w.getParent()
+														  .getViewPortHeight(), false);
 
 					RectangularShape rec;
 
@@ -305,10 +308,10 @@ public class SVGConverter
 			break;
 			case ellipse:
 			{
-				float cx = (float) w.toPDouble(Attribute.Cx, false);
-				float cy = (float) w.toPDouble(Attribute.Cy, false);
-				float rx = (float) w.toPDouble(Attribute.Rx, false);
-				float ry = (float) w.toPDouble(Attribute.Ry, false);
+				float cx = (float) w.toPDouble(Attribute.Cx, w.getViewPortWidth(), false);
+				float cy = (float) w.toPDouble(Attribute.Cy, w.getViewPortHeight(), false);
+				float rx = (float) w.toPDouble(Attribute.Rx, w.getViewPortWidth(), false);
+				float ry = (float) w.toPDouble(Attribute.Ry, w.getViewPortHeight(), false);
 
 				w.setShape(new Ellipse2D.Double(cx - rx, cy - ry, 2d * rx, 2d * ry));
 				shapes.add(createShapeInfo(w));
@@ -316,25 +319,28 @@ public class SVGConverter
 			break;
 			case text:
 			{
+				List<ElementInfo> g = new ArrayList<>();
 				new Text(this, w, defaultFont_, g);
-				addShapeContainer(w, g, shapes);
+				addShapeGroup(w, g, shapes);
 			}
 			break;
 			case use:
 			{
+				// We need to create a group with transformations from the use-element that contains the referenced element.
 				String href = w.href();
 				if (isNotEmpty(href))
 				{
 					ElementWrapper refOrgW = elementCache_.getElementWrapperById(href);
 					if (refOrgW != null)
 					{
+						GroupInfo group = new GroupInfo(w.id());
+
 						ElementWrapper uw = refOrgW.createReferenceShadow(w);
-
-						// Convert elements in the target context
-						List<ElementInfo> childElements = new ArrayList<>();
-						parseElement(childElements, uw);
-
-						AffineTransform aft = w.transform();
+						{
+							List<ElementInfo> g = new ArrayList<>();
+							parseElement(g, uw);
+							addShapeGroup(w, g, group.shapes_);
+						}
 
 						Length x = w.toLength(Attribute.X, false);
 						Length y = w.toLength(Attribute.Y, false);
@@ -344,31 +350,22 @@ public class SVGConverter
 									AffineTransform.getTranslateInstance(
 											x == null ? 0 : x.toPixel(null),
 											y == null ? 0 : y.toPixel(null));
-							if (!posAft.isIdentity())
-							{
-								if (aft != null)
-									aft.concatenate(posAft);
-								else
-									aft = posAft;
-							}
-						}
-						if (aft != null)
-						{
-							for (ElementInfo s : childElements)
-								s.applyTransform(aft);
+							group.shapes_.get(0)
+										 .applyPostTransform(posAft);
 						}
 
-
-						addShapeContainerWithoutTranform(uw, childElements, shapes);
+						group.filter_ = filter(w);
+						group.clipPath_ = clipPath(w);
+						shapes.add(group);
 					}
 				}
 			}
 			break;
 			case circle:
 			{
-				double x1 = w.toPDouble(Attribute.Cx);
-				double y1 = w.toPDouble(Attribute.Cy);
-				double r = w.toPDouble(Attribute.R);
+				double x1 = w.toPDouble(Attribute.Cx, w.getViewPortWidth());
+				double y1 = w.toPDouble(Attribute.Cy, w.getViewPortHeight());
+				double r = w.toPDouble(Attribute.R, w.getViewPortLength());
 
 				w.setShape(new Ellipse2D.Double(x1 - r, y1 - r, 2 * r, 2 * r));
 				shapes.add(createShapeInfo(w));
@@ -376,10 +373,10 @@ public class SVGConverter
 			break;
 			case line:
 			{
-				double x1 = w.toPDouble(Attribute.X1);
-				double y1 = w.toPDouble(Attribute.Y1);
-				double x2 = w.toPDouble(Attribute.X2);
-				double y2 = w.toPDouble(Attribute.Y2);
+				double x1 = w.toPDouble(Attribute.X1, w.getViewPortWidth());
+				double y1 = w.toPDouble(Attribute.Y1, w.getViewPortHeight());
+				double x2 = w.toPDouble(Attribute.X2, w.getViewPortWidth());
+				double y2 = w.toPDouble(Attribute.Y2, w.getViewPortHeight());
 
 				w.setShape(new Line2D.Double(x1, y1, x2, y2));
 				shapes.add(createShapeInfo(w));
@@ -419,7 +416,6 @@ public class SVGConverter
 				((Path2D) s.shape_).setWindingRule(windingRule);
 			}
 
-
 			StyledShape sws = new StyledShape(
 					s.id_,
 					s.shape_,
@@ -434,7 +430,7 @@ public class SVGConverter
 		else
 		{
 			GroupInfo g = (GroupInfo) si;
-			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_), g.clipPath_);
+			ShapeGroup gr = new ShapeGroup(g.id_, createFilterChain(g.filter_), g.clipPath_, g.aft_);
 			for (ElementInfo e : g.shapes_)
 				gr.shapes_.add(finish(e));
 			// @TODO
@@ -676,7 +672,7 @@ public class SVGConverter
 				m = new Marker(w);
 				List<ElementInfo> shapes = new ArrayList<>();
 				parseChildren(shapes, w);
-				addShapeContainer(w, shapes, m.shapes_);
+				addShapeGroup(w, shapes, m.shapes_);
 				elementCache_.addMarker(id, m);
 			}
 		}
@@ -728,7 +724,7 @@ public class SVGConverter
 			switch (t)
 			{
 				case feGaussianBlur:
-					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList(Attribute.StdDeviation, false));
+					fp = new GaussianBlurFilterPrimitive(w.toPDoubleList(Attribute.StdDeviation, w.getViewPortLength(), false));
 					break;
 				case feOffset:
 					fp = new OffsetFilterPrimitive(w.toLength(Attribute.Dx), w.toLength(Attribute.Dy));
@@ -795,9 +791,9 @@ public class SVGConverter
 	/**
 	 * Get all parsed shapes.
 	 */
-	public List<AbstractShape> getShapes()
+	public AbstractShape getShape()
 	{
-		return Collections.unmodifiableList(finalShapes_);
+		return finalShape_;
 	}
 
 	/**
@@ -854,52 +850,17 @@ public class SVGConverter
 	}
 
 
-	protected void addShapeContainer(ElementWrapper w, List<ElementInfo> shapes, List<ElementInfo> global)
-	{
-		addShapeContainerWithTransform(w, w.transform(), shapes, global);
-	}
-
-	protected void addShapeContainerWithTransform(ElementWrapper w, AffineTransform t, List<ElementInfo> shapes, List<ElementInfo> global)
-	{
-		if (t != null)
-		{
-			final String wid = w.id();
-			for (ElementInfo s : shapes)
-				if (!s.id_.equals(wid))
-					s.applyTransform(t);
-		}
-		addShapeContainerWithoutTranform(w, shapes, global);
-	}
-
-	protected void addShapeContainerWithoutTranform(ElementWrapper w, List<ElementInfo> shapes, List<ElementInfo> global)
+	protected void addShapeGroup(ElementWrapper w, List<ElementInfo> shapes, List<ElementInfo> target)
 	{
 		Filter f = filter(w);
 
-		GroupInfo group = null;
+		GroupInfo group = new GroupInfo(w.id());
+		group.shapes_.addAll(shapes);
+		group.filter_ = filter(w);
+		group.clipPath_ = clipPath(w);
+		group.applyTransform(w.transform());
 
-		if (f != null)
-		{
-			group = new GroupInfo(w.id());
-			group.filter_ = f;
-		}
-
-		Shape clipPath = clipPath(w);
-		if (clipPath != null)
-		{
-			if (group == null)
-				group = new GroupInfo(w.id());
-			group.clipPath_ = clipPath;
-		}
-
-		if (group == null)
-		{
-			global.addAll(shapes);
-		}
-		else
-		{
-			group.shapes_.addAll(shapes);
-			global.add(group);
-		}
+		target.add(group);
 		shapes.clear();
 	}
 
@@ -966,7 +927,7 @@ public class SVGConverter
 							List<ElementInfo> markerElements = new ArrayList<>();
 							parseChildren(markerElements, markerElement);
 							List<ElementInfo> targetElements = new ArrayList<>();
-							addShapeContainer(w, markerElements, targetElements);
+							addShapeGroup(w, markerElements, targetElements);
 							AffineTransform aft = AffineTransform.getTranslateInstance(coords[0], coords[1]);
 							// @TODO angle, auto-reverse, marker-width/height, e.t.c.
 							for (ElementInfo markerEI : targetElements)
@@ -1022,11 +983,7 @@ public class SVGConverter
 				String offset = wrapper.attr(Attribute.Offset);
 				if (offset != null)
 				{
-					offset = offset.trim();
-					if (offset.endsWith("%"))
-						f = (float) ElementWrapper.convPDouble(offset.substring(0, offset.length() - 1)) / 100f;
-					else
-						f = (float) ElementWrapper.convPDouble(offset);
+					f = (float) ElementWrapper.convPDouble(offset, 1);
 					if (f < 0)
 						f = 0;
 					else if (f > 1.0f)
@@ -1044,7 +1001,7 @@ public class SVGConverter
 				g.fractions_[i] = f;
 
 				final Color cp = new Color(this, wrapper.attr(Attribute.StopColor),
-						wrapper.toPDouble(Attribute.StopOpacity, 1d, false));
+						wrapper.toPDouble(Attribute.StopOpacity, 1d, 1d, false));
 				PaintWrapper pw = cp.getPaintWrapper();
 				g.colors_[i] = (pw != null && pw.getColor() != null) ? pw.getColor() : java.awt.Color.BLACK;
 			}
@@ -1065,7 +1022,7 @@ public class SVGConverter
 	protected Color fill(ElementWrapper w)
 	{
 		String color = w.attr(Attribute.Fill, true);
-		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble(Attribute.FillOpacity, 1.0d, true));
+		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble(Attribute.FillOpacity, 1.0d, 1.0d, true));
 	}
 
 	protected FillRule fillRule(ElementWrapper w)
@@ -1078,13 +1035,15 @@ public class SVGConverter
 	{
 		Stroke stroke = new Stroke(
 				new Color(this, w.attr(Attribute.Stroke, true),
-						w.effectiveOpacity() * w.toPDouble(Attribute.Stroke_Opacity, 1.0d, true)),
+						w.effectiveOpacity() * w.toPDouble(Attribute.Stroke_Opacity, 1.0d, 1.0d, true)),
 				w.toLength(Attribute.Stroke_Width, true),
 				w.toLengthList(Attribute.Stroke_DashArray, true),
-				w.toDouble(Attribute.Stroke_DashOffset, true),
+				// @TODO: relative widths
+				w.toDouble(Attribute.Stroke_DashOffset, 1, true),
 				LineCap.fromString(w.attr(Attribute.Stroke_LineCap, true)),
 				LineJoin.fromString(w.attr(Attribute.Stroke_LineJoin, true)),
-				w.toDouble(Attribute.Stroke_MiterLimit, true)
+				// @TODO: relative limits?
+				w.toDouble(Attribute.Stroke_MiterLimit, 1, true)
 		);
 		return stroke;
 	}

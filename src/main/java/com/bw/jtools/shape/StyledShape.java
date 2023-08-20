@@ -37,12 +37,6 @@ public final class StyledShape extends AbstractShape
 	 */
 	public final Paint fill_;
 
-	/**
-	 * Transform to be applied to the graphics context.<br>
-	 * Never null.
-	 */
-	public AffineTransform aft_;
-
 	public final Shape clipping_;
 
 	private Rectangle2D transformedBounds_;
@@ -80,25 +74,21 @@ public final class StyledShape extends AbstractShape
 		return transformedBounds_;
 	}
 
-	protected AffineTransform aftTemp_ = new AffineTransform();
-
-
 	@Override
 	public void paint(Context ctx)
 	{
 		Shape orgClip = null;
 
-		aftTemp_.setTransform(ctx.aft_);
-		aftTemp_.concatenate(aft_);
-
 		final Graphics2D g3D = ctx.g2D_;
 
+		AffineTransform aold = g3D.getTransform();
+		aftTemp_.setTransform(aold);
+		aftTemp_.concatenate(aft_);
 		if (clipping_ != null)
 		{
 			orgClip = g3D.getClip();
 			g3D.clip(clipping_);
 		}
-		AffineTransform aold = g3D.getTransform();
 		g3D.setTransform(aftTemp_);
 
 		Paint p = translatePaint(ctx, fill_);

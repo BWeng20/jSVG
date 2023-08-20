@@ -2,6 +2,7 @@ package com.bw.jtools.shape;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -24,10 +25,21 @@ public abstract class AbstractShape
 	 */
 	public static final Color NONE = new Color(0, 0, 0, 0);
 
+	protected static final AffineTransform ident_ = new AffineTransform();
+
 	/**
 	 * Id to identify the shape group in the some document.
 	 */
 	public final String id_;
+
+	/**
+	 * Transform to be applied to the graphics context.<br>
+	 * Never null.
+	 */
+	public AffineTransform aft_;
+
+	protected AffineTransform aftTemp_ = new AffineTransform();
+
 
 	/**
 	 * Constructor to initialize,

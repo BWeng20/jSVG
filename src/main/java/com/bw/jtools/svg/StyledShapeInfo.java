@@ -1,7 +1,6 @@
 package com.bw.jtools.svg;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 
 /**
  * Collects all information about a shape that are needed to produce a final shape.
@@ -34,7 +33,6 @@ public final class StyledShapeInfo extends ElementInfo
 	/**
 	 * Transform to be applied to the graphics context.
 	 */
-	public AffineTransform aft_;
 
 	public Shape clipping_;
 	public FillRule fillRule_;
@@ -49,27 +47,5 @@ public final class StyledShapeInfo extends ElementInfo
 		this.paintWrapper_ = paint;
 		this.fillWrapper_ = fill;
 		this.clipping_ = clipping;
-	}
-
-	@Override
-	public void applyTransform(AffineTransform aft)
-	{
-		if (aft_ == null)
-			aft_ = new AffineTransform(aft);
-		else
-			aft_.preConcatenate(aft);
-
-	}
-
-	@Override
-	public void applyPostTransform(AffineTransform aft)
-	{
-		if (aft != null)
-		{
-			if (aft_ == null)
-				aft_ = new AffineTransform(aft);
-			else
-				aft_.concatenate(aft);
-		}
 	}
 }

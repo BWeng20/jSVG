@@ -36,7 +36,7 @@ public class SVGViewer extends SVGAppBase
 		{
 			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
 			SVGConverter nsvg = new SVGConverter(ips);
-			pane_.setShapes(nsvg.getShapes());
+			pane_.setShape(nsvg.getShape());
 		}
 		catch (Exception err)
 		{
@@ -81,8 +81,12 @@ public class SVGViewer extends SVGAppBase
 		{
 			setTitle("jSVG Demonstration");
 		}
-		// Let us zoom by mouse-wheel...
-		pane_.setZoomByMouseWheelEnabled(true);
+		// Let us zoom by ctrl-mouse-wheel...
+		pane_.setZoomByMetaMouseWheelEnabled(true);
+		// Let us drag by mouse...
+		pane_.setMouseDragEnabled(true);
+		// Let us rotate by shift-mouse-wheel...
+		pane_.setRotateByShiftMouseWheelEnabled(true);
 
 		// Create layout (menu, painter pane and status bar).
 		setLayout(new BorderLayout());
@@ -138,17 +142,6 @@ public class SVGViewer extends SVGAppBase
 		setLocationByPlatform(true);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(400, 300));
-
-		try
-		{
-			// ShapePainter svgIconPainter = new ShapePainter(
-			// 		SVGConverter.convert(SVGViewer.class.getResourceAsStream("jSVGIcon.svg")));
-			//setIconImage(new ShapeMultiResolutionImage(svgIconPainter));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 	}
 
 	/**

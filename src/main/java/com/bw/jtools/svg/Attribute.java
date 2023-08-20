@@ -7,6 +7,7 @@ public enum Attribute
 	Class("class"),
 	Color("color"),
 	ViewBox("viewBox"),
+	ClipPath("clip-path"),
 	D("d"),
 	Opacity("opacity"),
 	Marker_Start("marker-start"),

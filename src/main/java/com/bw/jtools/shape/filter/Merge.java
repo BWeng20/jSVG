@@ -1,8 +1,9 @@
 package com.bw.jtools.shape.filter;
 
+import com.bw.jtools.shape.Context;
 import com.bw.jtools.svg.MergeFilterNode;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -11,7 +12,6 @@ import java.util.List;
  */
 public class Merge extends FilterBase
 {
-
 	public Merge(List<MergeFilterNode> nodes, String target)
 	{
 		super(null, target);
@@ -26,7 +26,8 @@ public class Merge extends FilterBase
 	protected void render(PainterBuffers buffers, String targetName, List<BufferedImage> srcs, BufferedImage target, double scaleX, double scaleY)
 	{
 
-		Graphics g = target.createGraphics();
+		Graphics2D g = target.createGraphics();
+		Context.initGraphics(g);
 		try
 		{
 			for (BufferedImage src : srcs)

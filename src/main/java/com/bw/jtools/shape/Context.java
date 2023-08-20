@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 /**
@@ -17,22 +16,9 @@ import java.awt.image.BufferedImage;
 public class Context
 {
 	public Graphics2D g2D_;
-	public AffineTransform aft_;
 	public Paint currentColor_;
 	public Paint currentBackground_;
 	private final boolean newContext_;
-
-	/**
-	 * Rendering Antialiasing mode. Can be
-	 * <ul>
-	 *   <li>VALUE_ANTIALIAS_ON</li>
-	 *   <li>VALUE_ANTIALIAS_OFF</li>
-	 *   <li>VALUE_ANTIALIAS_DEFAULT</li>
-	 * </ul>
-	 *
-	 * @see RenderingHints#KEY_ANTIALIASING
-	 */
-	public static Object RenderingHints_Antialiasing = RenderingHints.VALUE_ANTIALIAS_ON;
 
 	public boolean debug_ = false;
 	/**
@@ -44,6 +30,8 @@ public class Context
 	 */
 	public static Paint debugPaint_ = Color.RED;
 
+	public static Object renderingHint_Antialias_ = RenderingHints.VALUE_ANTIALIAS_ON;
+
 
 	public Context(Context ctx)
 	{
@@ -53,8 +41,12 @@ public class Context
 	public Context(Context ctx, boolean createNewContext)
 	{
 		newContext_ = createNewContext;
-		g2D_ = createNewContext ? (Graphics2D) ctx.g2D_.create() : ctx.g2D_;
-		aft_ = ctx.aft_;
+		if (createNewContext)
+		{
+			this.g2D_ = (Graphics2D) ctx.g2D_.create();
+		}
+		else
+			this.g2D_ = ctx.g2D_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
 		debug_ = ctx.debug_;
@@ -71,13 +63,11 @@ public class Context
 		if (createNewContext)
 		{
 			this.g2D_ = (Graphics2D) g2D.create();
-			this.g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
 		}
 		else
 		{
 			this.g2D_ = (Graphics2D) g2D;
 		}
-		this.aft_ = this.g2D_.getTransform();
 		this.currentColor_ = this.g2D_.getPaint();
 	}
 
@@ -85,11 +75,19 @@ public class Context
 	{
 		newContext_ = true;
 		g2D_ = source.createGraphics();
-		g2D_.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints_Antialiasing);
-		aft_ = ctx.aft_;
+		initGraphics(g2D_);
+
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
 		debug_ = ctx.debug_;
+	}
+
+	/**
+	 * Sets rendering hints.
+	 */
+	public static void initGraphics(Graphics2D g2d)
+	{
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, Context.renderingHint_Antialias_);
 	}
 
 	public void dispose()

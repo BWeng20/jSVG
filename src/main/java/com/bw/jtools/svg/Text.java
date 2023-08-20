@@ -67,8 +67,8 @@ public class Text extends Parser
 		super();
 
 		// @TODO: Multiple values for x/y
-		x_ = w.toPDouble(Attribute.X, false);
-		y_ = w.toPDouble(Attribute.Y, false);
+		x_ = w.toPDouble(Attribute.X, w.getViewPortWidth(), false);
+		y_ = w.toPDouble(Attribute.Y, w.getViewPortHeight(), false);
 
 		Rectangle2D.Double box = w.getViewPort();
 
@@ -153,8 +153,8 @@ public class Text extends Parser
 				if (aft != null)
 					path = new ShapeHelper(aft.createTransformedShape(path.getShape()));
 
-				Double startOffset = ew.toDouble(Attribute.StartOffset, false);
-				Double textLength = ew.toDouble(Attribute.TextLength, false);
+				Double startOffset = ew.toDouble(Attribute.StartOffset, 1, false);
+				Double textLength = ew.toDouble(Attribute.TextLength, 1, false);
 				LengthAdjust adjust = LengthAdjust.valueFrom(ew.attr(Attribute.LengthAdjust, true));
 				// @TODO spacing
 
