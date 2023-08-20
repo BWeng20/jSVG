@@ -267,7 +267,7 @@ public final class ElementWrapper
 	 */
 	public String clipPath()
 	{
-		String v = attr(Attribute.ClipPath,false).trim();
+		String v = attr(Attribute.ClipPath, false).trim();
 		if (isNotEmpty(v))
 		{
 			String ref[] = urlRef(v);
@@ -399,7 +399,7 @@ public final class ElementWrapper
 	 */
 	public double toPDouble(Attribute attribute, double absVal)
 	{
-		return toPDouble(attribute, absVal,false);
+		return toPDouble(attribute, absVal, false);
 	}
 
 	/**
@@ -584,7 +584,7 @@ public final class ElementWrapper
 			Attribute attr = Attribute.valueFrom(attrNode.getNodeName());
 			if (attr != null)
 			{
-				if (attr != Attribute.Transform && attr != Attribute.X && attr != Attribute.Y)
+				if (attr != Attribute.Transform && attr != Attribute.ClipPath && attr != Attribute.X && attr != Attribute.Y)
 				{
 					if (!usingElement.isOverrideFromAttribute(attr))
 						// Add any attribute that is not already in overrides
@@ -624,12 +624,14 @@ public final class ElementWrapper
 		return viewPortLength_;
 	}
 
-	public double getViewPortWidth() {
+	public double getViewPortWidth()
+	{
 		if (viewPort_ == null) getViewPort();
 		return viewPort_.width;
 	}
 
-	public double getViewPortHeight() {
+	public double getViewPortHeight()
+	{
 		if (viewPort_ == null) getViewPort();
 		return viewPort_.height;
 	}
@@ -645,10 +647,11 @@ public final class ElementWrapper
 			Length height = toLength(Attribute.Height, true);
 
 			String viewBox = attr(Attribute.ViewBox, true);
-			if ( viewBox != null) {
+			if (viewBox != null)
+			{
 				Viewbox vb = new Viewbox(viewBox);
-				if ( width == null ) width = vb.width;
-				if ( height == null ) height = vb.height;
+				if (width == null) width = vb.width;
+				if (height == null) height = vb.height;
 			}
 
 			if (x == null) x = new Length(0, LengthUnit.px);
@@ -657,9 +660,9 @@ public final class ElementWrapper
 			if (width == null) width = new Length(100, LengthUnit.px);
 			if (height == null) height = new Length(100, LengthUnit.px);
 
-			Double absW = ( parent_ != null ) ? parent_.getViewPortWidth() : null;
-			Double absH = ( parent_ != null ) ? parent_.getViewPortHeight() : null;
-			viewPort_ = new Rectangle2D.Double( x.toPixel(absW), y.toPixel(absH),width.toPixel(absW), height.toPixel(absH));
+			Double absW = (parent_ != null) ? parent_.getViewPortWidth() : null;
+			Double absH = (parent_ != null) ? parent_.getViewPortHeight() : null;
+			viewPort_ = new Rectangle2D.Double(x.toPixel(absW), y.toPixel(absH), width.toPixel(absW), height.toPixel(absH));
 		}
 		return viewPort_;
 	}
@@ -992,5 +995,10 @@ public final class ElementWrapper
 			}
 		}
 		return children;
+	}
+
+	public ElementWrapper getParent()
+	{
+		return parent_;
 	}
 }

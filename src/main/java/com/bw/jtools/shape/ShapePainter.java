@@ -6,14 +6,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Holds and paints a list of shapes.<br>
@@ -25,7 +21,7 @@ import java.util.List;
 public final class ShapePainter
 {
 	private Rectangle2D.Double area_ = null;
-	private final List<AbstractShape> shapes_ = new ArrayList<>();
+	private AbstractShape shape_;
 	private double scaleX_ = 1.0f;
 	private double scaleY_ = 1.0f;
 	private boolean adaptOffset_ = true;
@@ -110,44 +106,25 @@ public final class ShapePainter
 		return area_ == null ? 0 : scaleY_ * (adaptOffset_ ? area_.height : (area_.y + area_.height));
 	}
 
-	public void clearShapes()
-	{
-		shapes_.clear();
-		area_ = null;
-	}
-
 	public ShapePainter()
 	{
 	}
 
-	public ShapePainter(Collection<AbstractShape> shapes)
+	public ShapePainter(AbstractShape shape)
 	{
-		addShapes(shapes);
+		setShape(shape);
 	}
 
 	/**
 	 * Adds a shape.
 	 */
-	public void addShape(AbstractShape shape)
+	public final void setShape(AbstractShape shape)
 	{
-		shapes_.add(shape);
+		shape_ = shape;
 		Rectangle2D transRect = shape.getTransformedBounds();
-		if (area_ == null)
-			area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());
-		else
-			area_ = (Rectangle2D.Double) area_.createUnion(transRect);
+		area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());
 	}
 
-	/**
-	 * Adds a number of shapes.
-	 * Iterates across the collection and calls {@link #addShape(AbstractShape)}.
-	 */
-	public void addShapes(Collection<AbstractShape> shapes)
-	{
-		if (shapes != null)
-			for (AbstractShape s : shapes)
-				addShape(s);
-	}
 
 	/**
 	 * Sets X- and Y-Scale factor.
@@ -180,9 +157,9 @@ public final class ShapePainter
 	 * @param ctx       Graphic context, will NOT be restored.
 	 * @param clearArea If true the area of the shapes is cleared with the current color.
 	 */
-	public void paintShapes(Context ctx, boolean clearArea)
+	public void paintShape(Context ctx, boolean clearArea)
 	{
-		if (area_ == null)
+		if (area_ == null || shape_ == null)
 			return;
 
 		final long ms = (measureTime_) ? System.currentTimeMillis() : 0;
@@ -220,30 +197,28 @@ public final class ShapePainter
 			g2D.transform(rotation);
 		}
 
-		lct.aft_ = lct.g2D_.getTransform();
-		for (AbstractShape shape : shapes_)
-			shape.paint(lct);
+		shape_.paint(lct);
 
 		if (measureTime_)
 			lastMSNeeded_ = System.currentTimeMillis() - ms;
 	}
 
 	/**
-	 * Paints the shapes.
+	 * Paints the shape.
 	 *
 	 * @param g          Graphics, will not be changed.
 	 * @param foreground The foreground paint to use.
 	 * @param background The background paint to use.
 	 * @param clearArea  If true the area of the shapes is cleared with the current color.
 	 */
-	public void paintShapes(Graphics g, Paint foreground, Paint background, boolean clearArea)
+	public void paintShape(Graphics g, Paint foreground, Paint background, boolean clearArea)
 	{
 		Context ctx = new Context(g);
 		try
 		{
 			ctx.currentColor_ = foreground;
 			ctx.currentBackground_ = background;
-			paintShapes(ctx, clearArea);
+			paintShape(ctx, clearArea);
 		}
 		finally
 		{
@@ -258,9 +233,9 @@ public final class ShapePainter
 	 * @param dst If null a new buffer, compatible with the current screen is created.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapedToBuffer(BufferedImage dst)
+	public BufferedImage paintShapeToBuffer(BufferedImage dst)
 	{
-		return paintShapedToBuffer(dst, Color.BLACK, Color.WHITE);
+		return paintShapeToBuffer(dst, Color.BLACK, Color.WHITE);
 	}
 
 	/**
@@ -270,9 +245,9 @@ public final class ShapePainter
 	 * @param dst If null a new buffer, compatible with the current screen is created.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapedToBufferTransparent(BufferedImage dst)
+	public BufferedImage paintShapeToBufferTransparent(BufferedImage dst)
 	{
-		return paintShapedToBuffer(dst, Color.BLACK, new Color(0, 0, 0, 0));
+		return paintShapeToBuffer(dst, Color.BLACK, new Color(0, 0, 0, 0));
 	}
 
 
@@ -285,7 +260,7 @@ public final class ShapePainter
 	 * @param background The background color.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapedToBuffer(BufferedImage dst, Paint foreground, Paint background)
+	public BufferedImage paintShapeToBuffer(BufferedImage dst, Paint foreground, Paint background)
 	{
 		if (dst == null)
 		{
@@ -300,7 +275,7 @@ public final class ShapePainter
 		Graphics2D g2d = dst.createGraphics();
 		Context.initGraphics(g2d);
 
-		paintShapes(g2d, foreground, background, true);
+		paintShape(g2d, foreground, background, true);
 		return dst;
 	}
 
@@ -384,7 +359,7 @@ public final class ShapePainter
 						gl.g2D_.rotate(Math.atan2(pop2.y_ - pop1.y_, pop2.x_ - pop1.x_));
 					}
 
-					paintShapes(gl, false);
+					paintShape(gl, false);
 
 					if (gl.debug_)
 					{

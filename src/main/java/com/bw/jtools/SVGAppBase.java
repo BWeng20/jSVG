@@ -20,8 +20,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,18 +33,18 @@ public class SVGAppBase extends JFrame
 	protected JFileChooser pngFileChooser;
 
 
-	protected List<AbstractShape> loadSVG(java.nio.file.Path svgFile)
+	protected AbstractShape loadSVG(java.nio.file.Path svgFile)
 	{
 		try
 		{
 			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
 			SVGConverter nsvg = new SVGConverter(ips);
-			return nsvg.getShapes();
+			return nsvg.getShape();
 		}
 		catch (Exception err)
 		{
 			err.printStackTrace();
-			return Collections.emptyList();
+			return null;
 		}
 	}
 
@@ -95,7 +93,7 @@ public class SVGAppBase extends JFrame
 		if (pngFile != null)
 		{
 			BufferedImage image = painter
-					.paintShapedToBufferTransparent(null);
+					.paintShapeToBufferTransparent(null);
 			if (image != null)
 			{
 				try
@@ -177,7 +175,6 @@ public class SVGAppBase extends JFrame
 
 	protected void setAppIcon()
 	{
-		if ( false)
 		try
 		{
 			ShapePainter svgIconPainter = new ShapePainter(

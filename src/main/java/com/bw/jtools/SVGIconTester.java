@@ -42,7 +42,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -60,7 +59,7 @@ public class SVGIconTester extends SVGAppBase
 	protected javax.swing.ButtonGroup sizeGroup_;
 
 	protected int iconSize_ = 32;
-	private int[] iconSizes_ = { 16, 32, 64, 128 };
+	private int[] iconSizes_ = {16, 32, 64, 128};
 
 	/**
 	 * Shows a SVG file.
@@ -159,7 +158,8 @@ public class SVGIconTester extends SVGAppBase
 	}
 
 
-	public int getIconSize() {
+	public int getIconSize()
+	{
 		return iconSize_;
 	}
 
@@ -268,7 +268,7 @@ public class SVGIconTester extends SVGAppBase
 	final GridBagConstraints gc = new GridBagConstraints();
 
 
-	protected void showShapes(String name, List<AbstractShape> shapes)
+	protected void showShape(String name, AbstractShape shape)
 	{
 		if (contentViewer_ == null)
 		{
@@ -301,14 +301,15 @@ public class SVGIconTester extends SVGAppBase
 			});
 		}
 		Dimension s = scrollPane_.getSize(null);
-		Rectangle2D.Double targetArea = new Rectangle2D.Double(0,0,s.width-4, s.height-4);
+		Rectangle2D.Double targetArea = new Rectangle2D.Double(0, 0, s.width - 4, s.height - 4);
 
-		drawPane_.setShapes(shapes);
-		drawPane_.setScale(1,1);
-		Rectangle2D.Double area = drawPane_.getPainter().getArea();
+		drawPane_.setShape(shape);
+		drawPane_.setScale(1, 1);
+		Rectangle2D.Double area = drawPane_.getPainter()
+										   .getArea();
 
-		double scale = Math.min( targetArea.width/area.width, targetArea.height/area.height );
-		drawPane_.setScale( scale, scale );
+		double scale = Math.min(targetArea.width / area.width, targetArea.height / area.height);
+		drawPane_.setScale(scale, scale);
 
 		contentViewer_.setTitle(name);
 		contentViewer_.setVisible(true);
@@ -338,10 +339,10 @@ public class SVGIconTester extends SVGAppBase
 					gc.gridy++;
 				}
 
-				final List<AbstractShape> shapes = loadSVG(path);
-				System.out.println("Loaded " + shapes.size() + " shapes from " + path);
+				final AbstractShape shape = loadSVG(path);
+				System.out.println("Loaded shape from " + path);
 
-				ShapeIcon sicon = new ShapeIcon(shapes);
+				ShapeIcon sicon = new ShapeIcon(shape);
 				double w = sicon.getIconWidth();
 				double h = sicon.getIconHeight();
 				// Keep Aspect ratio
@@ -351,11 +352,11 @@ public class SVGIconTester extends SVGAppBase
 				JButton b = new JButton(sicon);
 				b.addActionListener(e ->
 				{
-					showShapes(path.toString(), shapes);
+					showShape(path.toString(), shape);
 				});
 				b.setOpaque(true);
 				b.setBackground(Color.WHITE);
-				b.setPreferredSize(new Dimension(iconSize_+2, iconSize_+2));
+				b.setPreferredSize(new Dimension(iconSize_ + 2, iconSize_ + 2));
 				// b.setMaximumSize(new Dimension(34,34));
 				pane_.add(b, gc);
 				gc.gridx++;

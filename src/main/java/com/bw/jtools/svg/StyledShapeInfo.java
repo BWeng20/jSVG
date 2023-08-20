@@ -1,7 +1,6 @@
 package com.bw.jtools.svg;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 
 /**
  * Collects all information about a shape that are needed to produce a final shape.

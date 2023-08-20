@@ -10,8 +10,6 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.util.Collection;
 
 /**
  * Icon that use a ShapePainter to render.
@@ -26,32 +24,21 @@ public class ShapeIcon implements Icon
 	 * Creates a new Shape Icon. <br>
 	 * The shapes are drawn in the same order as added.
 	 *
-	 * @param shapes Initial shapes to draw.
+	 * @param shape Initial shapes to draw.
 	 */
-	public ShapeIcon(Collection<AbstractShape> shapes)
+	public ShapeIcon(AbstractShape shape)
 	{
-		painter_ = new ShapePainter(shapes);
+		painter_ = new ShapePainter(shape);
 	}
 
 	/**
 	 * Replaces all shapes in the painter.
 	 *
-	 * @param shapes The new shapes.
+	 * @param shape The new shapes.
 	 */
-	public void setShapes(Collection<AbstractShape> shapes)
+	public void setShape(AbstractShape shape)
 	{
-		painter_.clearShapes();
-		painter_.addShapes(shapes);
-	}
-
-	/**
-	 * Adds a shape.
-	 *
-	 * @param shape The shape to add.
-	 */
-	public void addShape(AbstractShape shape)
-	{
-		painter_.addShape(shape);
+		painter_.setShape(shape);
 	}
 
 	/**
@@ -112,7 +99,7 @@ public class ShapeIcon implements Icon
 				g2d.setPaint(framePaint_);
 				g2d.draw(painter_.getArea());
 			}
-			painter_.paintShapes(g2d, c.getForeground(), c.getBackground(), c.isOpaque());
+			painter_.paintShape(g2d, c.getForeground(), c.getBackground(), c.isOpaque());
 		}
 		finally
 		{

@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AbstractMultiResolutionImage;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -31,7 +30,7 @@ public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 	{
 		if (defaultImage_ == null)
 		{
-			defaultImage_ = painter_.paintShapedToBufferTransparent(null);
+			defaultImage_ = painter_.paintShapeToBufferTransparent(null);
 		}
 		return defaultImage_;
 	}
@@ -47,9 +46,9 @@ public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 	/**
 	 * Creates a multi-res image from SVG-Shapes.
 	 */
-	public ShapeMultiResolutionImage(Collection<AbstractShape> shapes)
+	public ShapeMultiResolutionImage(AbstractShape shape)
 	{
-		this.painter_ = new ShapePainter(shapes);
+		this.painter_ = new ShapePainter(shape);
 	}
 
 	@Override
@@ -75,7 +74,7 @@ public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 				{
 					painter_.setScale(scaleX, scaleY);
 				}
-				img = painter_.paintShapedToBufferTransparent(null);
+				img = painter_.paintShapeToBufferTransparent(null);
 				images_.put(key, img);
 			}
 		}

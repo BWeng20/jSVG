@@ -68,15 +68,17 @@ public class Parser
 		return nextDouble(0);
 	}
 
-	protected boolean nextFlag() {
+	protected boolean nextFlag()
+	{
 		return nextFlag(false);
 	}
 
-	protected boolean nextFlag(boolean defaultVal) {
+	protected boolean nextFlag(boolean defaultVal)
+	{
 		consumeSeparators();
 		char c = nextChar();
 
-		if ( c == '1')
+		if (c == '1')
 			return true;
 		else if (c == 0)
 			return defaultVal;

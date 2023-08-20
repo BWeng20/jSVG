@@ -1,7 +1,6 @@
 package com.bw.jtools.svg;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 

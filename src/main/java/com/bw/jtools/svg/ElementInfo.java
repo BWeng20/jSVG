@@ -23,10 +23,13 @@ public abstract class ElementInfo
 
 	public void applyTransform(AffineTransform aft)
 	{
-		if (aft_ == null)
-			aft_ = new AffineTransform(aft);
-		else
-			aft_.preConcatenate(aft);
+		if (aft != null)
+		{
+			if (aft_ == null)
+				aft_ = new AffineTransform(aft);
+			else
+				aft_.preConcatenate(aft);
+		}
 	}
 
 	public void applyPostTransform(AffineTransform aft)

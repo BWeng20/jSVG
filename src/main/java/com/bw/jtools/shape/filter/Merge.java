@@ -3,9 +3,7 @@ package com.bw.jtools.shape.filter;
 import com.bw.jtools.shape.Context;
 import com.bw.jtools.svg.MergeFilterNode;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.List;
 

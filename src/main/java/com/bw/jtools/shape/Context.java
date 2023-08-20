@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 /**
@@ -17,7 +16,6 @@ import java.awt.image.BufferedImage;
 public class Context
 {
 	public Graphics2D g2D_;
-	public AffineTransform aft_;
 	public Paint currentColor_;
 	public Paint currentBackground_;
 	private final boolean newContext_;
@@ -43,13 +41,12 @@ public class Context
 	public Context(Context ctx, boolean createNewContext)
 	{
 		newContext_ = createNewContext;
-		if ( createNewContext )
+		if (createNewContext)
 		{
 			this.g2D_ = (Graphics2D) ctx.g2D_.create();
 		}
 		else
 			this.g2D_ = ctx.g2D_;
-		aft_ = ctx.aft_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
 		debug_ = ctx.debug_;
@@ -71,7 +68,6 @@ public class Context
 		{
 			this.g2D_ = (Graphics2D) g2D;
 		}
-		this.aft_ = this.g2D_.getTransform();
 		this.currentColor_ = this.g2D_.getPaint();
 	}
 
@@ -81,7 +77,6 @@ public class Context
 		g2D_ = source.createGraphics();
 		initGraphics(g2D_);
 
-		aft_ = ctx.aft_;
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
 		debug_ = ctx.debug_;

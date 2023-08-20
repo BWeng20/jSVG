@@ -25,6 +25,8 @@ public abstract class AbstractShape
 	 */
 	public static final Color NONE = new Color(0, 0, 0, 0);
 
+	protected static final AffineTransform ident_ = new AffineTransform();
+
 	/**
 	 * Id to identify the shape group in the some document.
 	 */

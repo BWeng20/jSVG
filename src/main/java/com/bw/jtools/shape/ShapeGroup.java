@@ -63,10 +63,12 @@ public final class ShapeGroup extends AbstractShape
 	{
 
 		Rectangle2D r = getTransformedBounds();
-		r = ctx.aft_.createTransformedShape(r)
-					.getBounds2D();
 
-		AffineTransform bAft = new AffineTransform(ctx.aft_);
+		AffineTransform aft = ctx.g2D_.getTransform();
+		r = aft.createTransformedShape(r)
+			   .getBounds2D();
+
+		AffineTransform bAft = new AffineTransform(aft);
 		AffineTransform tr = AffineTransform.getTranslateInstance(-r.getX(), -r.getY());
 		bAft.preConcatenate(tr);
 
@@ -86,7 +88,7 @@ public final class ShapeGroup extends AbstractShape
 			Context bctx = new Context(source, ctx);
 			try
 			{
-				bctx.aft_ = bufferAft_ = bAft;
+				bufferAft_ = bAft;
 				paintInternal(bctx);
 			}
 			finally
@@ -95,8 +97,6 @@ public final class ShapeGroup extends AbstractShape
 			}
 		}
 	}
-
-	static final AffineTransform ident = new AffineTransform();
 
 	@Override
 	public void paint(Context ctx)
@@ -113,9 +113,10 @@ public final class ShapeGroup extends AbstractShape
 			{
 				Point2D targetPoint = new Point2D.Double(0, 0);
 
-				ctx.g2D_.setTransform(ident);
-				getBasePoint(ctx.aft_, targetPoint);
-				Point2D.Double units = FilterBase.getUnits(ctx.aft_);
+				ctx.g2D_.setTransform(ident_);
+				AffineTransform aft = ctx.g2D_.getTransform();
+				getBasePoint(aft, targetPoint);
+				Point2D.Double units = FilterBase.getUnits(aft);
 
 				FilteredImage image = filter_.render(buffers,
 						units_.x * units.x, units_.y * units.y);
@@ -138,25 +139,25 @@ public final class ShapeGroup extends AbstractShape
 
 	protected void paintInternal(Context ctx)
 	{
-		final Graphics2D g3D = ctx.g2D_;
-
-		aftTemp_.setTransform(ctx.aft_);
-		if ( aft_ != null )
-			aftTemp_.concatenate(aft_);
+		final Graphics2D g2D = ctx.g2D_;
 
 		Shape orgClip = null;
 		if (clipping_ != null)
 		{
-			orgClip = ctx.g2D_.getClip();
-			ctx.g2D_.clip(clipping_);
+			orgClip = g2D.getClip();
+			g2D.clip(clipping_);
 		}
-		AffineTransform aold = g3D.getTransform();
-		g3D.setTransform(aftTemp_);
+		AffineTransform orgAft = g2D.getTransform();
+		aftTemp_.setTransform(orgAft);
+		if (aft_ != null)
+			aftTemp_.concatenate(aft_);
+
+		g2D.setTransform(aftTemp_);
 
 		for (AbstractShape shape : shapes_)
 			shape.paint(ctx);
 
-		g3D.setTransform(aold);
+		g2D.setTransform(orgAft);
 		if (clipping_ != null)
 			ctx.g2D_.setClip(orgClip);
 	}
@@ -189,19 +190,34 @@ public final class ShapeGroup extends AbstractShape
 	{
 		if (transformedBounds_ == null)
 		{
-			for (AbstractShape shape : shapes_)
-			{
-				Rectangle2D r = shape.getTransformedBounds();
-				if (transformedBounds_ == null)
-					transformedBounds_ = r.getBounds2D();
-				else
-					transformedBounds_.add(r);
-			}
 			if (clipping_ != null)
 			{
-				Area area = new Area(transformedBounds_);
-				area.intersect(new Area(clipping_));
-				transformedBounds_ = area.getBounds2D();
+				Area area = new Area(clipping_);
+				if (aft_ != null)
+					transformedBounds_ = aft_.createTransformedShape(clipping_)
+											 .getBounds2D();
+				else
+					transformedBounds_ = clipping_.getBounds2D();
+			}
+			else
+			{
+				// @TODO: fix it
+				for (AbstractShape shape : shapes_)
+				{
+					Rectangle2D r = shape.getTransformedBounds();
+					if (transformedBounds_ == null)
+						transformedBounds_ = r.getBounds2D();
+					else
+						transformedBounds_.add(r);
+				}
+				if (transformedBounds_ == null)
+					transformedBounds_ = new Rectangle2D.Double(0, 0, 0, 0);
+				if (clipping_ != null)
+				{
+					Area area = new Area(transformedBounds_);
+					area.intersect(new Area(clipping_));
+					transformedBounds_ = area.getBounds2D();
+				}
 			}
 		}
 		return transformedBounds_;

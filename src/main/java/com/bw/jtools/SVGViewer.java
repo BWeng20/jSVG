@@ -36,7 +36,7 @@ public class SVGViewer extends SVGAppBase
 		{
 			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
 			SVGConverter nsvg = new SVGConverter(ips);
-			pane_.setShapes(nsvg.getShapes());
+			pane_.setShape(nsvg.getShape());
 		}
 		catch (Exception err)
 		{

@@ -2,7 +2,6 @@ package com.bw.jtools.ui;
 
 import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.Context;
-import com.bw.jtools.shape.ShapeGroup;
 import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.JComponent;
@@ -15,13 +14,11 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
 
 /**
  * A pane that uses a ShapePainter.
@@ -140,10 +137,9 @@ public class ShapePane extends JComponent
 	 *
 	 * @param shapes The new shapes.
 	 */
-	public void setShapes(Collection<AbstractShape> shapes)
+	public void setShape(AbstractShape shape)
 	{
-		painter_.clearShapes();
-		painter_.addShapes(shapes);
+		painter_.setShape(shape);
 		refresh();
 	}
 
@@ -161,18 +157,6 @@ public class ShapePane extends JComponent
 	public double getYScale()
 	{
 		return painter_.getYScale();
-	}
-
-
-	/**
-	 * Adds a hsape to the painter.
-	 *
-	 * @param shape The new shape.
-	 */
-	public void addShape(ShapeGroup shape)
-	{
-		painter_.addShape(shape);
-		refresh();
 	}
 
 	/**
@@ -208,7 +192,7 @@ public class ShapePane extends JComponent
 				g2d.draw(painter_.getArea());
 				g2d.setPaint(p);
 			}
-			painter_.paintShapes(g2d, getForeground(), getBackground(), isOpaque());
+			painter_.paintShape(g2d, getForeground(), getBackground(), isOpaque());
 		}
 	}
 

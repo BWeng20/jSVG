@@ -87,6 +87,10 @@ public abstract class FilterBase
 		target_ = target;
 	}
 
+	/**
+	 * Get the target pixel-units accorigin to the transformation.
+	 * E.g. if the transformation is scale(2,4) you will get (2,4).
+	 */
 	public static Point2D.Double getUnits(final AffineTransform aft)
 	{
 		AffineTransform scaleAft = new AffineTransform(aft);
