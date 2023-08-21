@@ -378,10 +378,15 @@ public class SVGIconTester extends SVGAppBase
 		contentViewer_.setVisible(true);
 	}
 
+	protected Pattern svgFileNameRegEx = Pattern.compile(".*\\.svg", Pattern.CASE_INSENSITIVE);
+
 	protected void loadSVGs(Stream<Path> paths)
 	{
 
-		paths.sorted((p1, p2) -> p1.getFileName()
+		paths.filter(p -> Files.isDirectory(p) || svgFileNameRegEx.matcher(p.getFileName()
+																			.toString())
+																  .matches())
+			 .sorted((p1, p2) -> p1.getFileName()
 								   .toString()
 								   .compareTo(p1.getFileName()
 												.toString()))
@@ -420,15 +425,16 @@ public class SVGIconTester extends SVGAppBase
 		ShapeIcon sicon = new ShapeIcon(shape);
 		sicon.setDescription(name.getFileName()
 								 .toString());
-		double w = sicon.getIconWidth();
-		double h = sicon.getIconHeight();
+		double w = sicon.getIconWidth2D();
+		double h = sicon.getIconHeight2D();
 		// Keep Aspect ratio
 		double scale = Math.min(iconSize_ / w, iconSize_ / h);
 		sicon.setScale(scale, scale);
 
 		JButton b = new JButton(sicon);
 
-		b.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		b.setBorderPainted(showBorder_);
+		b.setBorder(showBorder_ ? UIManager.getBorder("Button.border") : null);
 		b.setMargin(new Insets(0, 0, 0, 0));
 		b.setIconTextGap(0);
 		b.setContentAreaFilled(false);

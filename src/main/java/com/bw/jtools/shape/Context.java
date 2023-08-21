@@ -163,7 +163,7 @@ public class Context
 				{
 					colors[ci] = (Color) translatePaint(colors[ci]);
 				}
-				p = rp; // new RadialGradientPaint(rp.getCenterPoint(), rp.getRadius(), rp.getFocusPoint(), rp.getFractions(), colors, rp.getCycleMethod(), rp.getColorSpace(), rp.getTransform() );
+				p = new RadialGradientPaint(rp.getCenterPoint(), rp.getRadius(), rp.getFocusPoint(), rp.getFractions(), colors, rp.getCycleMethod(), rp.getColorSpace(), rp.getTransform() );
 
 			}
 			else if (p instanceof LinearGradientPaint)

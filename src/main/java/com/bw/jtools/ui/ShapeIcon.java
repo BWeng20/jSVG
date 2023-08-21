@@ -128,16 +128,26 @@ public class ShapeIcon implements Icon, Accessible
 		}
 	}
 
+	public double getIconWidth2D()
+	{
+		return painter_.getAreaWidth();
+	}
+
+	public double getIconHeight2D()
+	{
+		return painter_.getAreaHeight();
+	}
+
 	@Override
 	public int getIconWidth()
 	{
-		return (int) Math.ceil(painter_.getAreaWidth());
+		return (int) painter_.getAreaWidth();
 	}
 
 	@Override
 	public int getIconHeight()
 	{
-		return (int) Math.ceil(painter_.getAreaHeight());
+		return (int) painter_.getAreaHeight();
 	}
 
 	public ShapePainter getPainter()

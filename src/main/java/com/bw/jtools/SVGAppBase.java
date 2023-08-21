@@ -48,13 +48,15 @@ public class SVGAppBase extends JFrame
 		}
 	}
 
+	protected FileNameExtensionFilter svgFileFilter = new FileNameExtensionFilter("SVG files", "svg");
+
 
 	protected JFileChooser getSVGFileChooser()
 	{
 		if (svgFileChooser == null)
 		{
 			svgFileChooser = new JFileChooser();
-			svgFileChooser.setFileFilter(new FileNameExtensionFilter("SVG files", "svg"));
+			svgFileChooser.setFileFilter(svgFileFilter);
 			svgFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			// Install SVG preview.
 			new SVGFilePreview(svgFileChooser);
