@@ -121,7 +121,7 @@ public final class ShapePainter
 	public final void setShape(AbstractShape shape)
 	{
 		shape_ = shape;
-		if ( shape != null )
+		if (shape != null)
 		{
 			Rectangle2D transRect = shape.getTransformedBounds();
 			area_ = new Rectangle2D.Double(transRect.getX(), transRect.getY(), transRect.getWidth(), transRect.getHeight());
@@ -216,13 +216,14 @@ public final class ShapePainter
 	 * @param background The background paint to use.
 	 * @param clearArea  If true the area of the shapes is cleared with the current color.
 	 */
-	public void paintShape(Graphics g, Paint foreground, Paint background, boolean clearArea)
+	public void paintShape(Graphics g, Paint foreground, Paint background, boolean clearArea, boolean toGray)
 	{
 		Context ctx = new Context(g);
 		try
 		{
 			ctx.currentColor_ = foreground;
 			ctx.currentBackground_ = background;
+			ctx.translateColor2Gray_ = toGray;
 			paintShape(ctx, clearArea);
 		}
 		finally
@@ -238,9 +239,9 @@ public final class ShapePainter
 	 * @param dst If null a new buffer, compatible with the current screen is created.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapeToBuffer(BufferedImage dst)
+	public BufferedImage paintShapeToBuffer(BufferedImage dst, boolean toGray)
 	{
-		return paintShapeToBuffer(dst, Color.BLACK, Color.WHITE);
+		return paintShapeToBuffer(dst, Color.BLACK, Color.WHITE, toGray);
 	}
 
 	/**
@@ -250,9 +251,9 @@ public final class ShapePainter
 	 * @param dst If null a new buffer, compatible with the current screen is created.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapeToBufferTransparent(BufferedImage dst)
+	public BufferedImage paintShapeToBufferTransparent(BufferedImage dst, boolean toGray)
 	{
-		return paintShapeToBuffer(dst, Color.BLACK, new Color(0, 0, 0, 0));
+		return paintShapeToBuffer(dst, Color.BLACK, new Color(0, 0, 0, 0), toGray);
 	}
 
 
@@ -265,7 +266,7 @@ public final class ShapePainter
 	 * @param background The background color.
 	 * @return dst or (if dst was null) a new created image.
 	 */
-	public BufferedImage paintShapeToBuffer(BufferedImage dst, Paint foreground, Paint background)
+	public BufferedImage paintShapeToBuffer(BufferedImage dst, Paint foreground, Paint background, boolean toGray)
 	{
 		if (dst == null)
 		{
@@ -280,7 +281,7 @@ public final class ShapePainter
 		Graphics2D g2d = dst.createGraphics();
 		Context.initGraphics(g2d);
 
-		paintShape(g2d, foreground, background, true);
+		paintShape(g2d, foreground, background, true, toGray);
 		return dst;
 	}
 

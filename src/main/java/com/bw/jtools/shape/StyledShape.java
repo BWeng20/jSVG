@@ -91,7 +91,7 @@ public final class StyledShape extends AbstractShape
 		}
 		g3D.setTransform(aftTemp_);
 
-		Paint p = translatePaint(ctx, fill_);
+		Paint p = ctx.translatePaint(fill_);
 		if (p != null)
 		{
 			g3D.setPaint(p);
@@ -100,7 +100,7 @@ public final class StyledShape extends AbstractShape
 
 		if (paint_ != null)
 		{
-			p = translatePaint(ctx, paint_);
+			p = ctx.translatePaint(paint_);
 			if (p != null)
 			{
 				g3D.setPaint(p);

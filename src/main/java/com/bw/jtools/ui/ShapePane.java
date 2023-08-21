@@ -192,7 +192,7 @@ public class ShapePane extends JComponent
 				g2d.draw(painter_.getArea());
 				g2d.setPaint(p);
 			}
-			painter_.paintShape(g2d, getForeground(), getBackground(), isOpaque());
+			painter_.paintShape(g2d, getForeground(), getBackground(), isOpaque(), !isEnabled());
 		}
 	}
 

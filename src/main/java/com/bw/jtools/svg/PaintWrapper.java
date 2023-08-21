@@ -1,6 +1,6 @@
 package com.bw.jtools.svg;
 
-import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.Context;
 
 /**
  * Encapsulates color and gradients definitions to adapt gradients if needed.
@@ -29,7 +29,7 @@ public final class PaintWrapper
 		if (other == null)
 		{
 			mode_ = Mode.Color;
-			value_ = AbstractShape.NONE;
+			value_ = Context.NONE;
 		}
 		else
 		{

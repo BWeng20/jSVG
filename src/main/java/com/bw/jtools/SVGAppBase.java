@@ -93,7 +93,7 @@ public class SVGAppBase extends JFrame
 		if (pngFile != null)
 		{
 			BufferedImage image = painter
-					.paintShapeToBufferTransparent(null);
+					.paintShapeToBufferTransparent(null, false);
 			if (image != null)
 			{
 				try
