@@ -341,6 +341,7 @@ public class SVGIconTester extends SVGAppBase
 			contentViewerDrawPane_.setZoomByMetaMouseWheelEnabled(true);
 			contentViewerDrawPane_.setMouseDragEnabled(true);
 			contentViewerDrawPane_.setRotateByShiftMouseWheelEnabled(true);
+			contentViewerDrawPane_.setContextMenuEnabled(true);
 			contentViewerDrawPane_.setInlineBorder(true);
 
 			contentViewerScrollPane_ = new JScrollPane(contentViewerDrawPane_);

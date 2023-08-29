@@ -692,38 +692,40 @@ public class SVGConverter
 	 */
 	public Filter filter(ElementWrapper w)
 	{
-			w = w == null ? null : elementCache_.getElementWrapperById(w.filter());
-			if (w != null)
+		w = w == null ? null : elementCache_.getElementWrapperById(w.filter());
+		if (w != null)
+		{
+			if (experimentalFeaturesEnables_)
 			{
-				if (experimentalFeaturesEnables_)
+				Filter f = new Filter(w.id(), w.getType());
+				// @TODO: handle href references for filters (same as for gradients).
+				if (f.type_ != Type.filter)
+					warn("%s is not a filter", f.id_);
+
+				f.x_ = w.toLength(Attribute.X);
+				f.y_ = w.toLength(Attribute.Y);
+				f.width_ = w.toLength(Attribute.Width);
+				f.height_ = w.toLength(Attribute.Height);
+
+				// @TODO: filterRes
+				f.filterUnits_ = Unit.fromString(w.attr(Attribute.FilterUnits));
+				f.primitiveUnits_ = Unit.fromString(w.attr(Attribute.PrimitiveUnits));
+
+				f.primitives_ = new ArrayList<>();
+
+				// Collect all Sub-Primitives of the filter.
+				elementCache_.forSubTree(w.getNode(), e ->
 				{
-					Filter f = new Filter(w.id(), w.getType());
-					// @TODO: handle href references for filters (same as for gradients).
-					if (f.type_ != Type.filter)
-						warn("%s is not a filter", f.id_);
-
-					f.x_ = w.toLength(Attribute.X);
-					f.y_ = w.toLength(Attribute.Y);
-					f.width_ = w.toLength(Attribute.Width);
-					f.height_ = w.toLength(Attribute.Height);
-
-					// @TODO: filterRes
-					f.filterUnits_ = Unit.fromString(w.attr(Attribute.FilterUnits));
-					f.primitiveUnits_ = Unit.fromString(w.attr(Attribute.PrimitiveUnits));
-
-					f.primitives_ = new ArrayList<>();
-
-					// Collect all Sub-Primitives of the filter.
-					elementCache_.forSubTree(w.getNode(), e ->
-					{
-						FilterPrimitive fp = filterPrimitive(e);
-						if (fp != null)
-							f.primitives_.add(fp);
-					});
-					return f;
-				} else {
-					warn("Filter are experimental and not enabled.");
-				}
+					FilterPrimitive fp = filterPrimitive(e);
+					if (fp != null)
+						f.primitives_.add(fp);
+				});
+				return f;
+			}
+			else
+			{
+				warn("Filter are experimental and not enabled.");
+			}
 		}
 		return null;
 	}

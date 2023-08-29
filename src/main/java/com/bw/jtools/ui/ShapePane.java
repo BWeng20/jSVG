@@ -1,12 +1,17 @@
 package com.bw.jtools.ui;
 
+import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.Context;
 import com.bw.jtools.shape.ShapePainter;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -15,6 +20,7 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelListener;
@@ -34,15 +40,55 @@ public class ShapePane extends JComponent
 
 	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
-	private ShapePainter painter_ = new ShapePainter();
+	private AbstractPainterBase painter_ = new ShapePainter();
 	private boolean mouseWheelEnabled_ = false;
 	private boolean mouseDragEnabled_ = false;
 	private boolean mouseRotateEnabled_ = false;
+
+	private double initialScaleX_ = 1;
+	private double initialScaleY_ = 1;
+
 
 	/**
 	 * If set, the shape not rendered in gray-mode if component is disabled.
 	 */
 	private boolean renderGrayIfDisabled_ = true;
+
+	private JPopupMenu contextPopupMenu_;
+
+	private static JFileChooser pngFileChooser;
+
+
+	/**
+	 * Get the file chooser used for "save as PNG" actions.
+	 */
+	public static synchronized JFileChooser getPNGFileChooser()
+	{
+		if (pngFileChooser == null)
+		{
+			pngFileChooser = new JFileChooser();
+			pngFileChooser.setFileFilter(new FileNameExtensionFilter("Portable Network Graphics (PNG) files", "png"));
+			pngFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		}
+		return pngFileChooser;
+	}
+
+	/**
+	 * Saves the shape as PNG image.
+	 */
+	public void saveAsImage()
+	{
+		if (painter_ != null)
+		{
+			JFileChooser fs = getPNGFileChooser();
+			int returnVal = fs.showSaveDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION)
+			{
+				painter_.saveAsImage(fs.getSelectedFile());
+			}
+		}
+	}
+
 
 	private MouseWheelListener scaleWheelListener = we ->
 	{
@@ -124,23 +170,23 @@ public class ShapePane extends JComponent
 	}
 
 	/**
-	 * Sets a new painter, including the shapes in it.
+	 * Sets a new painter, including the shape in it.
 	 */
-	public void setPainter(ShapePainter painter)
+	public void setPainter(AbstractPainterBase painter)
 	{
 		painter_ = painter;
 		refresh();
 	}
 
-	public ShapePainter getPainter()
+	public AbstractPainterBase getPainter()
 	{
 		return painter_;
 	}
 
 	/**
-	 * Replaces all shapes in the painter.
+	 * Replaces the shape in the painter.
 	 *
-	 * @param shapes The new shapes.
+	 * @param shape The new shape.
 	 */
 	public void setShape(AbstractShape shape)
 	{
@@ -169,6 +215,8 @@ public class ShapePane extends JComponent
 	 */
 	public void setScale(double scaleX, double scaleY)
 	{
+		initialScaleX_ = scaleX;
+		initialScaleY_ = scaleY;
 		painter_.setScale(scaleX, scaleY);
 		refresh();
 	}
@@ -287,4 +335,41 @@ public class ShapePane extends JComponent
 		}
 	}
 
+	public void setContextMenuEnabled(boolean menuEnabled)
+	{
+		setComponentPopupMenu(menuEnabled ? getPopupMenu() : null);
+	}
+
+	/**
+	 * Gets the context pop-up menu that can be used.
+	 * Remind that this pop-up menu is only set on this component if {@link #setContextMenuEnabled(boolean)} is set to true.<br>
+	 * The pop-up menu return can be used on other components if needed.
+	 */
+	public synchronized JPopupMenu getPopupMenu()
+	{
+		if (contextPopupMenu_ == null)
+		{
+
+			JMenuItem saveAsImageMenuItem = new JMenuItem("Save as PNG...", KeyEvent.VK_P);
+			saveAsImageMenuItem.setToolTipText("<html>Saves the SVG with the<br>current scale to a PNG image.</html>");
+			saveAsImageMenuItem.addActionListener(e -> saveAsImage());
+
+			JMenuItem resetMenuItem = new JMenuItem("Reset scale & rotation", KeyEvent.VK_R);
+			resetMenuItem.setToolTipText("<html>Resets rotation and scale to defaults.</html>");
+			resetMenuItem.addActionListener(e ->
+			{
+				AbstractPainterBase p = getPainter();
+				p.setRotationAngleDegree(0);
+				p.setScale(initialScaleX_, initialScaleY_);
+				refresh();
+			});
+
+
+			contextPopupMenu_ = new JPopupMenu("Shape Menu");
+			contextPopupMenu_.add(saveAsImageMenuItem);
+			contextPopupMenu_.add(resetMenuItem);
+
+		}
+		return contextPopupMenu_;
+	}
 }

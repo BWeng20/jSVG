@@ -142,7 +142,7 @@ public final class ShapeGroup extends AbstractShape
 		final Graphics2D g2D = ctx.g2D_;
 
 		Shape orgClip = null;
-		if (clipping_ != null)
+		if (clipping_ != null && enableClipping_)
 		{
 			orgClip = g2D.getClip();
 			g2D.clip(clipping_);
@@ -158,7 +158,7 @@ public final class ShapeGroup extends AbstractShape
 			shape.paint(ctx);
 
 		g2D.setTransform(orgAft);
-		if (clipping_ != null)
+		if (clipping_ != null && enableClipping_)
 			ctx.g2D_.setClip(orgClip);
 	}
 

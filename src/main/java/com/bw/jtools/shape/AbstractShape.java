@@ -10,8 +10,10 @@ public abstract class AbstractShape
 {
 	protected static final AffineTransform ident_ = new AffineTransform();
 
+	protected boolean enableClipping_ = true;
+
 	/**
-	 * Id to identify the shape group in the some document.
+	 * Id to identify the shape group in some document.
 	 */
 	public final String id_;
 
@@ -38,6 +40,16 @@ public abstract class AbstractShape
 	 * Get bounds of the transformed shape including stroke-width.
 	 */
 	public abstract Rectangle2D getTransformedBounds();
+
+	public boolean isClippingEnabled()
+	{
+		return enableClipping_;
+	}
+
+	public void setClippingEnabled(boolean enableClipping_)
+	{
+		this.enableClipping_ = enableClipping_;
+	}
 
 
 }
