@@ -216,6 +216,21 @@ public final class ShapePainter
 	 * @param background The background paint to use.
 	 * @param clearArea  If true the area of the shapes is cleared with the current color.
 	 */
+	public void paintShape(Graphics g, Paint foreground, Paint background, boolean clearArea )
+	{
+		paintShape(g,foreground,background,clearArea, false);
+	}
+
+
+	/**
+	 * Paints the shape.
+	 *
+	 * @param g          Graphics, will not be changed.
+	 * @param foreground The foreground paint to use.
+	 * @param background The background paint to use.
+	 * @param clearArea  If true the area of the shapes is cleared with the current color.
+	 * @param toGray     If true all colors are converted to gray.
+	 */
 	public void paintShape(Graphics g, Paint foreground, Paint background, boolean clearArea, boolean toGray)
 	{
 		Context ctx = new Context(g);
