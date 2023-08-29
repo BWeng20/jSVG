@@ -39,6 +39,9 @@ public class ShapePane extends JComponent
 	private boolean mouseDragEnabled_ = false;
 	private boolean mouseRotateEnabled_ = false;
 
+	/** If set, the shape not rendered in gray-mode if component is disabled. */
+	private boolean renderGrayIfDisabled_ = true;
+
 	private MouseWheelListener scaleWheelListener = we ->
 	{
 		int wheel = we.getWheelRotation();
@@ -168,6 +171,23 @@ public class ShapePane extends JComponent
 		refresh();
 	}
 
+	/**
+	 * Returns true if the shape is rendered in gray if this component is disabled.
+	 */
+	public boolean isGrayIfDisabled()
+	{
+		return renderGrayIfDisabled_;
+	}
+
+	/**
+	 * If set to true, the shape is rendered in gray if this component is disabled.
+	 */
+	public void setGrayIfDisabled(boolean grayIfDisabled)
+	{
+		this.renderGrayIfDisabled_ = grayIfDisabled;
+	}
+
+
 	@Override
 	public Dimension getPreferredSize()
 	{
@@ -192,7 +212,7 @@ public class ShapePane extends JComponent
 				g2d.draw(painter_.getArea());
 				g2d.setPaint(p);
 			}
-			painter_.paintShape(g2d, getForeground(), getBackground(), isOpaque(), !isEnabled());
+			painter_.paintShape(g2d, getForeground(), getBackground(), isOpaque(), renderGrayIfDisabled_ && !isEnabled());
 		}
 	}
 
