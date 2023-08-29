@@ -112,6 +112,9 @@ public class Context
 
 		currentColor_ = ctx.currentColor_;
 		currentBackground_ = ctx.currentBackground_;
+		translateColor2Gray_ = ctx.translateColor2Gray_;
+		translateColor2GrayMin_ = ctx.translateColor2GrayMin_;
+		translateColor2GrayMax_ = ctx.translateColor2GrayMax_;
 		debug_ = ctx.debug_;
 	}
 
@@ -163,7 +166,7 @@ public class Context
 				{
 					colors[ci] = (Color) translatePaint(colors[ci]);
 				}
-				p = new RadialGradientPaint(rp.getCenterPoint(), rp.getRadius(), rp.getFocusPoint(), rp.getFractions(), colors, rp.getCycleMethod(), rp.getColorSpace(), rp.getTransform() );
+				p = new RadialGradientPaint(rp.getCenterPoint(), rp.getRadius(), rp.getFocusPoint(), rp.getFractions(), colors, rp.getCycleMethod(), rp.getColorSpace(), rp.getTransform());
 
 			}
 			else if (p instanceof LinearGradientPaint)
