@@ -62,7 +62,7 @@ public class SVGIconTester extends SVGAppBase
 
 	protected Path svgPath_;
 	protected JPanel pane_;
-	protected JScrollPane scrollPane_;
+	protected JScrollPane contentViewerScrollPane_;
 
 	protected javax.swing.ButtonGroup sizeGroup_;
 	protected javax.swing.ButtonGroup lafGroup_;
@@ -326,7 +326,7 @@ public class SVGIconTester extends SVGAppBase
 	final static Insets is = new Insets(1, 1, 1, 1);
 
 	JDialog contentViewer_;
-	ShapePane drawPane_;
+	ShapePane contentViewerDrawPane_;
 
 	final GridBagConstraints gc = new GridBagConstraints();
 
@@ -338,16 +338,16 @@ public class SVGIconTester extends SVGAppBase
 			contentViewer_ = new JDialog(this);
 			contentViewer_.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
-			drawPane_ = new ShapePane();
-			drawPane_.setZoomByMetaMouseWheelEnabled(true);
-			drawPane_.setMouseDragEnabled(true);
-			drawPane_.setRotateByShiftMouseWheelEnabled(true);
-			drawPane_.setInlineBorder(true);
+			contentViewerDrawPane_ = new ShapePane();
+			contentViewerDrawPane_.setZoomByMetaMouseWheelEnabled(true);
+			contentViewerDrawPane_.setMouseDragEnabled(true);
+			contentViewerDrawPane_.setRotateByShiftMouseWheelEnabled(true);
+			contentViewerDrawPane_.setInlineBorder(true);
 
-			scrollPane_ = new JScrollPane(drawPane_);
+			contentViewerScrollPane_ = new JScrollPane(contentViewerDrawPane_);
 
 			contentViewer_.setLayout(new BorderLayout());
-			contentViewer_.add(BorderLayout.CENTER, scrollPane_);
+			contentViewer_.add(BorderLayout.CENTER, contentViewerScrollPane_);
 			contentViewer_.setPreferredSize(new Dimension(400, 400));
 
 			contentViewer_.pack();
@@ -363,16 +363,16 @@ public class SVGIconTester extends SVGAppBase
 				}
 			});
 		}
-		Dimension s = scrollPane_.getSize(null);
+		Dimension s = contentViewerScrollPane_.getSize(null);
 		Rectangle2D.Double targetArea = new Rectangle2D.Double(0, 0, s.width - 4, s.height - 4);
 
-		drawPane_.setShape(shape);
-		drawPane_.setScale(1, 1);
-		Rectangle2D.Double area = drawPane_.getPainter()
-										   .getArea();
+		contentViewerDrawPane_.setShape(shape);
+		contentViewerDrawPane_.setScale(1, 1);
+		Rectangle2D.Double area = contentViewerDrawPane_.getPainter()
+														.getArea();
 
 		double scale = Math.min(targetArea.width / area.width, targetArea.height / area.height);
-		drawPane_.setScale(scale, scale);
+		contentViewerDrawPane_.setScale(scale, scale);
 
 		contentViewer_.setTitle(name);
 		contentViewer_.setVisible(true);
