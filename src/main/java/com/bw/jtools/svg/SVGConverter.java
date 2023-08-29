@@ -116,12 +116,10 @@ public class SVGConverter
 		System.err.println();
 	}
 
-	private final List<ElementInfo> shapes_ = new ArrayList<>();
 	private ShapeGroup finalShape_;
 	private Map<String, Gradient> paintServer_ = new HashMap<>();
 	private Map<String, PaintWrapper> paints_ = new HashMap<>();
 	private Font defaultFont_ = Font.decode("Arial-PLAIN-12");
-	private Document doc_;
 	private final ElementCache elementCache_ = new ElementCache();
 
 	public static final boolean addPathSegments_ = false;
@@ -129,8 +127,13 @@ public class SVGConverter
 	public static boolean detailedErrorInformation_ = false;
 
 	/**
+	 * If true experimental features are enabled.
+	 */
+	public static boolean experimentalFeaturesEnables_ = false;
+
+	/**
 	 * Parse an SVG document and creates shapes.
-	 * After creation call {@link #getShapes()} to retrieve the resulting shapes.<br>
+	 * After creation call {@link #getShape()} to retrieve the resulting shapes.<br>
 	 *
 	 * @param xml The svg document.
 	 */
@@ -141,7 +144,7 @@ public class SVGConverter
 
 	/**
 	 * Parse an SVG document and creates shapes.
-	 * After creation call {@link #getShapes()} to retrieve the resulting shapes.<br>
+	 * After creation call {@link #getShape()} to retrieve the resulting shapes.<br>
 	 *
 	 * @param in Input-Stream to the svg document.
 	 */
@@ -163,14 +166,14 @@ public class SVGConverter
 			dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			doc_ = db.parse(in);
+			Document doc = db.parse(in);
 
 			// Without schema processing (see above), "id" attributes will not be detected as key
 			// and "getElementById" will not work. So we have to collect the Ids manually.
-			elementCache_.scanForIds(doc_);
+			elementCache_.scanForIds(doc);
 
 			// Parse styles and apply them
-			NodeList styles = doc_.getElementsByTagName(Type.style.name());
+			NodeList styles = doc.getElementsByTagName(Type.style.name());
 			if (styles.getLength() > 0)
 			{
 				CSSParser cssParser = new CSSParser();
@@ -180,27 +183,28 @@ public class SVGConverter
 					cssParser.parse(styles.item(i)
 										  .getTextContent(), null, cssStyleSelector);
 				}
-				cssStyleSelector.apply(doc_.getDocumentElement(), elementCache_);
+				cssStyleSelector.apply(doc.getDocumentElement(), elementCache_);
 			}
 
 			// @TODO patterns
-			// NodeList patterns = doc_.getElementsByTagName("pattern");
+			// NodeList patterns = doc.getElementsByTagName("pattern");
 
-			ElementWrapper svg = getCache().getElementWrapper(doc_.getElementsByTagName("svg")
-																  .item(0));
-			parseChildren(shapes_, svg);
+			ElementWrapper svg = getCache().getElementWrapper(doc.getElementsByTagName("svg")
+																 .item(0));
 
-			// Create a enclosing group and set the viewBox as clip-path.
+			List<ElementInfo> shapes = new ArrayList<>();
+			parseChildren(shapes, svg);
+
+			// Create an enclosing group and set the viewBox as clip-path.
 			// "Height" and "Width" is currently not supported.
 
 			String viewBox = svg.attr(Attribute.ViewBox);
 
 			finalShape_ = new ShapeGroup(svg.id(), null, (viewBox == null) ? null : new Viewbox(viewBox).getShape(), null);
 
-			for (ElementInfo s : shapes_)
+			for (ElementInfo s : shapes)
 				finalShape_.shapes_.add(finish(s));
-
-			shapes_.clear();
+			shapes.clear();
 
 		}
 		catch (Exception e)
@@ -395,6 +399,11 @@ public class SVGConverter
 				shapes.add(createShapeInfo(w));
 			}
 			break;
+			case metadata:
+			{
+				// @TODO: Add this somehow to the data?
+			}
+			break;
 
 			// Others are parsed on demand
 		}
@@ -477,7 +486,6 @@ public class SVGConverter
 			}
 			// Build primary filter tree
 			List<FilterPrimitive> chain = new ArrayList<>();
-			List<String> sourcesNeeded = new ArrayList<>();
 			// Start with root of primary filter tree
 			List<FilterPrimitive> needed = new ArrayList<>();
 			needed.add(primitives.get(primitives.size() - 1));
@@ -684,33 +692,38 @@ public class SVGConverter
 	 */
 	public Filter filter(ElementWrapper w)
 	{
-		w = w == null ? null : elementCache_.getElementWrapperById(w.filter());
-		if (w != null)
-		{
-			Filter f = new Filter(w.id(), w.getType());
-			// @TODO: handle href references for filters (same as for gradients).
-			if (f.type_ != Type.filter)
-				warn("%s is not a filter", f.id_);
-
-			f.x_ = w.toLength(Attribute.X);
-			f.y_ = w.toLength(Attribute.Y);
-			f.width_ = w.toLength(Attribute.Width);
-			f.height_ = w.toLength(Attribute.Height);
-
-			// @TODO: filterRes
-			f.filterUnits_ = Unit.fromString(w.attr(Attribute.FilterUnits));
-			f.primitiveUnits_ = Unit.fromString(w.attr(Attribute.PrimitiveUnits));
-
-			f.primitives_ = new ArrayList<>();
-
-			// Collect all Sub-Primitives of the filter.
-			elementCache_.forSubTree(w.getNode(), e ->
+			w = w == null ? null : elementCache_.getElementWrapperById(w.filter());
+			if (w != null)
 			{
-				FilterPrimitive fp = filterPrimitive(e);
-				if (fp != null)
-					f.primitives_.add(fp);
-			});
-			return f;
+				if (experimentalFeaturesEnables_)
+				{
+					Filter f = new Filter(w.id(), w.getType());
+					// @TODO: handle href references for filters (same as for gradients).
+					if (f.type_ != Type.filter)
+						warn("%s is not a filter", f.id_);
+
+					f.x_ = w.toLength(Attribute.X);
+					f.y_ = w.toLength(Attribute.Y);
+					f.width_ = w.toLength(Attribute.Width);
+					f.height_ = w.toLength(Attribute.Height);
+
+					// @TODO: filterRes
+					f.filterUnits_ = Unit.fromString(w.attr(Attribute.FilterUnits));
+					f.primitiveUnits_ = Unit.fromString(w.attr(Attribute.PrimitiveUnits));
+
+					f.primitives_ = new ArrayList<>();
+
+					// Collect all Sub-Primitives of the filter.
+					elementCache_.forSubTree(w.getNode(), e ->
+					{
+						FilterPrimitive fp = filterPrimitive(e);
+						if (fp != null)
+							f.primitives_.add(fp);
+					});
+					return f;
+				} else {
+					warn("Filter are experimental and not enabled.");
+				}
 		}
 		return null;
 	}
@@ -762,7 +775,7 @@ public class SVGConverter
 			return null;
 	}
 
-	private static Map<String, MultipleGradientPaint.ColorSpaceType> colorInterpolationTypes_ =
+	private static final Map<String, MultipleGradientPaint.ColorSpaceType> colorInterpolationTypes_ =
 			Map.of( // @TODO: Check for correct value for "auto"
 					"auto", MultipleGradientPaint.ColorSpaceType.LINEAR_RGB,
 					"sRGB ", MultipleGradientPaint.ColorSpaceType.SRGB,
@@ -891,8 +904,7 @@ public class SVGConverter
 		Filter f = filter(w);
 		if (f != null)
 		{
-			if (g == null)
-				g = new GroupInfo(sinfo.id_);
+			g = new GroupInfo(sinfo.id_);
 			g.filter_ = f;
 			g.shapes_.add(sinfo);
 		}
