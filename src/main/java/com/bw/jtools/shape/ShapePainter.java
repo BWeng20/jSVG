@@ -24,13 +24,9 @@ public final class ShapePainter
 	private AbstractShape shape_;
 	private double scaleX_ = 1.0f;
 	private double scaleY_ = 1.0f;
-	private boolean adaptOffset_ = true;
 
 	private boolean measureTime_ = false;
 	private long lastMSNeeded_ = 0;
-
-	private double offsetX_ = 0;
-	private double offsetY_ = 0;
 
 	private double rotationAngleDegree_ = 0;
 
@@ -66,28 +62,8 @@ public final class ShapePainter
 
 		if (area == null)
 			return new Rectangle2D.Double(0, 0, 0, 0);
-		else if (adaptOffset_)
-			return new Rectangle2D.Double(0, 0, scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
 		else
-			return new Rectangle2D.Double(scaleX_ * area.getX(), scaleY_ * area.getY(), scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
-	}
-
-	/**
-	 * Auto adapt origin. Manual offset is ignored.
-	 * Upper-left corner is moved to 0,0.
-	 */
-	public void setAdaptOrigin(boolean on)
-	{
-		adaptOffset_ = on;
-	}
-
-	/**
-	 * Sets manual offset.
-	 */
-	public void setOrigin(double x, double y)
-	{
-		offsetX_ = x;
-		offsetY_ = y;
+			return new Rectangle2D.Double(0, 0, scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
 	}
 
 	/**
@@ -95,7 +71,7 @@ public final class ShapePainter
 	 */
 	public double getAreaWidth()
 	{
-		return area_ == null ? 0 : scaleX_ * (adaptOffset_ ? area_.width : (area_.x + area_.width));
+		return area_ == null ? 0 : scaleX_ * area_.width;
 	}
 
 	/**
@@ -103,7 +79,7 @@ public final class ShapePainter
 	 */
 	public double getAreaHeight()
 	{
-		return area_ == null ? 0 : scaleY_ * (adaptOffset_ ? area_.height : (area_.y + area_.height));
+		return area_ == null ? 0 : scaleY_ * area_.height;
 	}
 
 	public ShapePainter()
@@ -175,21 +151,16 @@ public final class ShapePainter
 		final AffineTransform rotation = getRotation();
 		g2D.scale(scaleX_, scaleY_);
 
-		if (adaptOffset_)
+		if (rotation != null)
 		{
-			if (rotation != null)
-			{
-				Rectangle2D a = rotation.createTransformedShape(area_)
-										.getBounds2D();
-				g2D.translate(-a.getX(), -a.getY());
-			}
-			else
-			{
-				g2D.translate(-area_.x, -area_.y);
-			}
+			Rectangle2D a = rotation.createTransformedShape(area_)
+									.getBounds2D();
+			g2D.translate(-a.getX(), -a.getY());
 		}
 		else
-			g2D.translate(offsetX_, offsetY_);
+		{
+			g2D.translate(-area_.x, -area_.y);
+		}
 
 		if (clearArea)
 		{
