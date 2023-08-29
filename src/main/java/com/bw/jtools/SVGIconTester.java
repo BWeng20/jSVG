@@ -103,7 +103,6 @@ public class SVGIconTester extends SVGAppBase
 		gc.anchor = GridBagConstraints.NORTHWEST;
 		gc.fill = GridBagConstraints.NONE;
 
-
 		pane_ = new JPanel(new GridBagLayout());
 		if (path != null)
 		{
