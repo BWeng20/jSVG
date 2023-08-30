@@ -22,40 +22,90 @@ import java.util.List;
 public final class PaintAlongShapePainter extends AbstractPainterBase
 {
 
-	private AbstractPainterBase painter_;
+	private AbstractPainterBase tilePainter_;
 	private boolean paintOverlapped_ = true;
+	private boolean paintOutlines_ = false;
 
-	private List<Shape> shapes_ = new ArrayList<>();
-	private List<ShapeHelper> outlines_ = new ArrayList<>();
+	private double distance_ = 0;
+	private double start_ = 0;
+	private double end_ = 0;
+
+	private List<Shape> paths_ = new ArrayList<>();
+	private List<ShapeHelper> shapeHelpers_ = new ArrayList<>();
 
 	public PaintAlongShapePainter()
 	{
-
 	}
 
-	public void setPainter(AbstractPainterBase painter)
+	public void setPaintOutlines(boolean outlines)
 	{
-		if (painter != painter_)
+		paintOutlines_ = outlines;
+	}
+
+	public boolean getPaintOutlines()
+	{
+		return paintOutlines_;
+	}
+
+	public void setDistanceOffset(double distance)
+	{
+		distance_ = distance;
+	}
+
+	public double getDistanceOffset()
+	{
+		return distance_;
+	}
+
+	public void setStartOffset(double start)
+	{
+		start_ = start;
+	}
+
+	public double getStartOffset()
+	{
+		return start_;
+	}
+
+	public void setEndOffset(double end)
+	{
+		end_ = end;
+	}
+
+	public double getEndOffset()
+	{
+		return end_;
+	}
+
+	public void setTilePainter(AbstractPainterBase painter)
+	{
+		if (painter != tilePainter_)
 		{
 			area_ = null;
-			painter_ = painter;
+			tilePainter_ = painter;
 		}
 	}
 
-	public void addOutline(Shape shape)
+	public AbstractPainterBase getTilePainter()
 	{
-		shapes_.add(shape);
-		outlines_.add(new ShapeHelper(shape));
+		return tilePainter_;
+	}
+
+
+	public void addPath(Shape shape)
+	{
+		paths_.add(shape);
+		shapeHelpers_.add(new ShapeHelper(shape));
 		area_ = null;
 	}
 
-	public void removeOutline(Shape shape)
+	public void removePath(Shape shape)
 	{
-		int idx = shapes_.indexOf(shape);
+		int idx = paths_.indexOf(shape);
 		if (idx >= 0)
 		{
-			outlines_.remove(idx);
-			shapes_.remove(idx);
+			shapeHelpers_.remove(idx);
+			paths_.remove(idx);
 			area_ = null;
 		}
 	}
@@ -66,9 +116,9 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	@Override
 	public final void setShape(AbstractShape shape)
 	{
-		if (painter_ != null)
+		if (tilePainter_ != null)
 		{
-			painter_.setShape(shape);
+			tilePainter_.setShape(shape);
 			area_ = null;
 		}
 	}
@@ -85,10 +135,10 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 
 	protected void calculateArea()
 	{
-		if (painter_ != null && !shapes_.isEmpty())
+		if (tilePainter_ != null && !paths_.isEmpty())
 		{
-			Rectangle2D shapePainterArea = painter_.getArea();
-			for (Shape s : shapes_)
+			Rectangle2D shapePainterArea = tilePainter_.getArea();
+			for (Shape s : paths_)
 			{
 				Rectangle2D sBounds2D = s.getBounds2D();
 				if (area_ == null)
@@ -117,7 +167,7 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	@Override
 	protected void paint(Context ctx, boolean clearArea)
 	{
-		if (shapes_.isEmpty())
+		if (paths_.isEmpty())
 			return;
 
 		Context lct = new Context(ctx, false);
@@ -151,12 +201,15 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 			}
 			Stroke outlineStroke = new BasicStroke(1f);
 
-			for (int i = 0; i < shapes_.size(); ++i)
+			for (int i = 0; i < paths_.size(); ++i)
 			{
-				g2D.setStroke(outlineStroke);
-				g2D.setPaint(Color.RED);
-				g2D.draw(shapes_.get(i));
-				paintAlong(lct, outlines_.get(i), 0, 0, 0);
+				if (paintOutlines_)
+				{
+					g2D.setStroke(outlineStroke);
+					g2D.setPaint(Color.RED);
+					g2D.draw(paths_.get(i));
+				}
+				paintAlong(lct, shapeHelpers_.get(i), start_, end_, distance_);
 			}
 		}
 		finally
@@ -175,18 +228,20 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	 * @param distance The additional distance alone the outline.
 	 */
 	public void paintAlong(Context ctx, ShapeHelper outline,
-						   double start, double end, final double distance)
+						   double start, double end, double distance)
 	{
 		if (outline != null)
 		{
+			final double len = outline.getOutlineLength();
+
 			if (end <= 0)
 			{
-				end = outline.getOutlineLength() + end;
+				end =  len+ end;
 			}
-			else if (end > outline.getOutlineLength())
+			else if (end > len)
 			{
 				// Can't paint longer than the end.
-				end = outline.getOutlineLength();
+				end = len;
 			}
 			double d = end;
 			double pos = start;
@@ -208,35 +263,50 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 					gl.g2D_.draw(outline.getShape());
 				}
 
-				double shapeH = painter_.getAreaHeight();
-				double shapeW = painter_.getAreaWidth();
+				double shapeH = tilePainter_.getAreaHeight();
+				double shapeW = tilePainter_.getAreaWidth();
+
+				// Ensure that we will not loop endless.
+				if ((distance + shapeW) <= 0)
+				{
+					// shapeW < 0 is very unlikely. But to be sure...
+					distance = (shapeW <= 0) ? (1 - shapeW) : 0;
+				}
+
 				ShapeHelper.PointOnPath pop1 = outline.pointAtLength(pos);
 				pos += distance + shapeW;
 				if (paintOverlapped_)
 					d += distance + shapeW;
 				while (pos < d)
 				{
-					ShapeHelper.PointOnPath pop2 = outline.pointAtLength(pos);
-					gl.g2D_.setTransform(t);
-					gl.g2D_.translate(pop1.x_, pop1.y_);
-					if (pop2 == null)
-					{
-						gl.g2D_.rotate(pop1.angle_);
-					}
+					ShapeHelper.PointOnPath pop2;
+					if (pos > len)
+						pop2 = outline.pointAtLength(pos % len);
 					else
+						pop2 = outline.pointAtLength(pos);
+					if (pop1 != null)
 					{
-						gl.g2D_.rotate(Math.atan2(pop2.y_ - pop1.y_, pop2.x_ - pop1.x_));
-					}
-					gl.g2D_.translate(0, -shapeH / 2);
+						gl.g2D_.setTransform(t);
+						gl.g2D_.translate(pop1.x_, pop1.y_);
+						if (pop2 == null)
+						{
+							gl.g2D_.rotate(pop1.angle_);
+						}
+						else
+						{
+							gl.g2D_.rotate(Math.atan2(pop2.y_ - pop1.y_, pop2.x_ - pop1.x_));
+						}
+						gl.g2D_.translate(0, -shapeH / 2);
 
-					painter_.paint(gl, false);
+						tilePainter_.paint(gl, false);
 
-					if (gl.debug_)
-					{
-						gl.g2D_.setPaint(gl.debugPaint_);
-						gl.g2D_.setStroke(gl.debugStroke_);
-						gl.g2D_.draw(getArea());
-						gl.g2D_.drawLine(0, -2, 0, 2);
+						if (gl.debug_)
+						{
+							gl.g2D_.setPaint(gl.debugPaint_);
+							gl.g2D_.setStroke(gl.debugStroke_);
+							gl.g2D_.draw(getArea());
+							gl.g2D_.drawLine(0, -2, 0, 2);
+						}
 					}
 					pop1 = pop2;
 					pos += distance + shapeW;
@@ -248,5 +318,6 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 			}
 		}
 	}
+
 
 }

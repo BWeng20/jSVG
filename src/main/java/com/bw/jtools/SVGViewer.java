@@ -2,7 +2,6 @@ package com.bw.jtools;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
-import com.bw.jtools.shape.PaintAlongShapePainter;
 import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.svg.SVGException;
 import com.bw.jtools.ui.ShapePane;
@@ -41,10 +40,7 @@ public class SVGViewer extends SVGAppBase
 	protected File svgFile_;
 
 	protected JDialog paintAlongViewer_;
-	protected ShapePane paintAlongViewerDrawPane_;
-	protected JScrollPane paintAlongScrollPane_;
-	protected PaintAlongShapePainter paintAlongViewerPainter_;
-
+	protected PaintAlongViewerPanel paintAlongPane_;
 
 	protected void loadSVG2Pane(java.nio.file.Path svgFile)
 	{
@@ -205,24 +201,14 @@ public class SVGViewer extends SVGAppBase
 		{
 			paintAlongViewer_ = new JDialog(this);
 			paintAlongViewer_.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-
-			paintAlongViewerDrawPane_ = new ShapePane();
-			paintAlongViewerPainter_ = new PaintAlongShapePainter();
-			paintAlongViewerDrawPane_.setPainter(paintAlongViewerPainter_);
-			paintAlongViewerDrawPane_.setZoomByMetaMouseWheelEnabled(true);
-			paintAlongViewerDrawPane_.setMouseDragEnabled(true);
-			paintAlongViewerDrawPane_.setRotateByShiftMouseWheelEnabled(true);
-			paintAlongViewerDrawPane_.setContextMenuEnabled(true);
-			paintAlongViewerDrawPane_.setInlineBorder(true);
-			paintAlongViewerDrawPane_.setScale(1, 1);
-			paintAlongViewerDrawPane_.setOpaque(false);
-
-			paintAlongScrollPane_ = new JScrollPane(paintAlongViewerDrawPane_);
-
 			paintAlongViewer_.setLayout(new BorderLayout());
-			paintAlongViewer_.add(BorderLayout.CENTER, paintAlongScrollPane_);
-			paintAlongViewer_.setPreferredSize(new Dimension(400, 400));
 
+			paintAlongPane_ = new PaintAlongViewerPanel();
+			paintAlongPane_.setTilePainter(pane_.getPainter());
+			paintAlongPane_.addOutline(new Rectangle2D.Double(0, 0, 200, 200));
+			paintAlongPane_.addOutline(new Ellipse2D.Double(50, 50, 100, 100));
+
+			paintAlongViewer_.setContentPane(paintAlongPane_);
 			paintAlongViewer_.pack();
 			paintAlongViewer_.setLocationRelativeTo(this);
 
@@ -236,11 +222,9 @@ public class SVGViewer extends SVGAppBase
 				}
 			});
 			paintAlongViewer_.setTitle("Paint Along");
-			paintAlongViewerPainter_.setPainter(pane_.getPainter());
-			paintAlongViewerPainter_.addOutline(new Rectangle2D.Double(0, 0, 200, 200));
-			paintAlongViewerPainter_.addOutline(new Ellipse2D.Double(50, 50, 100, 100));
+
 		}
-		paintAlongViewerDrawPane_.setShape(shape_);
+		paintAlongPane_.setTileShape(shape_);
 		paintAlongViewer_.setVisible(true);
 	}
 
@@ -280,10 +264,8 @@ public class SVGViewer extends SVGAppBase
 				lastScaleX_ = scaleX;
 				lastRotation_ = rotation;
 				lastClippingEnabled_ = clippingEnabled;
-				paintAlongViewerPainter_.forceUpdateArea();
-				paintAlongViewerDrawPane_.repaint();
+				paintAlongPane_.updateTilePainter();
 			}
-
 		}
 	}
 
