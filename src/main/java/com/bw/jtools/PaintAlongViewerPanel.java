@@ -16,7 +16,7 @@ import java.awt.GridBagLayout;
 import java.awt.Shape;
 
 /**
- * Demonstration- and Test-Utility draw SVG files along shapes.
+ * Demonstration- and Test-Utility, using "paintAlong" feature to draw SVG files along shapes.
  */
 public class PaintAlongViewerPanel extends JPanel
 {
@@ -37,7 +37,7 @@ public class PaintAlongViewerPanel extends JPanel
 	{
 		paintAlongViewerDrawPane_ = new ShapePane();
 		paintAlongViewerPainter_ = new PaintAlongShapePainter();
-		paintAlongViewerPainter_.setPaintOutlines(true);
+		paintAlongViewerPainter_.setPaintPaths(true);
 		paintAlongViewerDrawPane_.setPainter(paintAlongViewerPainter_);
 		paintAlongViewerDrawPane_.setZoomByMetaMouseWheelEnabled(true);
 		paintAlongViewerDrawPane_.setMouseDragEnabled(true);
@@ -46,6 +46,7 @@ public class PaintAlongViewerPanel extends JPanel
 		paintAlongViewerDrawPane_.setInlineBorder(true);
 		paintAlongViewerDrawPane_.setScale(1, 1);
 		paintAlongViewerDrawPane_.setOpaque(false);
+		paintAlongViewerDrawPane_.setGrayIfDisabled(true);
 
 		paintAlongScrollPane_ = new JScrollPane(paintAlongViewerDrawPane_);
 
@@ -99,11 +100,11 @@ public class PaintAlongViewerPanel extends JPanel
 			repaint();
 		});
 
-		JCheckBox showOutlines = new JCheckBox("Outlines");
-		showOutlines.setSelected(true);
-		showOutlines.addChangeListener(e ->
+		JCheckBox showPaths = new JCheckBox("Paths");
+		showPaths.setSelected(true);
+		showPaths.addChangeListener(e ->
 		{
-			paintAlongViewerPainter_.setPaintOutlines(showOutlines.isSelected());
+			paintAlongViewerPainter_.setPaintPaths(showPaths.isSelected());
 			repaint();
 		});
 
@@ -113,6 +114,13 @@ public class PaintAlongViewerPanel extends JPanel
 		{
 			paintAlongViewerPainter_.setPaintOverlapped(overlapped.isSelected());
 			repaint();
+		});
+
+		JCheckBox enabled = new JCheckBox("Enabled");
+		enabled.setSelected(true);
+		enabled.addChangeListener(e ->
+		{
+			paintAlongViewerDrawPane_.setEnabled(enabled.isSelected());
 		});
 
 
@@ -127,8 +135,9 @@ public class PaintAlongViewerPanel extends JPanel
 		gc.gridx = 0;
 		gc.weighty = 0;
 		gc.gridwidth = 3;
-		optionPane.add(showOutlines, gc);
+		optionPane.add(showPaths, gc);
 		optionPane.add(overlapped, gc);
+		optionPane.add(enabled, gc);
 		// optionPane.add(autoScale,gc);
 
 		add(BorderLayout.EAST, optionPane);
@@ -147,9 +156,9 @@ public class PaintAlongViewerPanel extends JPanel
 		updateSliders();
 	}
 
-	public void addOutline(Shape outline)
+	public void addPath(Shape path)
 	{
-		paintAlongViewerPainter_.addPath(outline);
+		paintAlongViewerPainter_.addPath(path);
 	}
 
 	public void updateTilePainter()
