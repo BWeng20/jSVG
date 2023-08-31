@@ -3,8 +3,12 @@ Lightweight SVG rendering to use in Java UI Widgets.
 
 Some re-usable widgets and examples are provided for Swing. 
 However, since the base technology behind it is Java2D, it should work with
-any framework that uses Java Graphics2D like AWT, SWT. 
+any framework that uses Java Graphics2D. 
 
+In SWT it can be used... but only via some Java2D integration. 
+SWT does not directly support Java2D and the SWT graphics system itself lacks some necessary basic functions.
+
+### Motivation
 Most Icons used are based on bitmap images that doesn't scale well 
 on HiDPI displays. Most web applications use SVG for icons as they 
 can be scaled without loss in quality.
@@ -56,7 +60,7 @@ to see how they look at buttons.
 
 As said this is a lightweight SVG renderer, designed for High-Res icons.
 
-Most complex stuff may not work. "css" is supported to some degree. "markers" or the complex filters are not supported.
+Most complex stuff may not work. "css" is supported to some degree. "markers" or filters are not supported.
 
 I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!).
 If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
@@ -64,7 +68,7 @@ If something doesn't work, please use the functions of your SVG-editor to simpli
 #### Filters
 
 Usages of pixel-based filters are in any case a bad idea, because they are silly expensive to compute.
-The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow) but please don't use
+The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow and only if [SVGConverter.experimentalFeaturesEnabled_](src/main/java/com/bw/jtools/svg/SVGConverter.java)  is set to true). But please don't use
 them. Safe your computing power and the planet.
 
 See the SVG example for filter-effects at W3.org https://www.w3.org/TR/SVG11/filters.html#AnExample  
@@ -99,6 +103,31 @@ If vector graphics are used for the drawing, this is no issue.
 
 Nevertheless, ShapePainter has a method to export a BufferedImage that
 can be used this way (and can also be written to file via ImageIO). 
-The Screenshots here are produced this way.  
+The Screenshots here are produced this way.
+
+### Examples
+
+The project contains some tools to give examples and demonstrate some features. 
+Specially of the painter-interface.
+
+* [SVGViewer](src/main/java/com/bw/jtools/SVGViewer.java)<br> 
+  Shows one SVG file. The drawing can be rotated and scaled. 
+  The app shows time statistics in the status bar.
+
+* [SVGIconTester](src/main/java/com/bw/jtools/SVGIconTester.java)<br>
+  Shows multiple SVG files (you can select a directory) as Icons on Buttons.
+  A press on the button will show the original svg in a separate window - using the same painter instance.<br>
+  ![SVGIconTester_Demo.png](doc%2FSVGIconTester_Demo.png)<br>
+  You can test different sizes<br>
+  ![SVGIconTester_Demo64.png](doc%2FSVGIconTester_Demo64.png)<br>
+  and the "disabled" mode (all colors will get gray).<br>
+  ![SVGIconTester_DemoDisabled.png](doc%2FSVGIconTester_DemoDisabled.png)
+
+My trigger to start with this library was to use SVG as parts of icons, graphs or widgets.
+
+The demonstration app SVGViewer has an option to paint the SVG "along a path".
+In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
+the position and angle to draw some other shape "along" it. With the buttons you can control
+start-, end- and distance-offsets from the Painter-Interface. 
 
 
