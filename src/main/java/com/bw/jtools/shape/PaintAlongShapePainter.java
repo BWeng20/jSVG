@@ -5,6 +5,7 @@ import com.bw.jtools.svg.ShapeHelper;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -13,70 +14,145 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Holds and paints a list of shapes.<br>
- * <ul>
- * <li>See ShapeIcon for a usage as Icon.</li>
- * <li>See ShapePane for a usage as JComponent.</li>
- * </ul>
+ * Paints a Painter along a list of paths.
  */
 public final class PaintAlongShapePainter extends AbstractPainterBase
 {
 
 	private AbstractPainterBase tilePainter_;
 	private boolean paintOverlapped_ = true;
-	private boolean paintOutlines_ = false;
+	private boolean paintPaths_ = false;
 
 	private double distance_ = 0;
 	private double start_ = 0;
 	private double end_ = 0;
 
+	private static Stroke defaultPathStroke_ = new BasicStroke(1f);
+
+
+	private Stroke pathStroke_ = defaultPathStroke_;
+	private Paint pathPaint_ = Color.RED;
+
+
 	private List<Shape> paths_ = new ArrayList<>();
 	private List<ShapeHelper> shapeHelpers_ = new ArrayList<>();
 
+	/**
+	 * Creates an empty painter.<br>
+	 * To show anything a tile-painter needs to be set and at least one path needs to be added.
+	 *
+	 * @see #setTilePainter(AbstractPainterBase)
+	 * @see #addPath(Shape)
+	 */
 	public PaintAlongShapePainter()
 	{
 	}
 
-	public void setPaintOutlines(boolean outlines)
+	/**
+	 * Sets "paint path".
+	 * If true, the paths are painted below the tiles.
+	 * If false paths are not painted. Can be used for debugging.
+	 * Default is false.
+	 *
+	 * @see #setPathStroke(Stroke, Paint)
+	 * @see #getPaintPaths()
+	 */
+	public void setPaintPaths(boolean paintPaths)
 	{
-		paintOutlines_ = outlines;
+		paintPaths_ = paintPaths;
 	}
 
-	public boolean getPaintOutlines()
+	/**
+	 * Get the setting for "paint path".
+	 *
+	 * @see #setPaintPaths(boolean)
+	 */
+	public boolean getPaintPaths()
 	{
-		return paintOutlines_;
+		return paintPaths_;
 	}
 
+	/**
+	 * Sets the stroke and paint of the paths, if {@link #setPaintPaths(boolean)} is true.
+	 *
+	 * @param pathStroke If null default BasicStroke(1) is restored.
+	 * @param pathPaint  If null, default Color.RED is restored.
+	 */
+	public void setPathStroke(Stroke pathStroke, Paint pathPaint)
+	{
+		pathStroke_ = pathStroke == null ? defaultPathStroke_ : pathStroke;
+		pathPaint_ = pathPaint == null ? Color.RED : pathPaint;
+	}
+
+	/**
+	 * Sets the additional offset between tiles along the paths.
+	 * Can be negative to skip empty space inside the viewBox.<br>
+	 * Values less than negative width of the tile are ignored.
+	 * Default is 0.
+	 */
 	public void setDistanceOffset(double distance)
 	{
 		distance_ = distance;
 	}
 
+	/**
+	 * Gets the value of the distance-offset.
+	 *
+	 * @return The distance offset
+	 * @see #setDistanceOffset(double)
+	 */
 	public double getDistanceOffset()
 	{
 		return distance_;
 	}
 
+	/**
+	 * Sets the start offset from where tiles are drawn.
+	 * Default is 0.
+	 * If negative "0" will be used.
+	 */
 	public void setStartOffset(double start)
 	{
-		start_ = start;
+		start_ = start < 0d ? 0d : start;
 	}
 
+	/**
+	 * Gets values of "start offset".
+	 *
+	 * @return The start offset
+	 * @see #setStartOffset(double)
+	 */
 	public double getStartOffset()
 	{
 		return start_;
 	}
 
+	/**
+	 * Sets the end offset until tiles are drawn.
+	 * Default is 0.<br>
+	 * If negative or 0, the value is an offset to the length of the path.
+	 * If positive the value counts from start of path.
+	 */
 	public void setEndOffset(double end)
 	{
 		end_ = end;
 	}
 
+	/**
+	 * Gets values of "end offset".
+	 *
+	 * @return The end offset
+	 * @see #setEndOffset(double)
+	 */
 	public double getEndOffset()
 	{
 		return end_;
 	}
 
+	/**
+	 * Sets the tile painter.<br>
+	 * Needs to be called at least once to set the tile to paint along.
+	 */
 	public void setTilePainter(AbstractPainterBase painter)
 	{
 		if (painter != tilePainter_)
@@ -86,12 +162,19 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 		}
 	}
 
+	/**
+	 * Gets the current tile painter.
+	 */
 	public AbstractPainterBase getTilePainter()
 	{
 		return tilePainter_;
 	}
 
 
+	/**
+	 * Adds a path.
+	 * Needs to be called at least once.
+	 */
 	public void addPath(Shape shape)
 	{
 		paths_.add(shape);
@@ -99,9 +182,17 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 		area_ = null;
 	}
 
-	public void removePath(Shape shape)
+	/**
+	 * Removes a path.<br>
+	 * The instance is searched via "equals" calls.
+	 * This method should be used with the same instance as used for {@link #addPath(Shape)}.
+	 * Some Shape implementations have meaningfully "equals" implementation, other not (as Path).
+	 *
+	 * @param path The path to remove.
+	 */
+	public void removePath(Shape path)
 	{
-		int idx = paths_.indexOf(shape);
+		int idx = paths_.indexOf(path);
 		if (idx >= 0)
 		{
 			shapeHelpers_.remove(idx);
@@ -111,7 +202,9 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	}
 
 	/**
-	 * Sets the shape to paint along.
+	 * Sets the shape to paint along.<br>
+	 * Identical to {@link #getTilePainter()}.setShape()  with a following {@link #forceUpdateArea()}.
+	 * Has no effect if tile-painter is not set.
 	 */
 	@Override
 	public final void setShape(AbstractShape shape)
@@ -119,20 +212,34 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 		if (tilePainter_ != null)
 		{
 			tilePainter_.setShape(shape);
-			area_ = null;
+			forceUpdateArea();
 		}
 	}
 
-	public boolean isPaintOverlapped()
-	{
-		return paintOverlapped_;
-	}
-
+	/**
+	 * Sets setting "paint overlapped".
+	 * <ul>
+	 * <li>If true tiles are painted until the whole length of the path is covered, even if the last tile goes beyond the length.</li>
+	 * <li>If false the tiles are painted as long as the length ios not reached, so a gap at the end may occur.</li>
+	 * </ul>
+	 * Default is true.
+	 */
 	public void setPaintOverlapped(boolean paintOverlapped)
 	{
 		paintOverlapped_ = paintOverlapped;
 	}
 
+	/**
+	 * Gets setting "paint overlapped".
+	 *
+	 * @see #setPaintOverlapped(boolean)
+	 */
+	public boolean isPaintOverlapped()
+	{
+		return paintOverlapped_;
+	}
+
+	@Override
 	protected void calculateArea()
 	{
 		if (tilePainter_ != null && !paths_.isEmpty())
@@ -199,14 +306,13 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 			{
 				g2D.transform(rotation);
 			}
-			Stroke outlineStroke = new BasicStroke(1f);
 
 			for (int i = 0; i < paths_.size(); ++i)
 			{
-				if (paintOutlines_)
+				if (paintPaths_)
 				{
-					g2D.setStroke(outlineStroke);
-					g2D.setPaint(Color.RED);
+					g2D.setStroke(pathStroke_);
+					g2D.setPaint(pathPaint_);
 					g2D.draw(paths_.get(i));
 				}
 				paintAlong(lct, shapeHelpers_.get(i), start_, end_, distance_);
@@ -222,21 +328,21 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	 * Paint the shapes along the outline of on other shape.
 	 *
 	 * @param ctx      The graphics context.
-	 * @param outline  The shape-helper for the outline.
+	 * @param path     The shape-helper for the outline.
 	 * @param start    Start offset.
 	 * @param end      End offset. Negative values describe offsets from end.
 	 * @param distance The additional distance alone the outline.
 	 */
-	public void paintAlong(Context ctx, ShapeHelper outline,
+	public void paintAlong(Context ctx, ShapeHelper path,
 						   double start, double end, double distance)
 	{
-		if (outline != null)
+		if (path != null)
 		{
-			final double len = outline.getOutlineLength();
+			final double len = path.getOutlineLength();
 
 			if (end <= 0)
 			{
-				end =  len+ end;
+				end = len + end;
 			}
 			else if (end > len)
 			{
@@ -260,7 +366,7 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 					// Debugging: Shows the path
 					gl.g2D_.setPaint(ctx.debugPaint_);
 					gl.g2D_.setStroke(ctx.debugStroke_);
-					gl.g2D_.draw(outline.getShape());
+					gl.g2D_.draw(path.getShape());
 				}
 
 				double shapeH = tilePainter_.getAreaHeight();
@@ -273,17 +379,23 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 					distance = (shapeW <= 0) ? (1 - shapeW) : 0;
 				}
 
-				ShapeHelper.PointOnPath pop1 = outline.pointAtLength(pos);
+				ShapeHelper.PointOnPath pop1 = path.pointAtLength(pos);
 				pos += distance + shapeW;
 				if (paintOverlapped_)
 					d += distance + shapeW;
 				while (pos < d)
 				{
 					ShapeHelper.PointOnPath pop2;
-					if (pos > len)
-						pop2 = outline.pointAtLength(pos % len);
+					if (pos > len && path.isClosed())
+					{
+						// We reached the end of the outline.
+						// For closed shapes it makes sense to follow the line from start. For open shapes this will fail.
+						// As there is no method "isClosed" in any of the shape implementations,
+						// we have to guess via "ShapeHelper.isClosed" above
+						pop2 = path.pointAtLength(pos % len);
+					}
 					else
-						pop2 = outline.pointAtLength(pos);
+						pop2 = path.pointAtLength(pos);
 					if (pop1 != null)
 					{
 						gl.g2D_.setTransform(t);
@@ -318,6 +430,5 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 			}
 		}
 	}
-
 
 }
