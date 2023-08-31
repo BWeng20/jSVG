@@ -123,8 +123,6 @@ Specially of the painter-interface.
   and the "disabled" mode (all colors will get gray).<br>
   ![SVGIconTester_DemoDisabled.png](doc%2FSVGIconTester_DemoDisabled.png)
 
-My trigger to start with this library was to use SVG as parts of icons, graphs or widgets.
-
 The demonstration app SVGViewer has an option to paint the SVG "along a path".
 In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
 the position and angle to draw some other shape "along" it. With the buttons you can control
