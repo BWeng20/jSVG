@@ -1,7 +1,5 @@
 package com.bw.jtools.shape;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -10,25 +8,12 @@ import java.awt.geom.Rectangle2D;
  */
 public abstract class AbstractShape
 {
-	/**
-	 * Placeholder for "currentColor". The color from caller-perspective.
-	 */
-	public static final Color CURRENT_COLOR = new Color(0, 0, 0);
-
-	/**
-	 * Placeholder for "background", an internal extension to access the background of the painting component.
-	 */
-	public static final Color CURRENT_BACKGROUND = new Color(0xce, 0xce, 0xce);
-
-	/**
-	 * Placeholder for "none" color.
-	 */
-	public static final Color NONE = new Color(0, 0, 0, 0);
-
 	protected static final AffineTransform ident_ = new AffineTransform();
 
+	protected boolean enableClipping_ = true;
+
 	/**
-	 * Id to identify the shape group in the some document.
+	 * Id to identify the shape group in some document.
 	 */
 	public final String id_;
 
@@ -56,21 +41,15 @@ public abstract class AbstractShape
 	 */
 	public abstract Rectangle2D getTransformedBounds();
 
-	/**
-	 * Translates special paints to values.
-	 */
-	protected Paint translatePaint(Context ctx, Paint p)
+	public boolean isClippingEnabled()
 	{
-		if (p == null)
-			return Color.BLACK;
-		else if (p == NONE)
-			return null;
-		else if (p == CURRENT_COLOR)
-			return ctx.currentColor_;
-		else if (p == CURRENT_BACKGROUND)
-			return ctx.currentBackground_;
-		else
-			return p;
+		return enableClipping_;
 	}
+
+	public void setClippingEnabled(boolean enableClipping_)
+	{
+		this.enableClipping_ = enableClipping_;
+	}
+
 
 }

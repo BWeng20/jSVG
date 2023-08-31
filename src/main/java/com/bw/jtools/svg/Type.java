@@ -31,7 +31,9 @@ public enum Type
 	feTile, feTurbulence,
 
 	// Sub elements of feDiffuseLighting and feSpecularLighting
-	feDistantLight, fePointLight, feSpotLight;
+	feDistantLight, fePointLight, feSpotLight,
+
+	metadata;
 
 
 	private final static HashMap<String, Type> types_ = new HashMap<>();

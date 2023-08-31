@@ -8,9 +8,11 @@ import com.bw.jtools.ui.ShapePane;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -18,14 +20,19 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -42,21 +49,29 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Demonstration- and Test-Utility to test SVGs on buttons.
+ * Demonstration- and Test-Utility to test SVGs on buttons.<br>
+ * You can start the class from command-line with directories or files as arguments or open them via file-menu.
  */
 public class SVGIconTester extends SVGAppBase
 {
 
 	protected Path svgPath_;
 	protected JPanel pane_;
-	protected JScrollPane scrollPane_;
+	protected JScrollPane contentViewerScrollPane_;
 
 	protected javax.swing.ButtonGroup sizeGroup_;
+	protected javax.swing.ButtonGroup lafGroup_;
+
+	protected boolean showName_ = false;
+	protected boolean enabled_ = true;
+
+	protected boolean showBorder_ = true;
 
 	protected int iconSize_ = 32;
 	private int[] iconSizes_ = {16, 32, 64, 128};
@@ -68,7 +83,7 @@ public class SVGIconTester extends SVGAppBase
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
 	{
-		SVGIconTester frame = new SVGIconTester(args.length > 0 ? args[0] : null);
+		SVGIconTester frame = new SVGIconTester(args);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -77,17 +92,23 @@ public class SVGIconTester extends SVGAppBase
 	 * Create a new SVGViewer.
 	 * Caller has to call "pack" and "setVisible".
 	 *
-	 * @param path The file to show or null.
+	 * @param paths The file to show or null.
 	 */
-	public SVGIconTester(String path)
+	public SVGIconTester(String... paths)
 	{
+		gc.gridx = 0;
+		gc.gridy = 0;
+		gc.gridheight = 1;
+		gc.gridwidth = 1;
+		gc.insets = new Insets(0, 0, 5, 5);
 		gc.anchor = GridBagConstraints.NORTHWEST;
 		gc.fill = GridBagConstraints.NONE;
 
 		pane_ = new JPanel(new GridBagLayout());
-		if (path != null)
+		if (paths != null && paths.length > 0)
 		{
-			loadSVGsFromPathOrUri(path);
+			Arrays.asList(paths)
+				  .forEach(this::loadSVGsFromPathOrUri);
 		}
 		else
 		{
@@ -140,7 +161,7 @@ public class SVGIconTester extends SVGAppBase
 
 		for (int vsize : iconSizes_)
 		{
-			JRadioButtonMenuItem menuSizeX = new JRadioButtonMenuItem(String.format("%1$dx%1$d", vsize));
+			JRadioButtonMenuItem menuSizeX = new JRadioButtonMenuItem(String.format("%d", vsize));
 			sizeGroup_.add(menuSizeX);
 			viewMenu.add(menuSizeX);
 			if (vsize == iconSize_)
@@ -149,6 +170,47 @@ public class SVGIconTester extends SVGAppBase
 			menuSizeX.addActionListener(e -> setIconSize(vsizeFinal));
 		}
 
+		viewMenu.addSeparator();
+
+		final JCheckBoxMenuItem showName = new JCheckBoxMenuItem("Show Name");
+		showName.setSelected(showName_);
+		showName.addActionListener(e -> setShowName(showName.isSelected()));
+		viewMenu.add(showName);
+
+		final JCheckBoxMenuItem enabled = new JCheckBoxMenuItem("Enable Buttons");
+		enabled.setSelected(enabled_);
+		enabled.addActionListener(e -> setShowEnabled(enabled.isSelected()));
+		viewMenu.add(enabled);
+
+		final JCheckBoxMenuItem showBorder = new JCheckBoxMenuItem("Border");
+		showBorder.setSelected(showBorder_);
+		showBorder.addActionListener(e -> setShowBorder(showBorder.isSelected()));
+		viewMenu.add(showBorder);
+
+		JMenu lafMenu = new JMenu("Look & Feel");
+		lafGroup_ = new ButtonGroup();
+
+		LookAndFeel selectedLaf = UIManager.getLookAndFeel();
+
+		System.out.println("Current Metal Theme: " + MetalLookAndFeel.getCurrentTheme()
+																	 .getName());
+
+		for (UIManager.LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels())
+		{
+			JRadioButtonMenuItem l = new JRadioButtonMenuItem(laf.getName());
+			lafGroup_.add(l);
+			lafMenu.add(l);
+			final UIManager.LookAndFeelInfo lafFinal = laf;
+			if (selectedLaf.getName()
+						   .equals(laf.getName()))
+			{
+				l.setSelected(true);
+			}
+			l.addActionListener(e -> setLaf(lafFinal));
+		}
+
+		viewMenu.add(lafMenu);
+
 		menuBar.add(viewMenu);
 		setJMenuBar(menuBar);
 
@@ -156,7 +218,6 @@ public class SVGIconTester extends SVGAppBase
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(400, 300));
 	}
-
 
 	public int getIconSize()
 	{
@@ -236,7 +297,10 @@ public class SVGIconTester extends SVGAppBase
 		{
 			if (Files.isDirectory(path))
 			{
-				loadSVGs(Files.list(path));
+				try (Stream<Path> f = Files.list(path))
+				{
+					loadSVGs(f);
+				}
 			}
 			else
 			{
@@ -263,7 +327,7 @@ public class SVGIconTester extends SVGAppBase
 	final static Insets is = new Insets(1, 1, 1, 1);
 
 	JDialog contentViewer_;
-	ShapePane drawPane_;
+	ShapePane contentViewerDrawPane_;
 
 	final GridBagConstraints gc = new GridBagConstraints();
 
@@ -275,16 +339,17 @@ public class SVGIconTester extends SVGAppBase
 			contentViewer_ = new JDialog(this);
 			contentViewer_.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
-			drawPane_ = new ShapePane();
-			drawPane_.setZoomByMetaMouseWheelEnabled(true);
-			drawPane_.setMouseDragEnabled(true);
-			drawPane_.setRotateByShiftMouseWheelEnabled(true);
-			drawPane_.setInlineBorder(true);
+			contentViewerDrawPane_ = new ShapePane();
+			contentViewerDrawPane_.setZoomByMetaMouseWheelEnabled(true);
+			contentViewerDrawPane_.setMouseDragEnabled(true);
+			contentViewerDrawPane_.setRotateByShiftMouseWheelEnabled(true);
+			contentViewerDrawPane_.setContextMenuEnabled(true);
+			contentViewerDrawPane_.setInlineBorder(true);
 
-			scrollPane_ = new JScrollPane(drawPane_);
+			contentViewerScrollPane_ = new JScrollPane(contentViewerDrawPane_);
 
 			contentViewer_.setLayout(new BorderLayout());
-			contentViewer_.add(BorderLayout.CENTER, scrollPane_);
+			contentViewer_.add(BorderLayout.CENTER, contentViewerScrollPane_);
 			contentViewer_.setPreferredSize(new Dimension(400, 400));
 
 			contentViewer_.pack();
@@ -300,91 +365,180 @@ public class SVGIconTester extends SVGAppBase
 				}
 			});
 		}
-		Dimension s = scrollPane_.getSize(null);
+		Dimension s = contentViewerScrollPane_.getSize(null);
 		Rectangle2D.Double targetArea = new Rectangle2D.Double(0, 0, s.width - 4, s.height - 4);
 
-		drawPane_.setShape(shape);
-		drawPane_.setScale(1, 1);
-		Rectangle2D.Double area = drawPane_.getPainter()
-										   .getArea();
+		contentViewerDrawPane_.setShape(shape);
+		contentViewerDrawPane_.setScale(1, 1);
+		Rectangle2D.Double area = contentViewerDrawPane_.getPainter()
+														.getArea();
 
 		double scale = Math.min(targetArea.width / area.width, targetArea.height / area.height);
-		drawPane_.setScale(scale, scale);
+		contentViewerDrawPane_.setScale(scale, scale);
 
 		contentViewer_.setTitle(name);
 		contentViewer_.setVisible(true);
 	}
 
+	protected Pattern svgFileNameRegEx = Pattern.compile(".*\\.svg", Pattern.CASE_INSENSITIVE);
+
 	protected void loadSVGs(Stream<Path> paths)
 	{
 
-		paths.forEach(path ->
-		{
-			if (Files.isDirectory(path))
-			{
-				try
-				{
-					loadSVGs(Files.list(path));
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-			}
-			else
-			{
-				if (gc.gridx >= 20)
-				{
-					gc.gridx = 0;
-					gc.gridy++;
-				}
+		paths.filter(p -> Files.isDirectory(p) || svgFileNameRegEx.matcher(p.getFileName()
+																			.toString())
+																  .matches())
+			 .sorted((p1, p2) -> p1.getFileName()
+								   .toString()
+								   .compareTo(p1.getFileName()
+												.toString()))
+			 .forEach(path ->
+			 {
+				 if (Files.isDirectory(path))
+				 {
+					 try (Stream<Path> f = Files.list(path))
+					 {
+						 loadSVGs(f);
+					 }
+					 catch (IOException e)
+					 {
+						 e.printStackTrace();
+					 }
+				 }
+				 else
+				 {
+					 System.out.println("Loading shape from " + path);
+					 final AbstractShape shape = loadSVG(path);
+					 addSVG(path, shape);
+				 }
+			 });
 
-				final AbstractShape shape = loadSVG(path);
-				System.out.println("Loaded shape from " + path);
-
-				ShapeIcon sicon = new ShapeIcon(shape);
-				double w = sicon.getIconWidth();
-				double h = sicon.getIconHeight();
-				// Keep Aspect ratio
-				double scale = Math.min(iconSize_ / w, iconSize_ / h);
-				sicon.setScale(scale, scale);
-
-				JButton b = new JButton(sicon);
-				b.addActionListener(e ->
-				{
-					showShape(path.toString(), shape);
-				});
-				b.setOpaque(true);
-				b.setBackground(Color.WHITE);
-				b.setPreferredSize(new Dimension(iconSize_ + 2, iconSize_ + 2));
-				// b.setMaximumSize(new Dimension(34,34));
-				pane_.add(b, gc);
-				gc.gridx++;
-			}
-		});
-
-		revalidate();
+		pane_.revalidate();
 		repaint();
 	}
+
+	protected synchronized void addSVG(Path name, AbstractShape shape)
+	{
+		if (gc.gridx >= 20)
+		{
+			gc.gridx = 0;
+			gc.gridy++;
+		}
+		ShapeIcon sicon = new ShapeIcon(shape);
+		sicon.setDescription(name.getFileName()
+								 .toString());
+		double w = sicon.getIconWidth2D();
+		double h = sicon.getIconHeight2D();
+		// Keep Aspect ratio
+		double scale = Math.min(iconSize_ / w, iconSize_ / h);
+		sicon.setScale(scale, scale);
+
+		JButton b = new JButton(sicon);
+
+		b.setBorderPainted(showBorder_);
+		b.setBorder(showBorder_ ? UIManager.getBorder("Button.border") : null);
+		b.setMargin(new Insets(0, 0, 0, 0));
+		b.setIconTextGap(0);
+		b.setContentAreaFilled(false);
+
+		b.setToolTipText(name.toString());
+		b.setVerticalTextPosition(JButton.BOTTOM);
+		b.setHorizontalTextPosition(JButton.CENTER);
+
+		b.setText(showName_ ? sicon.getDescription() : null);
+		// sicon.setGray
+		b.setEnabled(enabled_);
+		b.addActionListener(e ->
+		{
+			showShape(name.toString(), shape);
+		});
+		b.setOpaque(false);
+		b.setBackground(Color.WHITE);
+		pane_.add(b, gc);
+		gc.gridx++;
+	}
+
+	void setShowName(boolean showName)
+	{
+		if (showName_ != showName)
+		{
+			showName_ = showName;
+			updateAllButtons(b -> b.setText(showName_ ? ((ShapeIcon) b.getIcon()).getDescription() : null));
+		}
+	}
+
+	void setShowEnabled(boolean showEnabled)
+	{
+		if (enabled_ != showEnabled)
+		{
+			enabled_ = showEnabled;
+			updateAllButtons(b -> b.setEnabled(enabled_));
+		}
+	}
+
+	void setShowBorder(boolean showBorder)
+	{
+		if (showBorder_ != showBorder)
+		{
+			showBorder_ = showBorder;
+			final Border border = showBorder_ ? UIManager.getBorder("Button.border") : null;
+
+			updateAllButtons(b ->
+			{
+				b.setBorderPainted(showBorder_);
+				b.setBorder(border);
+			});
+		}
+	}
+
 
 	void setIconSize(int s)
 	{
 		iconSize_ = s;
+		updateAllButtons(b ->
+		{
+			ShapeIcon si = (ShapeIcon) b.getIcon();
+			si.setScale(1, 1);
+			double iw = si.getIconWidth();
+			double ih = si.getIconHeight();
+			// Keep Aspect ratio
+			double scale = Math.min(s / iw, s / ih);
+			si.setScale(scale, scale);
+		});
+	}
+
+	void setLaf(UIManager.LookAndFeelInfo laf)
+	{
+		try
+		{
+			UIManager.setLookAndFeel(laf.getClassName());
+			Window[] ws = JFrame.getWindows();
+			for (Window w : ws)
+			{
+				SwingUtilities.updateComponentTreeUI(w);
+			}
+			showBorder_ = !showBorder_;
+			setShowBorder(!showBorder_);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	void updateAllButtons(Consumer<JButton> consumer)
+	{
 		for (int ci = 0; ci < pane_.getComponentCount(); ++ci)
 		{
 			JComponent c = (JComponent) pane_.getComponent(ci);
 			if (c instanceof JButton)
 			{
-				ShapeIcon si = (ShapeIcon) ((JButton) c).getIcon();
-				si.setScale(1, 1);
-				double iw = si.getIconWidth();
-				double ih = si.getIconHeight();
-				// Keep Aspect ratio
-				double scale = Math.min(s / iw, s / ih);
-				si.setScale(scale, scale);
-				c.setPreferredSize(new Dimension(s + 2, s + 2));
+				consumer.accept(((JButton) c));
 			}
 		}
 		pane_.revalidate();
+		repaint();
+
 	}
+
 }

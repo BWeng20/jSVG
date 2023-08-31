@@ -19,6 +19,8 @@ public final class ShapeHelper
 	private List<Segment> segments_;
 	private Rectangle2D bounds_;
 
+	private boolean isClosed_;
+
 	public ShapeHelper(Shape shape)
 	{
 		shape_ = shape;
@@ -195,6 +197,17 @@ public final class ShapeHelper
 				}
 				pi.next();
 			}
+			if (segments_.size()>1) {
+				// This logic is a bit fuzzy, as a path CAN contain multiple "MOVE" at start.
+				// we assume that the first segment is a real one...
+				Segment f = segments_.get(0);
+				Segment l = segments_.get(segments_.size()-1);
+				isClosed_ = Point2D.distance(f.x_, f.y_, l.x_, l.y_) < 0.1;
+			} else {
+				// A Shape with only one segment can not be closed (or how?).
+				isClosed_ = false;
+			}
+
 		}
 	}
 
@@ -219,6 +232,16 @@ public final class ShapeHelper
 		}
 		return path;
 	}
+
+	/**
+	 * Guess (from start and end point) if this shape is "closed".
+	 * A path with different sub-paths is assumed "closed" if the coordinates of the first and last segments a near enough.
+	 */
+	public boolean isClosed()
+	{
+		return isClosed_;
+	}
+
 
 	public static class PointOnPath
 	{

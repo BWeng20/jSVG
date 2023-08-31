@@ -4,6 +4,8 @@ import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.Context;
 import com.bw.jtools.shape.ShapePainter;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Icon;
 import java.awt.Color;
 import java.awt.Component;
@@ -14,11 +16,13 @@ import java.awt.Paint;
 /**
  * Icon that use a ShapePainter to render.
  */
-public class ShapeIcon implements Icon
+public class ShapeIcon implements Icon, Accessible
 {
 	private boolean drawFrame_ = false;
 	private Paint framePaint_ = Color.BLACK;
 	private final ShapePainter painter_;
+
+	protected String description_;
 
 	/**
 	 * Creates a new Shape Icon. <br>
@@ -30,6 +34,23 @@ public class ShapeIcon implements Icon
 	{
 		painter_ = new ShapePainter(shape);
 	}
+
+	/**
+	 * Sets the description of the icon.
+	 */
+	public void setDescription(String description)
+	{
+		description_ = description;
+	}
+
+	/**
+	 * Gets the description of the icon.
+	 */
+	public String getDescription()
+	{
+		return description_;
+	}
+
 
 	/**
 	 * Replaces all shapes in the painter.
@@ -99,7 +120,7 @@ public class ShapeIcon implements Icon
 				g2d.setPaint(framePaint_);
 				g2d.draw(painter_.getArea());
 			}
-			painter_.paintShape(g2d, c.getForeground(), c.getBackground(), c.isOpaque());
+			painter_.paint(g2d, c.getForeground(), c.getBackground(), c.isOpaque(), !c.isEnabled());
 		}
 		finally
 		{
@@ -107,16 +128,26 @@ public class ShapeIcon implements Icon
 		}
 	}
 
+	public double getIconWidth2D()
+	{
+		return painter_.getAreaWidth();
+	}
+
+	public double getIconHeight2D()
+	{
+		return painter_.getAreaHeight();
+	}
+
 	@Override
 	public int getIconWidth()
 	{
-		return (int) Math.ceil(painter_.getAreaWidth());
+		return (int) painter_.getAreaWidth();
 	}
 
 	@Override
 	public int getIconHeight()
 	{
-		return (int) Math.ceil(painter_.getAreaHeight());
+		return (int) painter_.getAreaHeight();
 	}
 
 	public ShapePainter getPainter()
@@ -124,4 +155,9 @@ public class ShapeIcon implements Icon
 		return painter_;
 	}
 
+	@Override
+	public AccessibleContext getAccessibleContext()
+	{
+		return null;
+	}
 }

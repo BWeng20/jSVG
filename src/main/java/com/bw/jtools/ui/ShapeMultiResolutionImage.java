@@ -30,7 +30,7 @@ public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 	{
 		if (defaultImage_ == null)
 		{
-			defaultImage_ = painter_.paintShapeToBufferTransparent(null);
+			defaultImage_ = painter_.paintShapeToBufferTransparent(null, false);
 		}
 		return defaultImage_;
 	}
@@ -74,7 +74,7 @@ public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 				{
 					painter_.setScale(scaleX, scaleY);
 				}
-				img = painter_.paintShapeToBufferTransparent(null);
+				img = painter_.paintShapeToBufferTransparent(null, false);
 				images_.put(key, img);
 			}
 		}

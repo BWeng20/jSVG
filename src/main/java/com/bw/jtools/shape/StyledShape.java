@@ -84,14 +84,14 @@ public final class StyledShape extends AbstractShape
 		AffineTransform aold = g3D.getTransform();
 		aftTemp_.setTransform(aold);
 		aftTemp_.concatenate(aft_);
-		if (clipping_ != null)
+		if (clipping_ != null && enableClipping_)
 		{
 			orgClip = g3D.getClip();
 			g3D.clip(clipping_);
 		}
 		g3D.setTransform(aftTemp_);
 
-		Paint p = translatePaint(ctx, fill_);
+		Paint p = ctx.translatePaint(fill_);
 		if (p != null)
 		{
 			g3D.setPaint(p);
@@ -100,7 +100,7 @@ public final class StyledShape extends AbstractShape
 
 		if (paint_ != null)
 		{
-			p = translatePaint(ctx, paint_);
+			p = ctx.translatePaint(paint_);
 			if (p != null)
 			{
 				g3D.setPaint(p);
@@ -109,7 +109,7 @@ public final class StyledShape extends AbstractShape
 			}
 		}
 		g3D.setTransform(aold);
-		if (clipping_ != null)
+		if (clipping_ != null && enableClipping_)
 		{
 			g3D.setClip(orgClip);
 		}

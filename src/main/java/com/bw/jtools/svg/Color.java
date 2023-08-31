@@ -1,6 +1,6 @@
 package com.bw.jtools.svg;
 
-import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.Context;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -159,14 +159,14 @@ public class Color
 		name2color_.put("lightyellow", new PaintWrapper(new java.awt.Color(0xFF, 0xFF, 0xE0)));
 		name2color_.put("ivory", new PaintWrapper(new java.awt.Color(0xFF, 0xFF, 0xF0)));
 		name2color_.put("white", new PaintWrapper(java.awt.Color.WHITE));
-		name2color_.put("none", new PaintWrapper(AbstractShape.NONE));
+		name2color_.put("none", new PaintWrapper(Context.NONE));
 		name2color_.put("transparent", new PaintWrapper(new java.awt.Color(0, 0, 0, 0)));
-		name2color_.put("currentColor", new PaintWrapper(AbstractShape.CURRENT_COLOR));
+		name2color_.put("currentColor", new PaintWrapper(Context.CURRENT_COLOR));
 		name2color_.put("context-fill", PaintWrapper.contextFill());
 		name2color_.put("context-stroke", PaintWrapper.contextStroke());
 		// Internal extension to access the background color of the painting component.
-		name2color_.put("background", new PaintWrapper(AbstractShape.CURRENT_BACKGROUND));
-		name2color_.put("currentBackground", new PaintWrapper(AbstractShape.CURRENT_BACKGROUND));
+		name2color_.put("background", new PaintWrapper(Context.CURRENT_BACKGROUND));
+		name2color_.put("currentBackground", new PaintWrapper(Context.CURRENT_BACKGROUND));
 	}
 
 	private PaintWrapper paintWrapper_;
@@ -270,8 +270,8 @@ public class Color
 
 	public static java.awt.Color adaptOpacity(java.awt.Color color, double opacity)
 	{
-		if (color == AbstractShape.NONE)
-			return AbstractShape.NONE;
+		if (color == Context.NONE)
+			return Context.NONE;
 		else
 			return new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * opacity + 0.5));
 	}
