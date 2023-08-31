@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -206,8 +207,15 @@ public class SVGViewer extends SVGAppBase
 
 			paintAlongPane_ = new PaintAlongViewerPanel();
 			paintAlongPane_.setTilePainter(pane_.getPainter());
-			paintAlongPane_.addOutline(new Rectangle2D.Double(0, 0, 200, 200));
-			paintAlongPane_.addOutline(new Ellipse2D.Double(50, 50, 100, 100));
+			paintAlongPane_.addPath(new Rectangle2D.Double(0, 0, 200, 200));
+			paintAlongPane_.addPath(new Ellipse2D.Double(50, 50, 100, 100));
+
+			Path2D weave = new Path2D.Double();
+			weave.moveTo(0,280);
+			weave.curveTo(66,210,133,350, 200, 280);
+
+
+			paintAlongPane_.addPath(weave);
 
 			paintAlongViewer_.setContentPane(paintAlongPane_);
 			paintAlongViewer_.pack();
