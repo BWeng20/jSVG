@@ -55,7 +55,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Demonstration- and Test-Utility to test SVGs on buttons.
+ * Demonstration- and Test-Utility to test SVGs on buttons.<br>
+ * You can start the class from command-line with directories or files as arguments or open them via file-menu.
  */
 public class SVGIconTester extends SVGAppBase
 {
@@ -82,7 +83,7 @@ public class SVGIconTester extends SVGAppBase
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
 	{
-		SVGIconTester frame = new SVGIconTester(args.length > 0 ? args[0] : null);
+		SVGIconTester frame = new SVGIconTester(args);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -91,9 +92,9 @@ public class SVGIconTester extends SVGAppBase
 	 * Create a new SVGViewer.
 	 * Caller has to call "pack" and "setVisible".
 	 *
-	 * @param path The file to show or null.
+	 * @param paths The file to show or null.
 	 */
-	public SVGIconTester(String path)
+	public SVGIconTester(String... paths)
 	{
 		gc.gridx = 0;
 		gc.gridy = 0;
@@ -104,9 +105,10 @@ public class SVGIconTester extends SVGAppBase
 		gc.fill = GridBagConstraints.NONE;
 
 		pane_ = new JPanel(new GridBagLayout());
-		if (path != null)
+		if (paths != null && paths.length > 0)
 		{
-			loadSVGsFromPathOrUri(path);
+			Arrays.asList(paths)
+				  .forEach(this::loadSVGsFromPathOrUri);
 		}
 		else
 		{
@@ -405,8 +407,8 @@ public class SVGIconTester extends SVGAppBase
 				 }
 				 else
 				 {
+					 System.out.println("Loading shape from " + path);
 					 final AbstractShape shape = loadSVG(path);
-					 System.out.println("Loaded shape from " + path);
 					 addSVG(path, shape);
 				 }
 			 });
