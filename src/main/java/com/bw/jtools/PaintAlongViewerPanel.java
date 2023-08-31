@@ -25,13 +25,14 @@ public class PaintAlongViewerPanel extends JPanel
 	protected JScrollPane paintAlongScrollPane_;
 	protected PaintAlongShapePainter paintAlongViewerPainter_;
 
+	/**
+	 * Property "distance".
+	 * Give additional distance between tiles. Can be negative to handle gaps inside the viewBox.
+	 */
 	protected JSlider distance_;
 
 	/**
-	 * Create a new SVGViewer.
-	 * Caller has to call "pack" and "setVisible".
-	 *
-	 * @param file The file to show or null.
+	 * Create a new PaintAlongViewerPanel.
 	 */
 	public PaintAlongViewerPanel()
 	{

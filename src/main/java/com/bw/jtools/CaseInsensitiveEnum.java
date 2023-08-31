@@ -10,7 +10,8 @@ import java.util.Map;
  */
 public final class CaseInsensitiveEnum<T extends Enum>
 {
-	public Map<String, T> lowerCaseMap_;
+
+	private Map<String, T> lowerCaseMap_;
 
 	public CaseInsensitiveEnum(T[] values)
 	{

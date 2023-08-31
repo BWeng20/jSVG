@@ -55,7 +55,7 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	 * Default is false.
 	 *
 	 * @see #setPathStroke(Stroke, Paint)
-	 * @see #getPaintPaths()
+	 * @see #isPaintPaths()
 	 */
 	public void setPaintPaths(boolean paintPaths)
 	{

@@ -1,5 +1,8 @@
 package com.bw.jtools.svg.css;
 
+/**
+ * Possible combination values for CSS selectors.
+ */
 public enum CombinatorType
 {
 	/**
