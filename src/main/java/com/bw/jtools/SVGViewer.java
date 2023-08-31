@@ -31,7 +31,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 /**
- * Demonstration- and Test-Utility to load and draw SVG files via jSVG.
+ * Demonstration- and Test-Utility to load and draw SVG files via jSVG.<br>
+ * You can start the class from command-line with the file as argument or select a file via menu.
  */
 public class SVGViewer extends SVGAppBase
 {
