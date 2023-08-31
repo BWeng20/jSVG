@@ -110,6 +110,7 @@ public class PaintAlongViewerPanel extends JPanel
 
 		JCheckBox overlapped = new JCheckBox("Overlapped");
 		overlapped.setSelected(true);
+		overlapped.setEnabled(false);
 		overlapped.addChangeListener(e ->
 		{
 			paintAlongViewerPainter_.setPaintOverlapped(overlapped.isSelected());
@@ -125,6 +126,12 @@ public class PaintAlongViewerPanel extends JPanel
 
 
 		JCheckBox autoScale = new JCheckBox("Autoscale");
+		autoScale.setSelected(true);
+		autoScale.addChangeListener(e ->
+		{
+			paintAlongViewerPainter_.setAutoScaleToLength(autoScale.isSelected());
+			overlapped.setEnabled(!autoScale.isSelected());
+		});
 
 		optionPane.add(distance_, gc);
 		gc.gridx = 1;
@@ -138,6 +145,7 @@ public class PaintAlongViewerPanel extends JPanel
 		optionPane.add(showPaths, gc);
 		optionPane.add(overlapped, gc);
 		optionPane.add(enabled, gc);
+		optionPane.add(autoScale, gc);
 		// optionPane.add(autoScale,gc);
 
 		add(BorderLayout.EAST, optionPane);

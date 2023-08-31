@@ -21,8 +21,8 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 
 	private AbstractPainterBase tilePainter_;
 	private boolean paintOverlapped_ = true;
+	private boolean autoScaleToLength_ = true;
 	private boolean paintPaths_ = false;
-
 	private double distance_ = 0;
 	private double start_ = 0;
 	private double end_ = 0;
@@ -67,7 +67,7 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	 *
 	 * @see #setPaintPaths(boolean)
 	 */
-	public boolean getPaintPaths()
+	public boolean isPaintPaths()
 	{
 		return paintPaths_;
 	}
@@ -150,6 +150,52 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	}
 
 	/**
+	 * Sets setting "paint overlapped".
+	 * <ul>
+	 * <li>If true tiles are painted until the whole length of the path is covered, even if the last tile goes beyond the length.</li>
+	 * <li>If false the tiles are painted as long as the length ios not reached, so a gap at the end may occur.</li>
+	 * </ul>
+	 * If "auto-scale to length" is enabled, this setting is ignored.<br>
+	 * Default is true.
+	 */
+	public void setPaintOverlapped(boolean paintOverlapped)
+	{
+		paintOverlapped_ = paintOverlapped;
+	}
+
+	/**
+	 * Gets setting "paint overlapped".
+	 *
+	 * @see #setPaintOverlapped(boolean)
+	 */
+	public boolean isPaintOverlapped()
+	{
+		return paintOverlapped_;
+	}
+
+	/**
+	 * Sets setting "auto-scale to length".<br>
+	 * If true, the tiles will be scaled so that a multiple of the painted tiles fits the length of the path.
+	 * If true, setting "paint overlapped" is ignored.
+	 * <br>
+	 * Default is true.
+	 */
+	public void setAutoScaleToLength(boolean autoScaleToLength)
+	{
+		autoScaleToLength_ = autoScaleToLength;
+	}
+
+	/**
+	 * Gets setting "auto scale to length".
+	 *
+	 * @see #setAutoScaleToLength(boolean)
+	 */
+	public boolean isAutoScaleToLength()
+	{
+		return autoScaleToLength_;
+	}
+
+	/**
 	 * Sets the tile painter.<br>
 	 * Needs to be called at least once to set the tile to paint along.
 	 */
@@ -214,29 +260,6 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 			tilePainter_.setShape(shape);
 			forceUpdateArea();
 		}
-	}
-
-	/**
-	 * Sets setting "paint overlapped".
-	 * <ul>
-	 * <li>If true tiles are painted until the whole length of the path is covered, even if the last tile goes beyond the length.</li>
-	 * <li>If false the tiles are painted as long as the length ios not reached, so a gap at the end may occur.</li>
-	 * </ul>
-	 * Default is true.
-	 */
-	public void setPaintOverlapped(boolean paintOverlapped)
-	{
-		paintOverlapped_ = paintOverlapped;
-	}
-
-	/**
-	 * Gets setting "paint overlapped".
-	 *
-	 * @see #setPaintOverlapped(boolean)
-	 */
-	public boolean isPaintOverlapped()
-	{
-		return paintOverlapped_;
 	}
 
 	@Override
@@ -336,8 +359,12 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	public void paintAlong(Context ctx, ShapeHelper path,
 						   double start, double end, double distance)
 	{
-		if (path != null)
+
+		if (path != null && tilePainter_ != null)
 		{
+			final double orgXS = tilePainter_.getXScale();
+			final double orgYS = tilePainter_.getYScale();
+
 			final double len = path.getOutlineLength();
 
 			if (end <= 0)
@@ -380,9 +407,25 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 				}
 
 				ShapeHelper.PointOnPath pop1 = path.pointAtLength(pos);
-				pos += distance + shapeW;
-				if (paintOverlapped_)
-					d += distance + shapeW;
+
+				double dsum = distance + shapeW;
+				if (autoScaleToLength_)
+				{
+					int nbOfT = (int) Math.round(len / dsum);
+
+					// Scale modifier to match length
+					double sf = (len - (distance * nbOfT)) / (nbOfT * shapeW);
+					tilePainter_.setScale(orgXS * sf, orgYS * sf);
+
+					// Adapt to new width
+					dsum = distance + (shapeW * sf);
+					// Some additional distance to be sure.
+					d += dsum / 2;
+				}
+				else if (paintOverlapped_)
+					d += dsum;
+
+				pos += dsum;
 				while (pos < d)
 				{
 					ShapeHelper.PointOnPath pop2;
@@ -421,11 +464,13 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 						}
 					}
 					pop1 = pop2;
-					pos += distance + shapeW;
+					pos += dsum;
 				}
 			}
 			finally
 			{
+				if (autoScaleToLength_)
+					tilePainter_.setScale(orgXS, orgYS);
 				gl.dispose();
 			}
 		}
