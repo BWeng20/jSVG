@@ -59,6 +59,11 @@ public abstract class AbstractPainterBase
 		return rotationAngleDegree_;
 	}
 
+	/**
+	 * Sets the rotation angle.
+	 *
+	 * @param angleDegree New angle in degree.
+	 */
 	public void setRotationAngleDegree(double angleDegree)
 	{
 		if (angleDegree != rotationAngleDegree_)
@@ -68,6 +73,9 @@ public abstract class AbstractPainterBase
 	}
 
 
+	/**
+	 * Get the current rotation angle as transform.
+	 */
 	protected AffineTransform getRotation()
 	{
 		if (isRotationActive())
@@ -77,12 +85,18 @@ public abstract class AbstractPainterBase
 			return null;
 	}
 
+	/**
+	 * Ensures that "area" is available.
+	 */
 	protected void ensureArea()
 	{
 		if (area_ == null)
 			calculateArea();
 	}
 
+	/**
+	 * Enforce an update of the area.
+	 */
 	public void forceUpdateArea()
 	{
 		area_ = null;
