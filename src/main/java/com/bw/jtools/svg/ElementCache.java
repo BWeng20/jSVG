@@ -6,6 +6,7 @@ import org.w3c.dom.Node;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -26,28 +27,35 @@ public class ElementCache
 		return id != null && id.startsWith("_#") && id.endsWith("Generated__");
 	}
 
-	public void scanForIds(Node node)
+	public void scanForIds(Node root)
 	{
-		if (node.getNodeType() == Node.ELEMENT_NODE)
+		Stack<Node> todos = new Stack<>();
+		todos.push(root);
+		while( !todos.empty() )
 		{
-			String id = ((Element) node).getAttribute("id");
-			if (ElementWrapper.isNotEmpty(id))
+			Node next = todos.pop();
+			if (next.getNodeType() == Node.ELEMENT_NODE)
 			{
-				if (wrapperById_.containsKey(id))
+				String id = ((Element) next).getAttribute("id");
+				if (ElementWrapper.isNotEmpty(id))
 				{
-					// Duplicate ids are no hard error, as svg seems to allow it.
-					// As we handle the element-wrapper via id, we need to remove the id.
-					SVGConverter.warn("SVG: Duplicate %s", id);
-					((Element) node).removeAttribute("id");
+					if (wrapperById_.containsKey(id))
+					{
+						// Duplicate ids are no hard error, as svg seems to allow it.
+						// As we handle the element-wrapper via id, we need to remove the id.
+						SVGConverter.warn("SVG: Duplicate %s", id);
+						((Element) next).removeAttribute("id");
+					}
+					else
+						wrapperById_.put(id, new ElementWrapper(this, (Element) next, false));
 				}
-				else
-					wrapperById_.put(id, new ElementWrapper(this, (Element) node, false));
+			}
+			Node c = next.getFirstChild();
+			while (c != null) {
+				todos.push(c);
+				c = c.getNextSibling();
 			}
 		}
-		Node next = node.getNextSibling();
-		if (next != null) scanForIds(next);
-		next = node.getFirstChild();
-		if (next != null) scanForIds(next);
 	}
 
 	public ElementWrapper getElementWrapper(Node node)
