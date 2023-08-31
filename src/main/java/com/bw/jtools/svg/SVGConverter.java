@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
@@ -89,6 +90,17 @@ public class SVGConverter
 	}
 
 	/**
+	 * To not flood the log with repeated warning, each "unsupported tag" warning is given once.
+	 */
+	private Set<String> warnings_ = new HashSet<>();
+
+	private void warnOnce(String s)
+	{
+		if (warnings_.add(s))
+			warn("%s", s);
+	}
+
+	/**
 	 * Helper method to dump SVG errors that may need user-attention.<br>
 	 * Can be used by other classes.
 	 */
@@ -129,7 +141,7 @@ public class SVGConverter
 	/**
 	 * If true experimental features are enabled.
 	 */
-	public static boolean experimentalFeaturesEnables_ = false;
+	public static boolean experimentalFeaturesEnabled_ = false;
 
 	/**
 	 * Parse an SVG document and creates shapes.
@@ -252,7 +264,7 @@ public class SVGConverter
 		Type typ = w.getType();
 
 		if (typ == null)
-			warn("Unknown command %s", e);
+			warnOnce("Unknown command " + e);
 		else switch (typ)
 		{
 			case g:
@@ -695,7 +707,7 @@ public class SVGConverter
 		w = w == null ? null : elementCache_.getElementWrapperById(w.filter());
 		if (w != null)
 		{
-			if (experimentalFeaturesEnables_)
+			if (experimentalFeaturesEnabled_)
 			{
 				Filter f = new Filter(w.id(), w.getType());
 				// @TODO: handle href references for filters (same as for gradients).
@@ -724,7 +736,7 @@ public class SVGConverter
 			}
 			else
 			{
-				warn("Filter are experimental and not enabled.");
+				warnOnce("Filter are experimental and not enabled.");
 			}
 		}
 		return null;
