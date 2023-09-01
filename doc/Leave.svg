@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg version="1.0" viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="greenGradient" fy="0.9" r="0.8"  >
+      <stop style="stop-color:#004600;stop-opacity:1;" offset="0" />
+      <stop style="stop-color:#009000;stop-opacity:1;" offset="1" />
+    </radialGradient>
+  </defs>
+  <path
+     style="fill:url(#greenGradient);stroke:none;"
+     d="M 0.52709746,0 C -2.302,2.102 7.078,36.27 9.25,40.45 16.92,55 21.35,57.27 41.607,66.13 c 4.002,1.804 7.467,3.48 7.7,3.71 0.224,-0.234 5.04,-1.907 9.0422,-3.71 C 78.594,57.27 86.937,51.475 92.344,39 94,35.42 102.25,2.102 99.42,0 86.55,0.66 58.08,13.76 54.14,24.38 51.68,31.03 51.825,34.7 49.973,41.888 48.122,34.7 48.266,31.026 45.81,24.379 41.867,13.76 13.401,0.659 0.527,0 Z"/>
+</svg>

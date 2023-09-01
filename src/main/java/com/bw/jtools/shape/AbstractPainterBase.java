@@ -18,6 +18,7 @@ public abstract class AbstractPainterBase
 	 * @see #calculateArea()
 	 */
 	protected Rectangle2D.Double area_ = null;
+	protected Rectangle2D.Double areaTransformed_ = null;
 	protected double scaleX_ = 1.0f;
 	protected double scaleY_ = 1.0f;
 
@@ -91,7 +92,21 @@ public abstract class AbstractPainterBase
 	protected void ensureArea()
 	{
 		if (area_ == null)
+		{
 			calculateArea();
+			areaTransformed_ = null;
+		}
+		if (areaTransformed_ == null)
+		{
+			areaTransformed_ = new Rectangle2D.Double(0, 0, area_.width * scaleX_, area_.height * scaleY_);
+			AffineTransform rotation = getRotation();
+			if (rotation != null)
+			{
+				Rectangle2D rotArea = rotation.createTransformedShape(areaTransformed_)
+											  .getBounds2D();
+				areaTransformed_.setRect(0, 0, rotArea.getWidth(), rotArea.getHeight());
+			}
+		}
 	}
 
 	/**
@@ -108,20 +123,7 @@ public abstract class AbstractPainterBase
 	public Rectangle2D.Double getArea()
 	{
 		ensureArea();
-		Rectangle2D area = area_;
-
-		if (area != null)
-		{
-			AffineTransform rotation = getRotation();
-			if (rotation != null)
-				area = rotation.createTransformedShape(area)
-							   .getBounds2D();
-		}
-
-		if (area == null)
-			return new Rectangle2D.Double(0, 0, 0, 0);
-		else
-			return new Rectangle2D.Double(0, 0, scaleX_ * area.getWidth(), scaleY_ * area.getHeight());
+		return areaTransformed_;
 	}
 
 	/**
@@ -130,7 +132,7 @@ public abstract class AbstractPainterBase
 	public double getAreaWidth()
 	{
 		ensureArea();
-		return scaleX_ * area_.width;
+		return areaTransformed_.width;
 	}
 
 	/**
@@ -139,7 +141,7 @@ public abstract class AbstractPainterBase
 	public double getAreaHeight()
 	{
 		ensureArea();
-		return scaleY_ * area_.height;
+		return areaTransformed_.height;
 	}
 
 	/**
@@ -149,6 +151,7 @@ public abstract class AbstractPainterBase
 	{
 		scaleX_ = scaleX;
 		scaleY_ = scaleY;
+		areaTransformed_ = null;
 	}
 
 	/**
