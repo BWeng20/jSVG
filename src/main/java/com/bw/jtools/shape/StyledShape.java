@@ -7,6 +7,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.Objects;
 
 /**
  * A shape plus additional style information.
@@ -114,4 +115,10 @@ public final class StyledShape extends AbstractShape
 			g3D.setClip(orgClip);
 		}
 	}
+
+	public AbstractShape getShapeById(String id)
+	{
+		return (Objects.equals(id_, id)) ? this : null;
+	}
+
 }

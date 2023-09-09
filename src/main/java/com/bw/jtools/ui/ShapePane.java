@@ -194,6 +194,12 @@ public class ShapePane extends JComponent
 		refresh();
 	}
 
+	public AbstractShape getShape()
+	{
+		return painter_.getShape();
+	}
+
+
 	/**
 	 * Gets X-Scale factor.
 	 */
@@ -372,4 +378,5 @@ public class ShapePane extends JComponent
 		}
 		return contextPopupMenu_;
 	}
+
 }

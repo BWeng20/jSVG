@@ -15,6 +15,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A group of shapes plus optional filter.
@@ -230,6 +231,20 @@ public final class ShapeGroup extends AbstractShape
 	{
 		Rectangle2D r = getTransformedBounds();
 		return aft.transform(new Point2D.Double(r.getX(), r.getY()), dst);
+	}
+
+	@Override
+	public AbstractShape getShapeById(String id)
+	{
+		if (Objects.equals(id_, id))
+			return this;
+		for (AbstractShape s : shapes_)
+		{
+			AbstractShape c = s.getShapeById(id);
+			if (c != null)
+				return c;
+		}
+		return null;
 	}
 
 }

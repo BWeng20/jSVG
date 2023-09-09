@@ -25,7 +25,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -37,22 +36,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Demonstration- and Test-Utility to test SVGs on buttons.<br>
@@ -192,9 +180,6 @@ public class SVGIconTester extends SVGAppBase
 
 		LookAndFeel selectedLaf = UIManager.getLookAndFeel();
 
-		System.out.println("Current Metal Theme: " + MetalLookAndFeel.getCurrentTheme()
-																	 .getName());
-
 		for (UIManager.LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels())
 		{
 			JRadioButtonMenuItem l = new JRadioButtonMenuItem(laf.getName());
@@ -222,105 +207,6 @@ public class SVGIconTester extends SVGAppBase
 	public int getIconSize()
 	{
 		return iconSize_;
-	}
-
-	static private Pattern urlPattern = Pattern.compile("^([^:/?#]+):(//[^/?#]*)?([^?#]*)(?:\\?([^#]*))?(#.*)?");
-
-	public static boolean isUri(String value)
-	{
-		Matcher m = urlPattern.matcher(value);
-		// Reject any schema < 1 character, it's most likely a window path.
-		return m.matches() && (m.group(1)
-								.length() > 1);
-	}
-
-	protected void loadSVGsFromPathOrUri(String path)
-	{
-		try
-		{
-			Path p = null;
-			if (isUri(path))
-			{
-				URI uri = URI.create(path);
-				final String scheme = uri.getScheme();
-				if (scheme != null)
-				{
-					if (scheme.equalsIgnoreCase("jar"))
-					{
-						FileSystem fs = null;
-						int si = path.indexOf("!/");
-						String arc = path.substring(0, si);
-						try
-						{
-							URI fsuri = new URI(arc);
-							try
-							{
-								fs = FileSystems.getFileSystem(fsuri);
-							}
-							catch (FileSystemNotFoundException fsnf)
-							{
-								fs = FileSystems.newFileSystem(fsuri, Collections.emptyMap());
-							}
-							p = fs.getPath(path.substring(si + 1));
-						}
-						catch (Exception ex2)
-						{
-							ex2.printStackTrace();
-						}
-					}
-					else
-					{
-						p = java.nio.file.Paths.get(uri);
-					}
-				}
-				else
-				{
-					System.err.println("Path Schema not correct: " + path);
-				}
-			}
-			else
-			{
-				p = Paths.get(path);
-			}
-			if (p != null)
-				loadSVGsFromPath(p);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	protected void loadSVGsFromPath(Path path)
-	{
-		try
-		{
-			if (Files.isDirectory(path))
-			{
-				try (Stream<Path> f = Files.list(path))
-				{
-					loadSVGs(f);
-				}
-			}
-			else
-			{
-				loadSVGs(Collections.singletonList(path)
-									.stream());
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-
-	protected void loadSVGsFromFiles(File[] files)
-	{
-		loadSVGs(
-				Arrays.asList(files)
-					  .stream()
-					  .map(f -> f.toPath()));
 	}
 
 	final static Border br = BorderFactory.createLineBorder(Color.BLACK, 1);
@@ -380,53 +266,17 @@ public class SVGIconTester extends SVGAppBase
 		contentViewer_.setVisible(true);
 	}
 
-	protected Pattern svgFileNameRegEx = Pattern.compile(".*\\.svg", Pattern.CASE_INSENSITIVE);
 
-	protected void loadSVGs(Stream<Path> paths)
-	{
-
-		paths.filter(p -> Files.isDirectory(p) || svgFileNameRegEx.matcher(p.getFileName()
-																			.toString())
-																  .matches())
-			 .sorted((p1, p2) -> p1.getFileName()
-								   .toString()
-								   .compareTo(p1.getFileName()
-												.toString()))
-			 .forEach(path ->
-			 {
-				 if (Files.isDirectory(path))
-				 {
-					 try (Stream<Path> f = Files.list(path))
-					 {
-						 loadSVGs(f);
-					 }
-					 catch (IOException e)
-					 {
-						 e.printStackTrace();
-					 }
-				 }
-				 else
-				 {
-					 System.out.println("Loading shape from " + path);
-					 final AbstractShape shape = loadSVG(path);
-					 addSVG(path, shape);
-				 }
-			 });
-
-		pane_.revalidate();
-		repaint();
-	}
-
-	protected synchronized void addSVG(Path name, AbstractShape shape)
+	protected synchronized void addSVG(ShapeFile shapeFile)
 	{
 		if (gc.gridx >= 20)
 		{
 			gc.gridx = 0;
 			gc.gridy++;
 		}
-		ShapeIcon sicon = new ShapeIcon(shape);
-		sicon.setDescription(name.getFileName()
-								 .toString());
+		ShapeIcon sicon = new ShapeIcon(shapeFile.shape_);
+		sicon.setDescription(shapeFile.path_.getFileName()
+											.toString());
 		double w = sicon.getIconWidth2D();
 		double h = sicon.getIconHeight2D();
 		// Keep Aspect ratio
@@ -441,7 +291,7 @@ public class SVGIconTester extends SVGAppBase
 		b.setIconTextGap(0);
 		b.setContentAreaFilled(false);
 
-		b.setToolTipText(name.toString());
+		b.setToolTipText(shapeFile.path_.toString());
 		b.setVerticalTextPosition(JButton.BOTTOM);
 		b.setHorizontalTextPosition(JButton.CENTER);
 
@@ -450,7 +300,7 @@ public class SVGIconTester extends SVGAppBase
 		b.setEnabled(enabled_);
 		b.addActionListener(e ->
 		{
-			showShape(name.toString(), shape);
+			showShape(shapeFile.path_.toString(), shapeFile.shape_);
 		});
 		b.setOpaque(false);
 		b.setBackground(Color.WHITE);
@@ -541,4 +391,11 @@ public class SVGIconTester extends SVGAppBase
 
 	}
 
+	@Override
+	protected void setShapes(List<ShapeFile> shapes)
+	{
+		shapes.forEach(this::addSVG);
+		pane_.revalidate();
+		repaint();
+	}
 }

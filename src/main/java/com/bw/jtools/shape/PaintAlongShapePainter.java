@@ -263,6 +263,16 @@ public final class PaintAlongShapePainter extends AbstractPainterBase
 	}
 
 	@Override
+	public final AbstractShape getShape()
+	{
+		if (tilePainter_ != null)
+		{
+			return tilePainter_.getShape();
+		}
+		return null;
+	}
+
+	@Override
 	protected void calculateArea()
 	{
 		if (tilePainter_ != null && !paths_.isEmpty())

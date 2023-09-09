@@ -160,4 +160,5 @@ public class ShapeIcon implements Icon, Accessible
 	{
 		return null;
 	}
+
 }

@@ -69,10 +69,21 @@ public class Stroke
 	public java.awt.Stroke createStroke(ElementWrapper w)
 	{
 		final Double vpLength = w.getViewPortLength();
-		return new BasicStroke(
-				(float) width_.toPixel(vpLength), cap, join, miterlimit_,
-				dasharray_ == null ? null : dasharray_.toFloatPixel(vpLength),
-				dashoffset_);
+		try
+		{
+			if ( miterlimit_ < 1.0f ) {
+				miterlimit_ = 1.0f;
+			}
+
+			return new BasicStroke(
+					(float) width_.toPixel(vpLength), cap, join, miterlimit_,
+					dasharray_ == null ? null : dasharray_.toFloatPixel(vpLength),
+					dashoffset_);
+		} catch (IllegalArgumentException ie)
+		{
+			SVGConverter.error("Failed to create stroke %s", ie.getMessage());
+			return new BasicStroke();
+		}
 
 	}
 

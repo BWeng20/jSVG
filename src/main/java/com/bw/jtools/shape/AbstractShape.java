@@ -51,5 +51,6 @@ public abstract class AbstractShape
 		this.enableClipping_ = enableClipping_;
 	}
 
+	public abstract AbstractShape getShapeById(String id);
 
 }

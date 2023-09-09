@@ -2,7 +2,6 @@ package com.bw.jtools;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
-import com.bw.jtools.svg.SVGConverter;
 import com.bw.jtools.svg.SVGException;
 import com.bw.jtools.ui.ShapePane;
 
@@ -25,11 +24,9 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.util.List;
 
 /**
  * Demonstration- and Test-Utility to load and draw SVG files via jSVG.<br>
@@ -44,37 +41,44 @@ public class SVGViewer extends SVGAppBase
 	protected JDialog paintAlongViewer_;
 	protected PaintAlongViewerPanel paintAlongPane_;
 
-	protected void loadSVG2Pane(java.nio.file.Path svgFile)
+	@Override
+	protected void setShapes(List<ShapeFile> shapes)
 	{
-		try
+		if (!shapes.isEmpty())
 		{
-			InputStream ips = new BufferedInputStream(Files.newInputStream(svgFile));
-			SVGConverter nsvg = new SVGConverter(ips);
-			shape_ = nsvg.getShape();
-			AbstractPainterBase painter = pane_.getPainter();
-
-			pane_.setShape(shape_);
-			pane_.setScale(1, 1);
-			Rectangle2D.Double area = painter.getArea();
-
-			Dimension s = getSize();
-			if (s.width == 0)
+			try
 			{
-				s.width = 400;
+				ShapeFile f = shapes.get(0);
+				if (f.path_ != null)
+					setTitle(f.path_.toString());
+				else
+					setTitle("jSVG Demonstration");
+
+				shape_ = f.shape_;
+				AbstractPainterBase painter = pane_.getPainter();
+
+				pane_.setShape(shape_);
+				pane_.setScale(1, 1);
+				Rectangle2D.Double area = painter.getArea();
+
+				Dimension s = getSize();
+				if (s.width == 0)
+				{
+					s.width = 400;
+				}
+				if (s.height == 0)
+				{
+					s.height = 400;
+				}
+
+				double scale = Math.min(s.width / area.width, s.height / area.height);
+				pane_.setScale(scale, scale);
 			}
-			if (s.height == 0)
+			catch (Exception err)
 			{
-				s.height = 400;
+				err.printStackTrace();
 			}
-
-			double scale = Math.min(s.width / area.width, s.height / area.height);
-			pane_.setScale(scale, scale);
 		}
-		catch (Exception err)
-		{
-			err.printStackTrace();
-		}
-
 	}
 
 	/**
@@ -107,7 +111,7 @@ public class SVGViewer extends SVGAppBase
 
 		if (file != null)
 		{
-			loadSVG2Pane(new File(file).toPath());
+			loadSVGsFromPathOrUri(file);
 		}
 		else
 		{
@@ -146,8 +150,8 @@ public class SVGViewer extends SVGAppBase
 			int returnVal = fs.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION)
 			{
-				loadSVG2Pane(fs.getSelectedFile()
-							   .toPath());
+				loadSVGsFromPath(fs.getSelectedFile()
+								   .toPath());
 			}
 		});
 
@@ -211,8 +215,8 @@ public class SVGViewer extends SVGAppBase
 			paintAlongPane_.addPath(new Ellipse2D.Double(50, 50, 100, 100));
 
 			Path2D weave = new Path2D.Double();
-			weave.moveTo(0,280);
-			weave.curveTo(66,210,133,350, 200, 280);
+			weave.moveTo(0, 280);
+			weave.curveTo(66, 210, 133, 350, 200, 280);
 
 
 			paintAlongPane_.addPath(weave);

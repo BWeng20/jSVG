@@ -36,6 +36,13 @@ public final class ShapePainter extends AbstractPainterBase
 	}
 
 	@Override
+	public final AbstractShape getShape()
+	{
+		return shape_;
+	}
+
+
+	@Override
 	protected void calculateArea()
 	{
 		if (shape_ == null)

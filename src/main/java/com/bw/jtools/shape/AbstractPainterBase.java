@@ -273,7 +273,9 @@ public abstract class AbstractPainterBase
 		{
 			ctx.dispose();
 			if (measureTime_)
+			{
 				lastMSNeeded_ = System.currentTimeMillis() - ms;
+			}
 		}
 	}
 
@@ -335,5 +337,9 @@ public abstract class AbstractPainterBase
 	 */
 	public abstract void setShape(AbstractShape shape);
 
+	/**
+	 * Get the current shape.
+	 */
+	public abstract AbstractShape getShape();
 
 }
