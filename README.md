@@ -114,6 +114,7 @@ Specially of the painter-interface.
   Shows one SVG file. The drawing can be rotated and scaled. 
   The app shows time statistics in the status bar.
 
+
 * [SVGIconTester](src/main/java/com/bw/jtools/SVGIconTester.java)<br>
   Shows multiple SVG files (you can select a directory) as Icons on Buttons.
   A press on the button will show the original svg in a separate window - using the same painter instance.<br>
@@ -122,6 +123,13 @@ Specially of the painter-interface.
   ![SVGIconTester_Demo64.png](doc%2FSVGIconTester_Demo64.png)<br>
   and the "disabled" mode (all colors will get gray).<br>
   ![SVGIconTester_DemoDisabled.png](doc%2FSVGIconTester_DemoDisabled.png)
+
+
+* [SVGClock](src/main/java/com/bw/jtools/SVGClock.java)<br>
+  Demonstrates animations.<br>
+  ![Clock_Demo.png](doc%2FClock_Demo.png)
+  <br> You can get the used file from 
+  https://commons.wikimedia.org/wiki/File:Swiss_railway_clock.svg
 
 The demonstration app SVGViewer has an option to paint the SVG "along a path".
 In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
