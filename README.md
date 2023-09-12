@@ -130,6 +130,9 @@ Specially of the painter-interface.
   ![Clock_Demo.png](doc%2FClock_Demo.png)
   <br> You can get the used file from 
   https://commons.wikimedia.org/wiki/File:Swiss_railway_clock.svg
+  In order to show "correct" time with such a clock, you must remove any rotation from the clock hand elements,
+  so that the hands show “12:00:00”.<br>
+  The animation simply rotates the elements and does not know the original orientation.
 
 The demonstration app SVGViewer has an option to paint the SVG "along a path".
 In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
