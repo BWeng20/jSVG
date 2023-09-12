@@ -21,7 +21,6 @@ import java.util.WeakHashMap;
 public class ShapeMultiResolutionImage extends AbstractMultiResolutionImage
 {
 	protected final ShapePainter painter_;
-
 	protected BufferedImage defaultImage_;
 	protected final WeakHashMap<String, BufferedImage> images_ = new WeakHashMap<>();
 	protected boolean keepAspectRatio = true;

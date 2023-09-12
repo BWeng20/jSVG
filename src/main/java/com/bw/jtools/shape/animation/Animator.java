@@ -73,21 +73,7 @@ public class Animator
 		AnimationItem item = animations_.get(id);
 		if (item != null)
 		{
-			boolean found = item.animation_.remove(animation);
-			if (found)
-			{
-				if (item.shape_.aft_ != null)
-				{
-					// @TODO: restore ....
-					item.shape_.aft_.setTransform(item.orgAft_);
-					for (Animation a : item.animation_)
-					{
-						a.apply(item.shape_);
-					}
-					SwingUtilities.invokeLater(component_::repaint);
-				}
-			}
-			return found;
+			return item.animation_.remove(animation);
 		}
 		return false;
 	}
@@ -142,8 +128,11 @@ public class Animator
 			nextTick = timerTick_ - (System.currentTimeMillis() - tick);
 			if (nextTick <= 0)
 				nextTick = 1;
-			timer_.setDelay((int) nextTick);
+			timer_.setInitialDelay((int) nextTick);
+			timer_.restart();
+
 		});
+		timer_.setDelay(0);
 		timer_.start();
 	}
 

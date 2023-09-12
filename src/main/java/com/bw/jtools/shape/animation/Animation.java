@@ -2,6 +2,8 @@ package com.bw.jtools.shape.animation;
 
 import com.bw.jtools.shape.AbstractShape;
 
+import java.time.LocalTime;
+
 /**
  * Abstract base class for animations.
  */

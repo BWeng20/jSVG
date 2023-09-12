@@ -2,29 +2,26 @@ package com.bw.jtools;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
-import com.bw.jtools.shape.ShapeGroup;
-import com.bw.jtools.shape.animation.AnimationType;
 import com.bw.jtools.shape.animation.Animator;
-import com.bw.jtools.shape.animation.FillMode;
-import com.bw.jtools.shape.animation.Rotation;
 import com.bw.jtools.svg.SVGException;
 import com.bw.jtools.ui.ShapePane;
+import com.bw.jtools.ui.editor.AbstractAnimationOptionPanel;
+import com.bw.jtools.ui.editor.RotationAnimationController;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
+import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -39,7 +36,6 @@ import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Demonstration- and Test-Utility to test animated SVGs.<br>
@@ -51,14 +47,12 @@ public class SVGClock extends SVGAppBase
 	protected ShapePane pane_;
 	protected AbstractShape shape_;
 	protected Timer clock_;
+	protected Timer status_;
+	protected Animator animator_;
+	protected JCheckBox animate_;
+
 
 	protected boolean enabled_ = true;
-
-	protected final double RAD_PRO_UNIT = Math.toRadians(36f / 6f);
-	protected final double DELAY_PRO_RAD = 500 / RAD_PRO_UNIT;
-
-	protected static final double RAD_FULL_CIRCLE = Math.toRadians(360);
-
 
 	/**
 	 * Shows a SVG file.
@@ -158,14 +152,62 @@ public class SVGClock extends SVGAppBase
 		menuBar.add(viewMenu);
 		setJMenuBar(menuBar);
 
-		seconds_ = new ClockAnimation("Seconds");
-		minutes_ = new ClockAnimation("Minutes");
-		hour_ = new ClockAnimation("Hour");
+		seconds_ = new RotationAnimationController("Seconds");
+		minutes_ = new RotationAnimationController("Minutes");
+		hour_ = new RotationAnimationController("Hour");
 
-		JTabbedPane options = new JTabbedPane(JTabbedPane.TOP);
-		options.addTab("Second", seconds_.optionPane_);
-		options.addTab("Minutes", minutes_.optionPane_);
-		options.addTab("Hour", hour_.optionPane_);
+		animate_ = new JCheckBox("On");
+		animate_.setSelected(false);
+		animate_.addChangeListener(e ->
+		{
+			if (animator_ != null)
+			{
+				if (animate_.isSelected())
+				{
+					if (!animator_.isRunning())
+					{
+						animator_.start();
+					}
+				}
+				else
+				{
+					animator_.stop();
+				}
+			}
+		});
+
+		JPanel options = new JPanel(new GridBagLayout());
+		GridBagConstraints gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 0;
+		gc.weightx = 0;
+		gc.weighty = 0;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		gc.anchor = GridBagConstraints.WEST;
+
+		options.add(animate_, gc);
+		gc.gridy++;
+
+		AbstractAnimationOptionPanel secondsOptions = seconds_.getOptionPane();
+		secondsOptions.setBorder(BorderFactory.createTitledBorder("Seconds"));
+		options.add(secondsOptions, gc);
+		gc.gridy++;
+
+		AbstractAnimationOptionPanel minutesOptions = minutes_.getOptionPane();
+		minutesOptions.setBorder(BorderFactory.createTitledBorder("Minutes"));
+		options.add(minutesOptions, gc);
+		gc.gridy++;
+		AbstractAnimationOptionPanel hoursOptions = hour_.getOptionPane();
+		hoursOptions.setBorder(BorderFactory.createTitledBorder("Hours"));
+		options.add(hoursOptions, gc);
+		gc.gridy++;
+		gc.weighty = 1;
+		JButton runGC = new JButton("Run GC");
+		runGC.addActionListener(e ->
+		{
+			System.gc();
+		});
+		options.add(runGC, gc);
 
 		add(BorderLayout.EAST, options);
 
@@ -192,13 +234,12 @@ public class SVGClock extends SVGAppBase
 				// Stop animator otherwise app will not exit.
 				//@TODO possibly we can do this from animator via component-listener?
 				clock_.stop();
-				seconds_.stop();
-				minutes_.stop();
-				hour_.stop();
+				animator_.stop();
 			}
 		});
 
-		// @TODO: SwingTimer are ugly un-accurate. Try some other... Eg.. Scheduler.
+		startMeasurementTimer(status, pane_.getPainter());
+
 		clock_ = new Timer(100, a ->
 		{
 
@@ -209,26 +250,20 @@ public class SVGClock extends SVGAppBase
 			localTime.plus(1, ChronoUnit.SECONDS);
 			long animationTime = (long) (1000 - millis);
 
-			seconds_.setAngle((360.0 / 60.0) * localTime.getSecond(), animationTime);
-			minutes_.setAngle((360.0 / 60.0) * localTime.getMinute(), animationTime);
-			hour_.setAngle((360.0 / 12.0) * localTime.getHour(), animationTime);
-
+			seconds_.setTargetValue((360.0 / 60.0) * localTime.getSecond(), animationTime);
+			minutes_.setTargetValue((360.0 / 60.0) * localTime.getMinute(), animationTime);
+			hour_.setTargetValue((360.0 / 12.0) * localTime.getHour(), animationTime);
 
 			int delayMS = (int) (1200.0 - millis);
 
-			System.out.println(localTime.toString() + " " + delayMS);
-
-			clock_.setDelay(delayMS);
-
-
+			clock_.setInitialDelay(delayMS);
+			clock_.restart();
 		});
 		LocalTime localTime = LocalTime.now();
 		clock_.setInitialDelay(1500 - (localTime.getNano() / 1000000));
+		clock_.setDelay(0);
 		clock_.start();
-
-
 	}
-
 
 	void setShowEnabled(boolean showEnabled)
 	{
@@ -273,227 +308,31 @@ public class SVGClock extends SVGAppBase
 			double scale = Math.min(s.width / area.width, s.height / area.height);
 			pane_.setScale(scale, scale);
 
-			hour_.setShape(pane_);
-			minutes_.setShape(pane_);
-			seconds_.setShape(pane_);
+			animator_ = new Animator(pane_, shape_);
 
-		}
-	}
+			hour_.setShape(shape_, animator_);
+			minutes_.setShape(shape_, animator_);
+			seconds_.setShape(shape_, animator_);
 
-	static class ClockAnimation
-	{
-		protected JComboBox<String> shapeIds_;
-		protected JCheckBox animate_;
-		protected JTextField centerX_;
-		protected JTextField centerY_;
-
-		protected Animator animator_;
-		protected JComboBox<AnimationType> type_;
-
-		protected double angle_ = 0;
-
-		protected String lastId_;
-		protected Rotation rotation_ = new Rotation(AnimationType.Spring, 0, 0);
-
-		public JPanel optionPane_;
-
-		public ClockAnimation(String name)
-		{
-			optionPane_ = new JPanel(new GridBagLayout());
-
-			GridBagConstraints gc = new GridBagConstraints();
-			gc.fill = GridBagConstraints.HORIZONTAL;
-			gc.anchor = GridBagConstraints.WEST;
-			gc.weighty = 0;
-			gc.gridx = 0;
-			gc.gridy = 0;
-			gc.gridwidth = 2;
-			gc.gridheight = 1;
-
-			shapeIds_ = new JComboBox<>();
-			shapeIds_.setToolTipText("Available Shape-Ids.");
-
-			animate_ = new JCheckBox("On");
-			animate_.setSelected(false);
-			animate_.addChangeListener(e ->
-			{
-				if (animate_.isSelected())
-				{
-					if (!animator_.isRunning())
-					{
-						rotation_.setAnimation(0, rotation_.getValue(), FillMode.Freeze);
-						updateAnimation(500);
-						animator_.start();
-						LocalTime localTime = LocalTime.now();
-					}
-				}
-				else
-				{
-					animator_.stop();
-					if (lastId_ != null)
-					{
-						animator_.removeAnimation(lastId_, rotation_);
-						lastId_ = null;
-					}
-
-				}
-			});
-
-			optionPane_.add(shapeIds_, gc);
-			gc.gridy = 1;
-			gc.weighty = 0;
-			optionPane_.add(animate_, gc);
-			gc.gridwidth = 1;
-
-			type_ = new JComboBox(AnimationType.values());
-			type_.setSelectedItem(AnimationType.Spring);
-
-			gc.gridy = 2;
-			gc.gridx = 0;
-			JLabel lt = new JLabel("Type");
-			lt.setLabelFor(type_);
-			optionPane_.add(lt, gc);
-			gc.gridx = 1;
-			optionPane_.add(type_, gc);
-
-			type_.addActionListener(a ->
-			{
-				updateAnimation(500);
-			});
-
-			gc.gridy = 3;
-			gc.gridx = 0;
-			JLabel lx = new JLabel("X");
-			optionPane_.add(lx, gc);
-			gc.gridx = 1;
-			centerX_ = new JTextField(10);
-			centerX_.setText("200");
-			lx.setLabelFor(centerX_);
-			optionPane_.add(centerX_, gc);
-			gc.gridy = 4;
-			gc.gridx = 0;
-			JLabel ly = new JLabel("Y");
-			optionPane_.add(ly, gc);
-			gc.gridx = 1;
-			centerY_ = new JTextField(10);
-			centerY_.setText("200");
-			ly.setLabelFor(centerY_);
-			optionPane_.add(centerY_, gc);
-
-			gc.fill = GridBagConstraints.VERTICAL;
-			gc.gridy++;
-			gc.weighty = 1;
-			optionPane_.add(new JLabel(""), gc);
-
-
-			shapeIds_.addActionListener(a -> updateAnimation(500));
-			centerX_.addActionListener(a -> updateAnimation(500));
-			centerY_.addActionListener(a -> updateAnimation(500));
-
-			updateAnimation(500);
-		}
-
-		/**
-		 * Updates the animation according to current second-angle.
-		 *
-		 * @param delayMS The calculated time delay until the pointer shall reach the target angle.
-		 */
-		private void updateAnimation(long delayMS)
-		{
-			try
-			{
-				double x = Double.parseDouble(centerX_.getText());
-				double y = Double.parseDouble(centerY_.getText());
-				rotation_.setCenter(x, y);
-			}
-			catch (Exception e)
-			{
-			}
-
-			if (animator_ != null)
-			{
-				String id = (String) shapeIds_.getSelectedItem();
-				if (!Objects.equals(id, lastId_))
-				{
-					// Selected shape has changed. Remove old and add a new animation.
-					if (lastId_ != null)
-					{
-						animator_.removeAnimation(lastId_, rotation_);
-						lastId_ = null;
-					}
-					if (id != null)
-					{
-						animator_.addAnimation(id, rotation_);
-						lastId_ = id;
-					}
-				}
-			}
-			// If the current value cross 360° we can adapt the range to stay in [0..360°].
-			double value = rotation_.getValue();
-			double rad = Math.toRadians(angle_);
-			if (value != rad)
-			{
-				rotation_.setType((AnimationType) type_.getSelectedItem());
-				rotation_.setAnimation(delayMS, rad, FillMode.Freeze);
-			}
-		}
-
-		public void setShape(ShapePane pane)
-		{
-			AbstractShape shape = pane.getShape();
-			shapeIds_.removeAllItems();
-			addShapeInfo(shape);
-
-			if (animator_ != null)
-				animator_.stop();
-			lastId_ = null;
-
-			animator_ = new Animator(pane, shape);
 			if (animate_.isSelected())
 				animator_.start();
 			else
 				animator_.stop();
 		}
-
-		public void addShapeInfo(AbstractShape shape)
-		{
-
-			if (shape.id_ != null && !shape.id_.isEmpty())
-			{
-				shapeIds_.addItem(shape.id_);
-				if (shape instanceof ShapeGroup)
-				{
-					for (AbstractShape s : ((ShapeGroup) shape).shapes_)
-					{
-						addShapeInfo(s);
-					}
-				}
-			}
-		}
-
-		public void stop()
-		{
-			if (animator_ != null)
-				animator_.stop();
-		}
-
-		void setAngle(double angle, long animationTime)
-		{
-
-			angle %= 360;
-			if (angle_ > 360)
-			{
-				angle_ %= 360;
-				rotation_.setValue(Math.toRadians(angle_));
-			}
-			angle_ = (angle_ <= angle) ? angle : 360 + angle;
-			updateAnimation(animationTime);
-
-		}
 	}
 
-	ClockAnimation hour_;
-	ClockAnimation minutes_;
-	ClockAnimation seconds_;
+	@Override
+	protected void statusUpdate(JTextComponent status, AbstractPainterBase painter)
+	{
+		long usedKB = (Runtime.getRuntime()
+							  .totalMemory() - Runtime.getRuntime()
+													  .freeMemory()) / (1024 * 1204);
+		status.setText(usedKB + "MB of " + (Runtime.getRuntime()
+												   .totalMemory() / (1024 * 1204)) + "MB used");
+	}
+
+	RotationAnimationController hour_;
+	RotationAnimationController minutes_;
+	RotationAnimationController seconds_;
 
 }

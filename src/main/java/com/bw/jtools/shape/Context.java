@@ -21,8 +21,8 @@ public class Context
 	public Paint currentColor_;
 	public Paint currentBackground_;
 	private final boolean newContext_;
-
 	public boolean debug_ = false;
+
 	/**
 	 * Stroke for debug lines.
 	 */
@@ -62,16 +62,23 @@ public class Context
 	 */
 	public static final Color NONE = new Color(0, 0, 0, 0);
 
-
+	/**
+	 * Create a new Context as copy from a given one.
+	 * The Graphics2D instance inside is cloned.
+	 */
 	public Context(Context ctx)
 	{
 		this(ctx, true);
 	}
 
+	/**
+	 * Create a new Context as copy from a given one.
+	 * @param createNewContext if true, the Graphics2D instance inside is cloned.
+	 */
 	public Context(Context ctx, boolean createNewContext)
 	{
 		newContext_ = createNewContext;
-		if (createNewContext)
+		if (newContext_)
 		{
 			this.g2D_ = (Graphics2D) ctx.g2D_.create();
 		}
@@ -85,15 +92,23 @@ public class Context
 		debug_ = ctx.debug_;
 	}
 
+	/**
+	 * Create a new Context and clones the given Graphics instance.
+	 */
 	public Context(Graphics g2D)
 	{
 		this(g2D, true);
 	}
 
+	/**
+	 * Cereate a context as wrapper for a Graphics2D object.
+	 * @param g2D The Graphics2D instance.
+	 * @param createNewContext If true the Graphics2D instance is cloned.
+	 */
 	public Context(Graphics g2D, boolean createNewContext)
 	{
-		this.newContext_ = createNewContext;
-		if (createNewContext)
+		newContext_ = createNewContext;
+		if (newContext_)
 		{
 			this.g2D_ = (Graphics2D) g2D.create();
 		}
@@ -104,6 +119,11 @@ public class Context
 		this.currentColor_ = this.g2D_.getPaint();
 	}
 
+	/**
+	 * Creates a context for a buffered-image as target device.
+	 * @param source The buffer to paint into.
+	 * @param ctx The parent Context to retrieve settings.
+	 */
 	public Context(BufferedImage source, Context ctx)
 	{
 		newContext_ = true;
@@ -183,22 +203,24 @@ public class Context
 						lp.getStartPoint(), lp.getEndPoint(),
 						lp.getFractions(), colors,
 						lp.getCycleMethod(), lp.getColorSpace(), lp.getTransform());
-
 			}
 		}
 
 		return p;
 	}
 
-
+	/**
+	 * Free resources hold by this context.
+	 * If a new Graphics2D object was created, it will also be disposed here.
+	 */
 	public void dispose()
 	{
 		if (newContext_)
 		{
 			g2D_.dispose();
-			g2D_ = null;
 		}
+		g2D_ = null;
+		currentColor_ = null;
+		currentBackground_= null;
 	}
-
-
 }
