@@ -1,5 +1,8 @@
 package com.bw.jtools.svg.css;
 
+/**
+ * Type of Selector.
+ */
 public enum SelectorType
 {
 	/**

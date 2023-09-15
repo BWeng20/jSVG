@@ -42,10 +42,18 @@ import java.util.stream.Stream;
  */
 public abstract class SVGAppBase extends JFrame
 {
-	protected long timeMS = 0;
 
+	/**
+	 * File Chooser to select SVG files.
+	 */
 	protected JFileChooser svgFileChooser;
 
+	/**
+	 * Loads a single SVG-file.
+	 *
+	 * @param svgFile The path to the file.
+	 * @return The converted shape.
+	 */
 	protected AbstractShape loadSVG(java.nio.file.Path svgFile)
 	{
 		try
@@ -61,9 +69,17 @@ public abstract class SVGAppBase extends JFrame
 		}
 	}
 
+	/**
+	 * File name filter for SVG files.
+	 */
 	protected FileNameExtensionFilter svgFileFilter = new FileNameExtensionFilter("SVG files", "svg");
 
 
+	/**
+	 * Gets the SVG file chooser.
+	 *
+	 * @return The file-chooser to select SVG files.
+	 */
 	protected JFileChooser getSVGFileChooser()
 	{
 		if (svgFileChooser == null)
@@ -77,6 +93,11 @@ public abstract class SVGAppBase extends JFrame
 		return svgFileChooser;
 	}
 
+	/**
+	 * Returns the PNG file chooser instance.
+	 *
+	 * @return The file chooser to select PNG files.
+	 */
 	protected JFileChooser getPNGFileChooser()
 	{
 		return ShapePane.getPNGFileChooser();
@@ -95,11 +116,20 @@ public abstract class SVGAppBase extends JFrame
 																	 .getName());
 	}
 
+	/**
+	 * The timer to update measurement status.
+	 */
 	protected Timer measurementTimer_;
 
 	private String lastStatus_;
 	private int lastStatusCount_ = 0;
 
+	/**
+	 * Starts measurement status timer.
+	 *
+	 * @param status  The text component to write to.
+	 * @param painter The painter to monitor.
+	 */
 	protected void startMeasurementTimer(final JTextComponent status, final AbstractPainterBase painter)
 	{
 		if (measurementTimer_ == null)
@@ -124,6 +154,9 @@ public abstract class SVGAppBase extends JFrame
 		measurementTimer_.start();
 	}
 
+	/**
+	 * Sets the application icon.
+	 */
 	protected void setAppIcon()
 	{
 		try
@@ -138,9 +171,15 @@ public abstract class SVGAppBase extends JFrame
 		}
 	}
 
+	/**
+	 * Updates status
+	 *
+	 * @param status  The text component to write to.
+	 * @param painter Painter to get status for.
+	 */
 	protected void statusUpdate(JTextComponent status, AbstractPainterBase painter)
 	{
-		timeMS = painter.getMeasuredTimeMS();
+		long timeMS = painter.getMeasuredTimeMS();
 		Rectangle2D r = painter.getArea();
 
 		String statusText = String.format("Size: %d x %d, Scale %.1f x %.1f, Rotation %.1f\u00B0%s",
@@ -165,6 +204,12 @@ public abstract class SVGAppBase extends JFrame
 
 	static private Pattern urlPattern = Pattern.compile("^([^:/?#]+):(//[^/?#]*)?([^?#]*)(?:\\?([^#]*))?(#.*)?");
 
+	/**
+	 * Checks via reg-exp if a string is a URI.
+	 *
+	 * @param value The value to check.
+	 * @return true if the value is most likely a URI.
+	 */
 	public static boolean isUri(String value)
 	{
 		Matcher m = urlPattern.matcher(value);
@@ -174,6 +219,11 @@ public abstract class SVGAppBase extends JFrame
 	}
 
 
+	/**
+	 * Loads SVG from a path or URI.
+	 *
+	 * @param path Path to a single file or to a directory.
+	 */
 	protected void loadSVGsFromPathOrUri(String path)
 	{
 		try
@@ -231,6 +281,11 @@ public abstract class SVGAppBase extends JFrame
 		}
 	}
 
+	/**
+	 * Loads SVG files from a path.
+	 *
+	 * @param path Path to a single file or to a directory.
+	 */
 	protected void loadSVGsFromPath(Path path)
 	{
 		try
@@ -255,6 +310,11 @@ public abstract class SVGAppBase extends JFrame
 	}
 
 
+	/**
+	 * Load svg files. Will call {@link #loadSVGs(Stream)}.
+	 *
+	 * @param files Array with files.
+	 */
 	protected void loadSVGsFromFiles(File[] files)
 	{
 		loadSVGs(
@@ -264,17 +324,36 @@ public abstract class SVGAppBase extends JFrame
 	}
 
 
+	/**
+	 * Regular expression to match svg-file paths.
+	 */
 	protected Pattern svgFileNameRegEx = Pattern.compile(".*\\.svg", Pattern.CASE_INSENSITIVE);
 
 
+	/**
+	 * Helper class to hold a shape with the source-file from where it was loaded.
+	 */
 	/**
 	 * Helper class to hold information about a shape and its source file.
 	 */
 	protected final static class ShapeFile
 	{
+		/**
+		 * The path the file was loaded from.
+		 */
 		public final Path path_;
+
+		/**
+		 * The shape.
+		 */
 		public final AbstractShape shape_;
 
+		/**
+		 * Creates a new instance.
+		 *
+		 * @param p The path.
+		 * @param s The shape.
+		 */
 		public ShapeFile(Path p, AbstractShape s)
 		{
 			path_ = p;
@@ -282,6 +361,11 @@ public abstract class SVGAppBase extends JFrame
 		}
 	}
 
+	/**
+	 * Loads recursively all svg files from a stream of paths.
+	 *
+	 * @param paths Stream with file and/or directories.
+	 */
 	protected void loadSVGs(Stream<Path> paths)
 	{
 		List<ShapeFile> shapes = new ArrayList<>();
@@ -315,6 +399,12 @@ public abstract class SVGAppBase extends JFrame
 		setShapes(shapes);
 	}
 
+	/**
+	 * Sets loaded shapes.
+	 * Needs to be implemented by inheritances.
+	 *
+	 * @param shapes The loaded shapes.
+	 */
 	protected abstract void setShapes(List<ShapeFile> shapes);
 
 }

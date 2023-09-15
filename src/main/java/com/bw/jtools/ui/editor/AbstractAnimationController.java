@@ -50,6 +50,8 @@ public abstract class AbstractAnimationController<T extends Animation>
 
 	/**
 	 * Gets the option UI for this animation.
+	 *
+	 * @return The panel, never null.
 	 */
 	public AbstractAnimationOptionPanel getOptionPane()
 	{
@@ -62,6 +64,8 @@ public abstract class AbstractAnimationController<T extends Animation>
 
 	/**
 	 * Implementation have to return a new instance of the option-UI.
+	 *
+	 * @return The panel to show the options.
 	 */
 	protected abstract AbstractAnimationOptionPanel createOptionPanel();
 
@@ -97,6 +101,8 @@ public abstract class AbstractAnimationController<T extends Animation>
 
 	/**
 	 * Gets the shape.
+	 *
+	 * @return The current shape.
 	 */
 	public AbstractShape getShape()
 	{
@@ -105,6 +111,8 @@ public abstract class AbstractAnimationController<T extends Animation>
 
 	/**
 	 * Gets the animator.
+	 *
+	 * @return The current Animator. Can be null.
 	 */
 	public Animator getAnimator()
 	{
@@ -113,6 +121,8 @@ public abstract class AbstractAnimationController<T extends Animation>
 
 	/**
 	 * Gets the animation.
+	 *
+	 * @return The animation. Never null.
 	 */
 	public T getAnimation()
 	{

@@ -48,17 +48,25 @@ import java.util.function.Consumer;
  */
 public class SVGIconTester extends SVGAppBase
 {
-
-	protected Path svgPath_;
+	/** The panel to show all icons. */
 	protected JPanel pane_;
+
+	/** Scroll-pane inside the svg content viewer (if an icon button is pressed). */
 	protected JScrollPane contentViewerScrollPane_;
 
+	/** Pre-defined icon-sizes to select. */
 	protected javax.swing.ButtonGroup sizeGroup_;
+
+	/** Look-And-Feel button. */
 	protected javax.swing.ButtonGroup lafGroup_;
 
+	/** True if the file name shall be shown below the icons. */
 	protected boolean showName_ = false;
+
+	/** True if all icons shall be enabled. */
 	protected boolean enabled_ = true;
 
+	/** True if a border shall be drawn. */
 	protected boolean showBorder_ = true;
 
 	protected int iconSize_ = 32;
@@ -121,13 +129,6 @@ public class SVGIconTester extends SVGAppBase
 			JFileChooser fs = getSVGFileChooser();
 			fs.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			fs.setMultiSelectionEnabled(true);
-			if (svgPath_ != null && "file".equals(svgPath_.getFileSystem()
-														  .provider()
-														  .getScheme()))
-			{
-				fs.setCurrentDirectory(svgPath_.toFile()
-											   .getParentFile());
-			}
 			int returnVal = fs.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION)
 			{

@@ -166,6 +166,8 @@ public class PaintAlongViewerPanel extends JPanel
 
 	/**
 	 * Sets a new tile-shape.
+	 *
+	 * @param shape The new shape.
 	 */
 	public void setTileShape(AbstractShape shape)
 	{
@@ -175,6 +177,8 @@ public class PaintAlongViewerPanel extends JPanel
 
 	/**
 	 * Sets a new tile-painter. Including the shape inside.
+	 *
+	 * @param painter The new painter.
 	 */
 	public void setTilePainter(AbstractPainterBase painter)
 	{
@@ -182,6 +186,11 @@ public class PaintAlongViewerPanel extends JPanel
 		updateSliders();
 	}
 
+	/**
+	 * Adds a new path to draw along.
+	 *
+	 * @param path The new path.
+	 */
 	public void addPath(Shape path)
 	{
 		paintAlongViewerPainter_.addPath(path);

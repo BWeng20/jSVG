@@ -14,6 +14,7 @@ public class RotationAnimationController extends AbstractAnimationController<Rot
 
 	/**
 	 * Creates a new Rotation animation controller
+	 *
 	 * @param name The user-friendly name of the animation.
 	 */
 	public RotationAnimationController(String name)
@@ -40,6 +41,11 @@ public class RotationAnimationController extends AbstractAnimationController<Rot
 		updateAnimation(animationTime);
 	}
 
+	/**
+	 * Updates the animation after changes.
+	 *
+	 * @param animationTime The new animation duration to apply.
+	 */
 	protected void updateAnimation(long animationTime)
 	{
 		// If the current value cross 360° we can adapt the range to stay in [0..360°].

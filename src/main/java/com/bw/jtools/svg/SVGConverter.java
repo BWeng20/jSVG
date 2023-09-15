@@ -34,7 +34,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -1178,10 +1177,10 @@ public class SVGConverter
 	 * If only one output-dimension is given, the other one is calculated to keep aspect ratio.<br>
 	 * The method will "System.exit" on error.
 	 *
-	 * @param file The svg input file.
+	 * @param file   The svg input file.
 	 * @param output The png output file (can be null).
-	 * @param gray If true, the image is rendered in gray-scale.
-	 * @param width The target width of the output image. Ignored if equal or less than 0.
+	 * @param gray   If true, the image is rendered in gray-scale.
+	 * @param width  The target width of the output image. Ignored if equal or less than 0.
 	 * @param height The target height of the output image. Ignored if equal or less than 0.
 	 */
 	public static void cliConvert(java.nio.file.Path file, java.nio.file.Path output, boolean gray, int width, int height)
@@ -1191,7 +1190,7 @@ public class SVGConverter
 			SVGConverter converter = new SVGConverter(new BufferedInputStream(Files.newInputStream(file)));
 			AbstractShape shape = converter.getShape();
 
-			System.out.println("Read from "+file);
+			System.out.println("Read from " + file);
 			Rectangle2D transRect = shape.getTransformedBounds();
 			System.out.println(String.format("Source image has dimensions %.2f x %.2f", transRect.getWidth(), transRect.getHeight()));
 			if (output != null)

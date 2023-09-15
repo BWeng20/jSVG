@@ -13,10 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A CSS selector. Hold style selector items and applies them on SVG-elements.
+ */
 public final class CssStyleSelector
 {
+	/**
+	 * The list of rules.
+	 */
 	public List<SelectorRule> rules_ = new ArrayList<>();
 
+	/**
+	 * A "pair" like helper class to bind a rule and a selector.
+	 */
 	private static class SelectorEntry
 	{
 		SelectorRule rule_;
@@ -29,11 +38,15 @@ public final class CssStyleSelector
 		}
 	}
 
+	/**
+	 * Applies the rules to the SVG elements.
+	 *
+	 * @param root  The root element.
+	 * @param cache The wrapper cache where the resulting styles are bounded to the elements.
+	 */
 	public void apply(Node root, ElementCache cache)
 	{
-
 		// As css is not used in svg very often, this is not implemented in an optimized way.
-
 		for (SelectorRule rule : rules_)
 		{
 			for (Selector s : rule.selectors_)
@@ -44,6 +57,15 @@ public final class CssStyleSelector
 		}
 	}
 
+	/**
+	 * Applies one selector-rule to a node.
+	 *
+	 * @param rule  The rule to apply
+	 * @param s     Addition selector to verify.
+	 * @param n     The node to apply to.
+	 * @param cache Wrapper-Element cache.
+	 * @param spec  Current specificity.
+	 */
 	protected void apply(SelectorRule rule, Selector s, Node n, ElementCache cache, Specificity spec)
 	{
 		if (s == null)
@@ -104,6 +126,13 @@ public final class CssStyleSelector
 		return descendant != null;
 	}
 
+	/**
+	 * Apply a style.
+	 *
+	 * @param rule        The rule to apply.
+	 * @param w           The element-wrapper to apply to.
+	 * @param specificity Current specificity.
+	 */
 	protected void setStyles(SelectorRule rule, ElementWrapper w, Specificity specificity)
 	{
 		if (w != null)
@@ -124,5 +153,4 @@ public final class CssStyleSelector
 			}
 		}
 	}
-
 }

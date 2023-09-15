@@ -14,6 +14,13 @@ import java.util.regex.Pattern;
  */
 public class CSSParser
 {
+	/**
+	 * Parses a style specification.
+	 *
+	 * @param style The source of the declaration.
+	 * @param type  The mime type of "style". Currently unused.
+	 * @return The resulting style selector. Never null.
+	 */
 	public static CssStyleSelector parse(String style, String type)
 	{
 		CssStyleSelector styleSelector = new CssStyleSelector();
@@ -58,6 +65,9 @@ public class CSSParser
 	/**
 	 * Parse a style sheet and put all style in the selector.<br>
 	 * Method is not thread-safe, use separate instances on each thread!
+	 *
+	 * @param lexer         The lexer to use as input.
+	 * @param styleSelector The style selector to add style-rules to.
 	 */
 	public void parse(Lexer lexer, CssStyleSelector styleSelector)
 	{
@@ -229,6 +239,9 @@ public class CSSParser
 
 	/**
 	 * Parses a style definition, e.g. "width:10px;height30px" and returns all entries as map.
+	 *
+	 * @param style The style declaration.
+	 * @return The map of attributes and the associated value.
 	 */
 	public static Map<Attribute, String> parseStyle(String style)
 	{

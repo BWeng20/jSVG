@@ -27,6 +27,12 @@ public class Lexer
 	private LexerSymbol reused_;
 	private int stringDelimiter = -100;
 
+	/**
+	 * Create a lexer on top of a reader.
+	 *
+	 * @param reader      The reader to use as input.
+	 * @param reUseSymbol If true the lexer re-use the same instance as result symbol.
+	 */
 	public Lexer(Reader reader, boolean reUseSymbol)
 	{
 		reader_ = reader;
@@ -34,8 +40,13 @@ public class Lexer
 			reused_ = new LexerSymbol();
 	}
 
-	StringBuilder buffer = new StringBuilder();
+	private StringBuilder buffer = new StringBuilder();
 
+	/**
+	 * Return the next symbol.
+	 *
+	 * @return The next symbol.
+	 */
 	public LexerSymbol nextSymbol()
 	{
 		LexerSymbol result = reused_ == null ? new LexerSymbol() : reused_;
@@ -78,6 +89,9 @@ public class Lexer
 
 	/**
 	 * Check if the character is a stop in current state.
+	 *
+	 * @param c The character to check.
+	 * @return true if c is a stop.
 	 */
 	protected boolean isStop(int c)
 	{
@@ -107,6 +121,9 @@ public class Lexer
 
 	/**
 	 * Check if the character is in list of stop characters
+	 *
+	 * @param c The character to check.
+	 * @return true if c is a stop.
 	 */
 	protected boolean isStopChar(int c)
 	{
@@ -129,11 +146,20 @@ public class Lexer
 		return false;
 	}
 
+	/**
+	 * Check if chracter is a string delimiter.
+	 *
+	 * @param c The character to check.
+	 * @return true if the character is a string delimiter.
+	 */
 	protected boolean isStringDelimiter(int c)
 	{
 		return (c == '\'' || c == '"');
 	}
 
+	/**
+	 * Eats all consecutive spaces starting from the current position.
+	 */
 	protected void eatSpace()
 	{
 		if (stringDelimiter < 0)
