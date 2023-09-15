@@ -31,7 +31,7 @@ public class ElementCache
 	{
 		Stack<Node> todos = new Stack<>();
 		todos.push(root);
-		while( !todos.empty() )
+		while (!todos.empty())
 		{
 			Node next = todos.pop();
 			if (next.getNodeType() == Node.ELEMENT_NODE)
@@ -51,7 +51,8 @@ public class ElementCache
 				}
 			}
 			Node c = next.getFirstChild();
-			while (c != null) {
+			while (c != null)
+			{
 				todos.push(c);
 				c = c.getNextSibling();
 			}

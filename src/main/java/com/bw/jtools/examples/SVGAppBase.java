@@ -1,4 +1,4 @@
-package com.bw.jtools;
+package com.bw.jtools.examples;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
@@ -267,6 +267,9 @@ public abstract class SVGAppBase extends JFrame
 	protected Pattern svgFileNameRegEx = Pattern.compile(".*\\.svg", Pattern.CASE_INSENSITIVE);
 
 
+	/**
+	 * Helper class to hold information about a shape and its source file.
+	 */
 	protected final static class ShapeFile
 	{
 		public final Path path_;
@@ -277,7 +280,6 @@ public abstract class SVGAppBase extends JFrame
 			path_ = p;
 			shape_ = s;
 		}
-
 	}
 
 	protected void loadSVGs(Stream<Path> paths)

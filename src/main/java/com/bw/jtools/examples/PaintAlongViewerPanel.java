@@ -1,4 +1,4 @@
-package com.bw.jtools;
+package com.bw.jtools.examples;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
@@ -21,8 +21,19 @@ import java.awt.Shape;
 public class PaintAlongViewerPanel extends JPanel
 {
 
+	/**
+	 * The shape pane to draw the decorated shape.
+	 */
 	protected ShapePane paintAlongViewerDrawPane_;
+
+	/**
+	 * The scroll pane to show the shape-pane.
+	 */
 	protected JScrollPane paintAlongScrollPane_;
+
+	/**
+	 * The painter to draw the tiles along the outline of the shape.
+	 */
 	protected PaintAlongShapePainter paintAlongViewerPainter_;
 
 	/**
@@ -153,12 +164,18 @@ public class PaintAlongViewerPanel extends JPanel
 		setPreferredSize(new Dimension(600, 600));
 	}
 
+	/**
+	 * Sets a new tile-shape.
+	 */
 	public void setTileShape(AbstractShape shape)
 	{
 		paintAlongViewerDrawPane_.setShape(shape);
 		updateSliders();
 	}
 
+	/**
+	 * Sets a new tile-painter. Including the shape inside.
+	 */
 	public void setTilePainter(AbstractPainterBase painter)
 	{
 		paintAlongViewerPainter_.setTilePainter(painter);
@@ -170,6 +187,9 @@ public class PaintAlongViewerPanel extends JPanel
 		paintAlongViewerPainter_.addPath(path);
 	}
 
+	/**
+	 * Updates if tile-painter was changed externally.
+	 */
 	public void updateTilePainter()
 	{
 		paintAlongViewerPainter_.forceUpdateArea();

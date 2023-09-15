@@ -25,8 +25,9 @@ public class CSSParser
 	/**
 	 * Parse a style sheet and put all style in the selector.<br>
 	 * Method is not thread-safe, use separate instances on each thread!
-	 * @param style The style specification to parse.
-	 * @param type The mime type of the text. Currently unused.
+	 *
+	 * @param style         The style specification to parse.
+	 * @param type          The mime type of the text. Currently unused.
 	 * @param styleSelector The target selector to add the resulting rules to.
 	 */
 	public void parse(String style, String type, CssStyleSelector styleSelector)

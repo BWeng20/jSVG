@@ -1,7 +1,5 @@
 package com.bw.jtools.svg;
 
-import com.bw.jtools.CaseInsensitiveEnum;
-
 public enum Unit
 {
 	userSpaceOnUse,

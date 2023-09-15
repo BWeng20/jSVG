@@ -40,6 +40,7 @@ public abstract class AbstractAnimationOptionPanel<T extends AbstractAnimationCo
 	/**
 	 * Sets a new shape. E.g. to fill the id-combos.<br>
 	 * Remind that members of the implementing class will be zero-initialized but c'tor is possible not finished if called.
+	 * @param shape The new shape to use.
 	 */
 	public abstract void setShape(AbstractShape shape);
 

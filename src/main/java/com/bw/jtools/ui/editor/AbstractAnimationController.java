@@ -10,10 +10,30 @@ import com.bw.jtools.shape.animation.Animator;
  */
 public abstract class AbstractAnimationController<T extends Animation>
 {
+
+	/**
+	 * The shared root of the shape-hierarchy.
+	 */
 	protected AbstractShape shape_;
+
+	/**
+	 * The shared animator that manages the animations.
+	 */
 	protected Animator animator_;
+
+	/**
+	 * The option panel to show the controls.
+	 */
 	protected AbstractAnimationOptionPanel optionPane_;
+
+	/**
+	 * The user-friendly name of the animation.
+	 */
 	protected String name_;
+
+	/**
+	 * The animation to control.
+	 */
 	protected T animation_;
 
 	/**

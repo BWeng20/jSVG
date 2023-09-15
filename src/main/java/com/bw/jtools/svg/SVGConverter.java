@@ -1,7 +1,9 @@
 package com.bw.jtools.svg;
 
+import com.bw.jtools.examples.SVGViewer;
 import com.bw.jtools.shape.AbstractShape;
 import com.bw.jtools.shape.ShapeGroup;
+import com.bw.jtools.shape.ShapePainter;
 import com.bw.jtools.shape.StyledShape;
 import com.bw.jtools.shape.filter.FilterBase;
 import com.bw.jtools.shape.filter.FilterChain;
@@ -32,9 +34,14 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +70,7 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>use</li>
  * <li>linearGradient (without stop-opacity)</li>
  * <li>radialGradient (without stop-opacity)</li>
- * <li>clipPath (only direct use by attribute clip-path, no inheritance)</li>
+ * <li>clipPath</li>
  * <li>filter (partial and only simple scenarios)</li>
  * </ul>
  * Filter stuff that needs offline-rendering (like blur) is very slow.
@@ -73,7 +80,7 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * use such stuff. So the conversion to Java2D shapes is an efficient way to draw
  * simple scalable graphics. Drawing these shapes is very fast. They can also be drawn with any transformation without loss in quality.<br>
  * See {@link com.bw.jtools.shape.ShapePainter} and {@link ShapeIcon}.<br>
- * For usage see the example {@link com.bw.jtools.SVGViewer}.
+ * For usage see the example {@link SVGViewer}.
  */
 public class SVGConverter
 {
@@ -1085,6 +1092,175 @@ public class SVGConverter
 				clipPath = aft.createTransformedShape(clipPath);
 		}
 		return clipPath;
+	}
+
+
+	/**
+	 * Main function for test and conversion use-cases.
+	 *
+	 * @param args Arguments. See {@link #cliHelp()}
+	 */
+	public static void main(String[] args)
+	{
+		final Map<String, Boolean> allowedOptions = Map.of(
+				"output", true,
+				"width", true,
+				"height", true,
+				"gray", false,
+				"help", false
+		);
+		Map<String, String> options = new HashMap<>();
+		List<String> arguments = new ArrayList<>();
+		for (int i = 0; i < args.length; ++i)
+		{
+			String a = args[i];
+			if (a.charAt(0) == '-')
+			{
+				int sepIdx = a.indexOf('=');
+				String name;
+				String value;
+				if (sepIdx > 0)
+				{
+					name = a.substring(1, sepIdx)
+							.toLowerCase();
+					value = a.substring(sepIdx + 1);
+				}
+				else
+				{
+					name = a.substring(1)
+							.toLowerCase();
+					value = null;
+				}
+				Map.Entry<String, Boolean> option = allowedOptions.entrySet()
+																  .stream()
+																  .filter(s -> s.getKey()
+																				.startsWith(name))
+																  .findFirst()
+																  .orElse(null);
+
+				if (option == null || (option.getValue() && value == null))
+					cliErrorAndExit(1);
+				options.put(option.getKey(), value);
+			}
+			else
+			{
+				arguments.add(a);
+			}
+		}
+		if (options.containsKey("help"))
+		{
+			cliHelp();
+			System.exit(0);
+		}
+		if (arguments.size() != 1)
+		{
+			cliErrorAndExit(1);
+		}
+		String outputFile = options.get("output");
+		String width = options.get("width");
+		String height = options.get("height");
+		try
+		{
+			cliConvert(Paths.get(arguments.get(0)),
+					outputFile == null ? null : Paths.get(outputFile), options.containsKey("gray"),
+					width == null ? 0 : Integer.parseInt(width),
+					height == null ? 0 : Integer.parseInt(height));
+		}
+		catch (NumberFormatException ne)
+		{
+			ne.printStackTrace(System.err);
+			cliErrorAndExit(2);
+		}
+	}
+
+	/**
+	 * Command-line-interface to read and convert to a png file.
+	 * If only one output-dimension is given, the other one is calculated to keep aspect ratio.<br>
+	 * The method will "System.exit" on error.
+	 *
+	 * @param file The svg input file.
+	 * @param output The png output file (can be null).
+	 * @param gray If true, the image is rendered in gray-scale.
+	 * @param width The target width of the output image. Ignored if equal or less than 0.
+	 * @param height The target height of the output image. Ignored if equal or less than 0.
+	 */
+	public static void cliConvert(java.nio.file.Path file, java.nio.file.Path output, boolean gray, int width, int height)
+	{
+		try
+		{
+			SVGConverter converter = new SVGConverter(new BufferedInputStream(Files.newInputStream(file)));
+			AbstractShape shape = converter.getShape();
+
+			System.out.println("Read from "+file);
+			Rectangle2D transRect = shape.getTransformedBounds();
+			System.out.println(String.format("Source image has dimensions %.2f x %.2f", transRect.getWidth(), transRect.getHeight()));
+			if (output != null)
+			{
+				ShapePainter painter = new ShapePainter(shape);
+				if (width != 0 || height != 0)
+				{
+					double scaleX = 1;
+					double scaleY = 1;
+					if (width > 0)
+					{
+						scaleX = width / painter.getAreaWidth();
+						if (height <= 0)
+							scaleY = scaleX;
+					}
+					if (height > 0)
+					{
+						scaleY = height / painter.getAreaHeight();
+						if (width <= 0)
+							scaleX = scaleY;
+					}
+					painter.setScale(scaleX, scaleY);
+				}
+				painter.saveAsImage(output.toFile(), gray);
+
+				int w = (int) (0.5 + painter.getAreaWidth());
+				int h = (int) (0.5 + painter.getAreaHeight());
+				System.out.println(String.format("Written image with dimension %d x %d to %s", w, h, output.toString()));
+			}
+		}
+		catch (SVGException e)
+		{
+			e.printStackTrace(System.err);
+			System.exit(3);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace(System.err);
+			System.exit(4);
+		}
+	}
+
+	private static void cliErrorAndExit(int status)
+	{
+		System.err.println("Error in arguments.");
+		cliHelp();
+		System.exit(status);
+	}
+
+	private static void cliHelp()
+	{
+		System.out.println(
+				"Usage\n" +
+						"\tcom.bw.jtools.svg.SVGConverter <svg-file> [<options>]\n" +
+						"\toptions:\n" +
+						"\t\t-output=<file> Specifies an output png file.\n" +
+						"\t\t-gray          Renders in grayscale.\n" +
+						"\t\t-help          Prints this usage and exits.\n" +
+						"\t\t-width         Width of output image.\n" +
+						"\t\t-height        Height of output image.\n" +
+						"\tThe image will be scaled for each dimension separately to match the given size.\n" +
+						"\tIf only one dimension is given, the same scale-factor will be used for the other one, keeping aspect ratio.\n\n" +
+						"\tYou can also use any unique prefix of these options.\n\n" +
+						"On error following error codes are returned:\n" +
+						"\t 1: General error in arguments\n" +
+						"\t 2: Error in width/height argument format. See trace.\n" +
+						"\t 3: Error in SVG file. See trace.\n" +
+						"\t 4: Some general IO-Error. See trace."
+		);
 	}
 
 }

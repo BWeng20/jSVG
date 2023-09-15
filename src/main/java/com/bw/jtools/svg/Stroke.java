@@ -71,7 +71,8 @@ public class Stroke
 		final Double vpLength = w.getViewPortLength();
 		try
 		{
-			if ( miterlimit_ < 1.0f ) {
+			if (miterlimit_ < 1.0f)
+			{
 				miterlimit_ = 1.0f;
 			}
 
@@ -79,7 +80,8 @@ public class Stroke
 					(float) width_.toPixel(vpLength), cap, join, miterlimit_,
 					dasharray_ == null ? null : dasharray_.toFloatPixel(vpLength),
 					dashoffset_);
-		} catch (IllegalArgumentException ie)
+		}
+		catch (IllegalArgumentException ie)
 		{
 			SVGConverter.error("Failed to create stroke %s", ie.getMessage());
 			return new BasicStroke();

@@ -286,9 +286,20 @@ public abstract class AbstractPainterBase
 	 */
 	public void saveAsImage(File pngFile)
 	{
+		saveAsImage(pngFile, false);
+	}
+
+	/**
+	 * Save the shape as PNG bitmap with the current scale.
+	 *
+	 * @param pngFile The File to store to. If extension is missing or empty, ".png" is added.
+	 * @param toGray  If true the image is rendered in gray-scale.
+	 */
+	public void saveAsImage(File pngFile, boolean toGray)
+	{
 		if (pngFile != null)
 		{
-			BufferedImage image = paintShapeToBufferTransparent(null, false);
+			BufferedImage image = paintShapeToBufferTransparent(null, toGray);
 			if (image != null)
 			{
 				try

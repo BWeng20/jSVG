@@ -1,4 +1,4 @@
-package com.bw.jtools;
+package com.bw.jtools.svg;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -2,8 +2,6 @@ package com.bw.jtools.shape.animation;
 
 import com.bw.jtools.shape.AbstractShape;
 
-import java.time.LocalTime;
-
 /**
  * Abstract base class for animations.
  */
@@ -12,11 +10,13 @@ public abstract class Animation
 	/**
 	 * Creates a new animation object.
 	 * Uses by implementations to initialize type and defaults.
+	 *
+	 * @param type The type of animation.
 	 */
 	protected Animation(AnimationType type)
 	{
 		type_ = type;
-		setSpringDamping(3);
+		setSpringDamping(800);
 		setSpringFrequency(20);
 	}
 
@@ -31,26 +31,42 @@ public abstract class Animation
 	/**
 	 * Sets the damping value for spring animation.
 	 * Has no effect if another type is set.
+	 *
+	 * @param damping The new damping value. Meaning full values are between 100 and 1000. Default in c'tor is 800.
 	 */
 	public void setSpringDamping(double damping)
 	{
-		springDamping_ = Math.pow(20, damping) / 10.0;
+		springDamping_ = damping;
 	}
 
 	/**
-	 * Sets the frequency value for spring animation.
-	 * Has no effect if another type is set.
+	 * Sets the frequency (number of oscillation in one time unit) value for spring animation.
+	 * Has no effect if another animation type is set.
+	 *
+	 * @param frequency The new frequency. Default in c'tor is 20. Values below 1 will be ignored.
 	 */
 	public void setSpringFrequency(double frequency)
 	{
 		springFrequency = Math.max(1, frequency);
 	}
 
+	/**
+	 * Calculates new relative "spring" value for the given time-factor.
+	 *
+	 * @param time Relative time in range of [0..1]
+	 * @return relative value in range [0..1]
+	 */
 	protected double spring(double time)
 	{
 		return 1 - (Math.pow(springDamping_, -time) * (1 - time) * Math.cos(springFrequency * time));
 	}
 
+	/**
+	 * Calculates new relative "linear" value for the given time-factor.
+	 *
+	 * @param time Relative time in range of [0..1]
+	 * @return always "time"
+	 */
 	protected double linear(double time)
 	{
 		return time;
@@ -59,7 +75,7 @@ public abstract class Animation
 	/**
 	 * Sets the animation to the time-frame.
 	 *
-	 * @param time The current time frame.
+	 * @param time The current time frame. Normally the current milliseconds from 1970.
 	 * @return true if some value was changed (and a repaint is needed).
 	 */
 	public boolean tick(long time)
@@ -133,6 +149,8 @@ public abstract class Animation
 
 	/**
 	 * Gets the current value.
+	 *
+	 * @return The current value.
 	 */
 	public double getValue()
 	{
@@ -141,6 +159,8 @@ public abstract class Animation
 
 	/**
 	 * Sets the current value.
+	 *
+	 * @param value The new value to use.
 	 */
 	public void setValue(double value)
 	{
@@ -176,6 +196,9 @@ public abstract class Animation
 	private double startValue_;
 	private double targetValue_;
 
+	/**
+	 * The current value.
+	 */
 	protected double value_;
 
 	private FillMode fill_;

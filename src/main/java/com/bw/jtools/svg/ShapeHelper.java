@@ -197,13 +197,16 @@ public final class ShapeHelper
 				}
 				pi.next();
 			}
-			if (segments_.size()>1) {
+			if (segments_.size() > 1)
+			{
 				// This logic is a bit fuzzy, as a path CAN contain multiple "MOVE" at start.
 				// we assume that the first segment is a real one...
 				Segment f = segments_.get(0);
-				Segment l = segments_.get(segments_.size()-1);
+				Segment l = segments_.get(segments_.size() - 1);
 				isClosed_ = Point2D.distance(f.x_, f.y_, l.x_, l.y_) < 0.1;
-			} else {
+			}
+			else
+			{
 				// A Shape with only one segment can not be closed (or how?).
 				isClosed_ = false;
 			}

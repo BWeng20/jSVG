@@ -12,6 +12,10 @@ public class RotationAnimationController extends AbstractAnimationController<Rot
 {
 	private double angle_ = 0;
 
+	/**
+	 * Creates a new Rotation animation controller
+	 * @param name The user-friendly name of the animation.
+	 */
 	public RotationAnimationController(String name)
 	{
 		super(name, new Rotation(AnimationType.Spring, 0, 0));

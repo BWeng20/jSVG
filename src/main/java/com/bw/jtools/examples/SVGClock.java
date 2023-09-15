@@ -1,4 +1,4 @@
-package com.bw.jtools;
+package com.bw.jtools.examples;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
@@ -233,8 +233,10 @@ public class SVGClock extends SVGAppBase
 			{
 				// Stop animator otherwise app will not exit.
 				//@TODO possibly we can do this from animator via component-listener?
-				clock_.stop();
-				animator_.stop();
+				if ( clock_ != null)
+					clock_.stop();
+				if (animator_ != null)
+					animator_.stop();
 			}
 		});
 

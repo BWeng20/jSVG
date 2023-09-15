@@ -73,6 +73,7 @@ public class Context
 
 	/**
 	 * Create a new Context as copy from a given one.
+	 *
 	 * @param createNewContext if true, the Graphics2D instance inside is cloned.
 	 */
 	public Context(Context ctx, boolean createNewContext)
@@ -102,7 +103,8 @@ public class Context
 
 	/**
 	 * Cereate a context as wrapper for a Graphics2D object.
-	 * @param g2D The Graphics2D instance.
+	 *
+	 * @param g2D              The Graphics2D instance.
 	 * @param createNewContext If true the Graphics2D instance is cloned.
 	 */
 	public Context(Graphics g2D, boolean createNewContext)
@@ -121,8 +123,9 @@ public class Context
 
 	/**
 	 * Creates a context for a buffered-image as target device.
+	 *
 	 * @param source The buffer to paint into.
-	 * @param ctx The parent Context to retrieve settings.
+	 * @param ctx    The parent Context to retrieve settings.
 	 */
 	public Context(BufferedImage source, Context ctx)
 	{
@@ -221,6 +224,6 @@ public class Context
 		}
 		g2D_ = null;
 		currentColor_ = null;
-		currentBackground_= null;
+		currentBackground_ = null;
 	}
 }

@@ -2,7 +2,6 @@ package com.bw.jtools.shape.animation;
 
 import com.bw.jtools.shape.AbstractShape;
 
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import java.awt.Component;
 import java.awt.geom.AffineTransform;
@@ -12,22 +11,39 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Animation manager.
+ * Animation manager.<br>
+ * Manages several animations on one shape-hierarchy.
  */
 public class Animator
 {
 
+	/**
+	 * The root of the shape-hierarchy to animate.
+	 */
 	protected final AbstractShape shape_;
+
+	/**
+	 * The component that display the shapes.
+	 */
 	protected final Component component_;
+
+	/**
+	 * Timer to create animation-frames.
+	 */
 	protected Timer timer_;
 
+	/**
+	 * The default timer-delay.
+	 */
 	protected int timerTick_ = 20;
 
+	/**
+	 * Map of shape-ids to animations.
+	 */
 	protected final Map<String, AnimationItem> animations_ = new HashMap<>();
 
 	private static class AnimationItem
 	{
-
 		public List<Animation> animation_ = new ArrayList<>();
 		public final AbstractShape shape_;
 		public final AffineTransform orgAft_;
@@ -39,6 +55,12 @@ public class Animator
 		}
 	}
 
+	/**
+	 * Creates a new animation.
+	 *
+	 * @param comp  The component that displays the shape.
+	 * @param shape The shape-root.
+	 */
 	public Animator(Component comp, AbstractShape shape)
 	{
 		shape_ = shape;
@@ -78,6 +100,9 @@ public class Animator
 		return false;
 	}
 
+	/**
+	 * Stops the animation. Value will keep the current value.
+	 */
 	public void stop()
 	{
 		if (timer_ != null)
@@ -136,6 +161,11 @@ public class Animator
 		timer_.start();
 	}
 
+	/**
+	 * Check if the animation is still running.
+	 *
+	 * @return True if the animation is still running.
+	 */
 	public boolean isRunning()
 	{
 		return timer_ != null && timer_.isRunning();

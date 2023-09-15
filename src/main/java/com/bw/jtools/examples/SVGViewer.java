@@ -1,4 +1,4 @@
-package com.bw.jtools;
+package com.bw.jtools.examples;
 
 import com.bw.jtools.shape.AbstractPainterBase;
 import com.bw.jtools.shape.AbstractShape;
