@@ -8,8 +8,15 @@ With ShapePainter you can draw the SVG "along" the outline of some other shape.
 
 Simple Example:
 
-This SVG ![Arrow.svg](Arrow.svg) is drawn along a rectangle:
+![decorared.png](decorared.png)
 
-To draw the SVG the base-position and the tangent angle along the outline is needed. Both values are calculated by the helper class 
+The SVG ![Arrow.svg](Arrow.svg) is drawn along a rectangle, a circle and a curve.
+To draw the SVG the base-position and the tangent angle along the outline is needed. Both values are calculated by 
 [ShapeHelper.pointAtLength](../src/main/java/com/bw/jtools/svg/ShapeHelper.java).
+
+Additionally, the painter can add space between the elements (here it is negative) and can add
+offset to start- or end of the decorated paths.<br>
+The same example with more gap and some offsets at start and end.
+
+![decorared_withgap.png](decorared_withgap.png)
 
