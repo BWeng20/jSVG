@@ -18,6 +18,10 @@ public abstract class AbstractPainterBase
 	 * @see #calculateArea()
 	 */
 	protected Rectangle2D.Double area_ = null;
+
+	/**
+	 * Area covert by the transformed shape. Including scale and rotation.
+	 */
 	protected Rectangle2D.Double areaTransformed_ = null;
 	protected double scaleX_ = 1.0f;
 	protected double scaleY_ = 1.0f;
@@ -27,11 +31,16 @@ public abstract class AbstractPainterBase
 
 	protected double rotationAngleDegree_ = 0;
 
+	/**
+	 * If true, clipping of the top-most view-box is applied.
+	 */
 	protected boolean enableClipping_ = true;
-
+	protected boolean areaIgnoresRotation_ = true;
 
 	/**
 	 * Enable paint time measurement.
+	 *
+	 * @param measureTime true if time measurement shall be enabled.
 	 */
 	public void setTimeMeasurementEnabled(boolean measureTime)
 	{
@@ -40,6 +49,8 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Get time in milliseconds of the last paint.
+	 *
+	 * @return time in milliseconds.
 	 */
 	public long getMeasuredTimeMS()
 	{
@@ -47,6 +58,11 @@ public abstract class AbstractPainterBase
 	}
 
 
+	/**
+	 * Checks if a rotation is in effect.
+	 *
+	 * @return true if rotation is set, false if not.
+	 */
 	protected boolean isRotationActive()
 	{
 		return (rotationAngleDegree_ < -0.1 || rotationAngleDegree_ > 0.1);
@@ -54,6 +70,8 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Gets the current rotation angle in degree.
+	 *
+	 * @return the rotation angle in degrees.
 	 */
 	public double getRotationAngleDegree()
 	{
@@ -70,12 +88,15 @@ public abstract class AbstractPainterBase
 		if (angleDegree != rotationAngleDegree_)
 		{
 			rotationAngleDegree_ = angleDegree;
+			areaTransformed_ = null;
 		}
 	}
 
-
 	/**
 	 * Get the current rotation angle as transform.
+	 *
+	 * @return The rotation transformation if rotation is active, null if rotation is off.
+	 * @see #setRotationAngleDegree(double)
 	 */
 	protected AffineTransform getRotation()
 	{
@@ -87,7 +108,7 @@ public abstract class AbstractPainterBase
 	}
 
 	/**
-	 * Ensures that "area" is available.
+	 * Ensures that members "area_" and "areaTransformed_" are available.
 	 */
 	protected void ensureArea()
 	{
@@ -98,14 +119,18 @@ public abstract class AbstractPainterBase
 		}
 		if (areaTransformed_ == null)
 		{
-			areaTransformed_ = new Rectangle2D.Double(0, 0, area_.width * scaleX_, area_.height * scaleY_);
-			AffineTransform rotation = getRotation();
-			if (rotation != null)
+			if (!areaIgnoresRotation_)
 			{
-				Rectangle2D rotArea = rotation.createTransformedShape(areaTransformed_)
-											  .getBounds2D();
-				areaTransformed_.setRect(0, 0, rotArea.getWidth(), rotArea.getHeight());
+				AffineTransform rotation = getRotation();
+				if (rotation != null)
+				{
+					Rectangle2D rotArea = rotation.createTransformedShape(new Rectangle2D.Double(area_.x, area_.y, area_.width, area_.height))
+												  .getBounds2D();
+					areaTransformed_ = new Rectangle2D.Double(0, 0, rotArea.getWidth() * scaleX_, rotArea.getHeight() * scaleY_);
+				}
 			}
+			if (areaTransformed_ == null)
+				areaTransformed_ = new Rectangle2D.Double(0, 0, area_.width * scaleX_, area_.height * scaleY_);
 		}
 	}
 
@@ -118,7 +143,9 @@ public abstract class AbstractPainterBase
 	}
 
 	/**
-	 * Returns the covered area according to shapes and scale.
+	 * Gets the covered area according to shape and scale.
+	 *
+	 * @return the area.
 	 */
 	public Rectangle2D.Double getArea()
 	{
@@ -127,7 +154,9 @@ public abstract class AbstractPainterBase
 	}
 
 	/**
-	 * Gets the absolute width of the covered area.
+	 * Gets the width of the covered area.
+	 *
+	 * @return The width.
 	 */
 	public double getAreaWidth()
 	{
@@ -137,6 +166,8 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Gets the absolute height of the covered area.
+	 *
+	 * @return The height of the output area.
 	 */
 	public double getAreaHeight()
 	{
@@ -146,6 +177,9 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Sets X- and Y-Scale factor.
+	 *
+	 * @param scaleX The new X-scale.
+	 * @param scaleY The new Y-scale.
 	 */
 	public void setScale(double scaleX, double scaleY)
 	{
@@ -156,6 +190,8 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Gets X-Scale factor.
+	 *
+	 * @return The current x-scale.
 	 */
 	public double getXScale()
 	{
@@ -164,22 +200,63 @@ public abstract class AbstractPainterBase
 
 	/**
 	 * Gets Y-Scale factor.
+	 *
+	 * @return The current y-scale.
 	 */
 	public double getYScale()
 	{
 		return scaleY_;
 	}
 
+
+	/**
+	 * Checks if clipping of the top-most view-box is applied.
+	 *
+	 * @return true if clipping is enabled.
+	 */
 	public boolean isClippingEnabled()
 	{
 		return enableClipping_;
 	}
 
+	/**
+	 * Sets clipping of the top-most view-box.
+	 *
+	 * @param enabled if true, clipping is enabled.
+	 */
 	public void setClippingEnabled(boolean enabled)
 	{
 		this.enableClipping_ = enabled;
 	}
 
+	/**
+	 * Checks if "area ignores rotation" is on.
+	 * If on, the value returned by "getArea" will ignore the additional rotation and return the scaled view-box without rotation.<br>
+	 * This is meaningful if the shape doesn't fill the view-box (e.g. is round).<br>
+	 * If off, area will give the bounding box of the rotated view-box.
+	 *
+	 * @return Current value of area-ignores-rotation_.
+	 */
+	public boolean isAreaIgnoresRotation()
+	{
+		return areaIgnoresRotation_;
+	}
+
+	/**
+	 * Sets "area ignores rotation".
+	 *
+	 * @param areaIgnoresRotation The new value.
+	 * @see #isAreaIgnoresRotation()
+	 */
+	public void setAreaIgnoresRotation(boolean areaIgnoresRotation)
+	{
+		if (areaIgnoresRotation_ != areaIgnoresRotation)
+		{
+			areaIgnoresRotation_ = areaIgnoresRotation;
+			// Force re-calculation.
+			areaTransformed_ = null;
+		}
+	}
 
 	/**
 	 * Draw the shapes to a buffered image with foreground black and background white.<br>

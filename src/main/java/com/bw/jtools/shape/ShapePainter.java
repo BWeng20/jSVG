@@ -15,7 +15,6 @@ public final class ShapePainter extends AbstractPainterBase
 {
 	private AbstractShape shape_;
 
-
 	public ShapePainter()
 	{
 	}
@@ -75,17 +74,26 @@ public final class ShapePainter extends AbstractPainterBase
 		final AffineTransform rotation = getRotation();
 		g2D.scale(scaleX_, scaleY_);
 
-		if (rotation != null)
+		if (areaIgnoresRotation_)
 		{
-			Rectangle2D a = rotation.createTransformedShape(area_)
-									.getBounds2D();
-			g2D.translate(-a.getX(), -a.getY());
+			g2D.translate(-area_.x, -area_.y);
+
+
 		}
 		else
 		{
-			g2D.translate(-area_.x, -area_.y);
-		}
 
+			if (rotation != null)
+			{
+				Rectangle2D a = rotation.createTransformedShape(area_)
+										.getBounds2D();
+				g2D.translate(-a.getX(), -a.getY());
+			}
+			else
+			{
+				g2D.translate(-area_.x, -area_.y);
+			}
+		}
 		if (clearArea)
 		{
 			g2D.setPaint(lct.currentBackground_);
@@ -100,7 +108,6 @@ public final class ShapePainter extends AbstractPainterBase
 		// If needed disable top-level-clipping.
 		shape_.setClippingEnabled(enableClipping_);
 		shape_.paint(lct);
-
 	}
 
 }

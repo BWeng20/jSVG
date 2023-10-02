@@ -43,21 +43,47 @@ import java.util.List;
 public class SVGClock extends SVGAppBase
 {
 
+	/**
+	 * The path where the shape was loaded from.
+	 */
 	protected Path svgPath_;
+
+	/**
+	 * The output pane.
+	 */
 	protected ShapePane pane_;
+
+	/**
+	 * The shape-root to animate.
+	 */
 	protected AbstractShape shape_;
+
+	/**
+	 * Clock timer. Starts animations if seconds/minuters/hour change.
+	 */
 	protected Timer clock_;
-	protected Timer status_;
+
+	/**
+	 * Animation manager.
+	 */
 	protected Animator animator_;
+
+	/**
+	 * Checkbox to turn animation on/off.
+	 */
 	protected JCheckBox animate_;
 
-
+	/**
+	 * True if painter-pane-component shall be enabled.
+	 */
 	protected boolean enabled_ = true;
 
 	/**
-	 * Shows a SVG file.
+	 * Starts tge clock animator.
 	 *
-	 * @param args File name
+	 * @param args Empty or one file name
+	 * @throws FileNotFoundException If the file was not found.
+	 * @throws SVGException          if some conversion error occurred.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
 	{
@@ -225,6 +251,7 @@ public class SVGClock extends SVGAppBase
 		setMinimumSize(new Dimension(400, 300));
 
 		pane_.setDoubleBuffered(false);
+		pane_.setInlineBorder(true);
 
 		addWindowListener(new WindowAdapter()
 		{
@@ -233,7 +260,7 @@ public class SVGClock extends SVGAppBase
 			{
 				// Stop animator otherwise app will not exit.
 				//@TODO possibly we can do this from animator via component-listener?
-				if ( clock_ != null)
+				if (clock_ != null)
 					clock_.stop();
 				if (animator_ != null)
 					animator_.stop();

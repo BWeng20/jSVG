@@ -9,18 +9,25 @@ In SWT it can be used... but only via some Java2D integration.
 SWT does not directly support Java2D and the SWT graphics system itself lacks some necessary basic functions.
 
 ### Motivation
+
 Most Icons used are based on bitmap images that doesn't scale well 
-on HiDPI displays. Most web applications use SVG for icons as they 
+on __HiDPI displays__. Most web applications use SVG for icons as they 
 can be scaled without loss in quality.
 
 Some Java apps use Apache Batik to do the same, but Batik is hugh.
-For bigger applications with interactivity in the SVG elements, batik is the best option.
-I had very good projects using Batik. It's a great software. But I personally doesn't want to include it "only" to render icons.
+For bigger applications with interactivity with the SVG elements, batik is the best option.
+I had very good projects using Batik. It's still a great software. But I personally doesn't want to include it "only" to render icons.
 
-jSVG tries to convert SVG elements to Java2D-Shapes. This reduces the features that can be used
-a bit, but the once converted shapes render incredible fast.
+It is also easy to create __gauge like widgets__ with SVG - as with JavaFX. 
+Elements in SVG can be addressed via their id and animated (see Clock example below).
 
-If you need a feature-complete renderer, use Apache Batik or (also not complete) SVG Salamander.
+As the SVGs can be transformed in any ways, it is also easy to use them for __decorations__. E.g. to give a box some fancy frame.
+
+
+### How it is done
+
+__jSVG tries to convert SVG elements to Java2D-Shapes__. This reduces the supported features that can be used,
+but the once converted shapes render incredible fast.
 
 The resulting Shapes can be painted on any Graphics2d-instance. Additional style information is handled by a specific "Painter" that sets colors, strokes etc. to match the SVG definitions. The Java2D-shapes (and the Painter) are fully scablable, any transformation (rotation, scale, translate) can be used without losing quality. 
 
@@ -28,6 +35,14 @@ The Painter can be called multiple times with different transformation. So the S
 E.g. as parts of a frame, for edge-decorations e.t.c.
 
 As the real rendering is done by the Java2d-engine this is fast enough to paint large amount of SVG elements. 
+
+If you need a feature-complete renderer, use
+* Apache Batik
+* SVG Salamander https://github.com/blackears/svgSalamander
+* JSVG https://github.com/weisJ/jsvg
+
+Specially jsvg - yes, same name, I discovered this too late, sorry - is nearly feature-complete.
+But all of them a larger and render slower, which - I assume - is normal for real SVG-rendering.
 
 ### Example
 
@@ -56,14 +71,14 @@ Clone one the repository, then start the icon tester and select the svg director
 to see how they look at buttons.
 
 
-### Supported features
+### (Not) Supported features
 
 As said this is a lightweight SVG renderer, designed for High-Res icons.
 
 Most complex stuff may not work. "css" is supported to some degree. "markers" or filters are not supported.
 
-I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated (these guys have fun!).
-If something doesn't work, please use the functions of your SVG-editor to simplify your drawings.
+I will not give here a complete list of features that are supported or not. After each SVG-conference the list would be outdated.
+If something doesn't work, try to use the functions of your SVG-editor to simplify your drawings.
 
 #### Filters
 
@@ -90,6 +105,14 @@ The image below shows a rendered circle on the left and the result of a clip-pat
 ![clip-path-antialiasing.png](doc%2Fclip-path-antialiasing.png)
 
 You can use your SVG editor to create a normal path from the clipped result.
+
+#### Animation
+
+As SVG animations involve executing scripts, it is not supported. 
+Clearly it's possible to execute Scripts with the Script-API, but this would be another project.
+
+This project includes a tiny animation-framework that supports programmatic animations to support
+animated widgets. See the Clock-example below. 
 
 ### A word about off-screen-images
 
@@ -133,6 +156,11 @@ Specially of the painter-interface.
   In order to show "correct" time with such a clock, you must remove any rotation from the clock hand elements,
   so that the hands show “12:00:00”.<br>
   The animation simply rotates the elements and does not know the original orientation.
+  This is a programmatic animation, NOT an scripted SVG animation. The animator-classes access sub-elements by id and modify 
+  attributes of the shape (transformation-matrix or other). Not more.
+
+  You have to select the matching elements from the combos and the rotation center (in the elements user-space).  
+
 
 The demonstration app SVGViewer has an option to paint the SVG "along a path".
 In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate

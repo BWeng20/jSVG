@@ -2,8 +2,11 @@ package com.bw.jtools.shape.animation;
 
 import com.bw.jtools.shape.AbstractShape;
 
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import java.awt.Component;
+import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +33,15 @@ public class Animator
 	/**
 	 * Timer to create animation-frames.
 	 */
-	protected Timer timer_;
+	protected int animationThreadId_;
 
 	/**
 	 * The default timer-delay.
 	 */
 	protected int timerTick_ = 20;
+
+	private static int animatorCount_ = 0;
+
 
 	/**
 	 * Map of shape-ids to animations.
@@ -103,62 +109,83 @@ public class Animator
 	/**
 	 * Stops the animation. Value will keep the current value.
 	 */
-	public void stop()
+	public synchronized void stop()
 	{
-		if (timer_ != null)
-		{
-			timer_.stop();
-			timer_ = null;
-		}
+		animationThreadId_ = 0;
 	}
 
 
 	/**
 	 * (Re-)Starts the animations.
 	 */
-	public void start()
+	public synchronized void start()
 	{
 		stop();
 
 		for (AnimationItem i : animations_.values())
 			i.animation_.forEach(Animation::start);
 
-		timer_ = new Timer(timerTick_, e ->
+		do
 		{
-			long nextTick;
-			boolean repaint = false;
-			long tick = System.currentTimeMillis();
-			for (Map.Entry<String, AnimationItem> i : animations_.entrySet())
+			animationThreadId_ = ++animatorCount_;
+		} while (animationThreadId_ == 0);
+		final int animatorId = animationThreadId_;
+
+
+			Thread animationThread = new Thread(() ->
 			{
-				AnimationItem s = i.getValue();
-				for (Animation a : s.animation_)
+				while (animatorId == animationThreadId_)
 				{
-					if (a.tick(tick))
+					long nextTick;
+					boolean repaint = false;
+					long tick = System.currentTimeMillis();
+					for (Map.Entry<String, AnimationItem> i : animations_.entrySet())
 					{
-						repaint = true;
+						AnimationItem s = i.getValue();
+						for (Animation a : s.animation_)
+						{
+							if (a.tick(tick))
+							{
+								repaint = true;
+							}
+						}
+						if (repaint)
+						{
+							if (s.shape_.aft_ == null)
+								s.shape_.aft_ = new AffineTransform(s.orgAft_);
+							else
+								s.shape_.aft_.setTransform(s.orgAft_);
+							s.animation_.forEach(a -> a.apply(s.shape_));
+						}
+					}
+					if (repaint)
+					{
+						SwingUtilities.invokeLater(() ->
+						{
+							if ( component_ instanceof JComponent)
+							{
+								((JComponent) component_).paintImmediately(0, 0, component_.getWidth(), component_.getHeight());
+								Toolkit.getDefaultToolkit()
+									   .sync();
+							}
+							else
+								component_.repaint();
+						});
+					}
+					nextTick = timerTick_ - (System.currentTimeMillis() - tick);
+					if (nextTick <= 0)
+						nextTick = 1;
+					try
+					{
+						Thread.sleep((int) nextTick);
+					}
+					catch (Exception e)
+					{
 					}
 				}
-				if (repaint)
-				{
-					if (s.shape_.aft_ == null)
-						s.shape_.aft_ = new AffineTransform(s.orgAft_);
-					else
-						s.shape_.aft_.setTransform(s.orgAft_);
-					s.animation_.forEach(a -> a.apply(s.shape_));
-				}
-
-			}
-			if (repaint)
-				component_.repaint();
-			nextTick = timerTick_ - (System.currentTimeMillis() - tick);
-			if (nextTick <= 0)
-				nextTick = 1;
-			timer_.setInitialDelay((int) nextTick);
-			timer_.restart();
-
-		});
-		timer_.setDelay(0);
-		timer_.start();
+				;
+			}, "Animator-" + animatorId);
+			animationThread.start();
 	}
 
 	/**
@@ -168,7 +195,7 @@ public class Animator
 	 */
 	public boolean isRunning()
 	{
-		return timer_ != null && timer_.isRunning();
+		return 0 != animationThreadId_;
 	}
 
 }

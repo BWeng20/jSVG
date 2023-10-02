@@ -196,7 +196,16 @@ public final class ElementWrapper
 			parent_ = elementCache_.getElementWrapper(parentNode);
 			parentNode = parentNode.getParentNode();
 		}
-		type_ = Type.valueFrom(node.getTagName());
+		Type t = Type.valueFrom(node.getTagName());
+		if ( t == null ) {
+			// @TODO: Currently we don't care about real namespaces....
+			String tn = node.getTagName();
+			int nsIdx = tn.indexOf(':');
+			if ( nsIdx >= 0) {
+				t = Type.valueFrom(tn.substring(nsIdx+1));
+			}
+		}
+		type_ = t;
 	}
 
 	public boolean isShadow()
@@ -537,7 +546,7 @@ public final class ElementWrapper
 			else
 				aft_ = new AffineTransform();
 		}
-		return aft_.isIdentity() ? null : aft_;
+		return (aft_ == null || aft_.isIdentity()) ? null : aft_;
 	}
 
 	public void applyTransform(AffineTransform aft)

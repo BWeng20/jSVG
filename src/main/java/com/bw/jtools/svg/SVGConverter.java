@@ -270,7 +270,9 @@ public class SVGConverter
 		Type typ = w.getType();
 
 		if (typ == null)
+		{
 			warnOnce("Unknown command " + e);
+		}
 		else switch (typ)
 		{
 			case g:
