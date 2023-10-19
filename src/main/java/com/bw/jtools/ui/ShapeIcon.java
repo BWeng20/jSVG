@@ -141,13 +141,13 @@ public class ShapeIcon implements Icon, Accessible
 	@Override
 	public int getIconWidth()
 	{
-		return (int) painter_.getAreaWidth();
+		return (int)Math.ceil(painter_.getAreaWidth());
 	}
 
 	@Override
 	public int getIconHeight()
 	{
-		return (int) painter_.getAreaHeight();
+		return (int)Math.ceil(painter_.getAreaHeight());
 	}
 
 	public ShapePainter getPainter()
