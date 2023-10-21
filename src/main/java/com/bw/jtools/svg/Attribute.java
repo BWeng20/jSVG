@@ -6,6 +6,7 @@ public enum Attribute
 {
 	Class("class"),
 	Color("color"),
+	BackgroundColor("background-color"),
 	ViewBox("viewBox"),
 	ClipPath("clip-path"),
 	D("d"),

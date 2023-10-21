@@ -2,6 +2,7 @@ package com.bw.jtools.svg;
 
 import com.bw.jtools.examples.SVGViewer;
 import com.bw.jtools.shape.AbstractShape;
+import com.bw.jtools.shape.Context;
 import com.bw.jtools.shape.ShapeGroup;
 import com.bw.jtools.shape.ShapePainter;
 import com.bw.jtools.shape.StyledShape;
@@ -216,9 +217,23 @@ public class SVGConverter
 			// Create an enclosing group and set the viewBox as clip-path.
 			// "Height" and "Width" is currently not supported.
 
+			Shape clipPath = null;
 			String viewBox = svg.attr(Attribute.ViewBox);
+			if (viewBox == null)
+			{
+				Length width = svg.toLength(Attribute.Width, false);
+				Length height = svg.toLength(Attribute.Height, false);
+				if (width != null && height != null)
+				{
+					clipPath = new Rectangle2D.Double(0, 0, width.toPixel(null), height.toPixel(null));
+				}
+			}
+			else
+			{
+				clipPath = new Viewbox(viewBox).getShape();
+			}
 
-			finalShape_ = new ShapeGroup(svg.id(), null, (viewBox == null) ? null : new Viewbox(viewBox).getShape(), null);
+			finalShape_ = new ShapeGroup(svg.id(), null, clipPath, null);
 
 			for (ElementInfo s : shapes)
 				finalShape_.shapes_.add(finish(s));
@@ -910,9 +925,9 @@ public class SVGConverter
 
 		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(w.getShape()
 															   .getShape(),
-				stroke.getPaintWrapper() == null ? null : stroke,
-				stroke.getPaintWrapper(),
-				fill.getPaintWrapper(),
+				(stroke == null || stroke.getPaintWrapper() == null) ? null : stroke,
+				(stroke == null) ? null : stroke.getPaintWrapper(),
+				(fill == null) ? null : fill.getPaintWrapper(),
 				clipPath
 		);
 		styledShapeInfo.fillRule_ = fillRule(w);
@@ -1034,8 +1049,7 @@ public class SVGConverter
 				}
 				g.fractions_[i] = f;
 
-				final Color cp = new Color(this, wrapper.attr(Attribute.StopColor),
-						wrapper.toPDouble(Attribute.StopOpacity, 1d, 1d, false));
+				final Color cp = color(wrapper, Attribute.StopColor, true, Attribute.StopOpacity, false, null);
 				PaintWrapper pw = cp.getPaintWrapper();
 				g.colors_[i] = (pw != null && pw.getColor() != null) ? pw.getColor() : java.awt.Color.BLACK;
 			}
@@ -1055,9 +1069,35 @@ public class SVGConverter
 
 	protected Color fill(ElementWrapper w)
 	{
-		String color = w.attr(Attribute.Fill, true);
-		return new Color(this, color == null ? "black" : color, w.effectiveOpacity() * w.toPDouble(Attribute.FillOpacity, 1.0d, 1.0d, true));
+		return color(w, Attribute.Fill, true, Attribute.FillOpacity, true, "black");
 	}
+
+	protected Color color(ElementWrapper w, Attribute attr, boolean inherited, Attribute opacityAttr, boolean opacityInherited, String defaultColor)
+	{
+		String color = w.attr(attr, inherited);
+		PaintWrapper cw = Color.getPredefinedPaintWrapper(color);
+		if (cw != null)
+		{
+			String styleColor;
+			if (cw.getColor() == Context.CURRENT_COLOR)
+			{
+				styleColor = w.getStyleValue(Attribute.Color);
+			}
+			else if (cw.getColor() == Context.CURRENT_BACKGROUND)
+			{
+				styleColor = w.getStyleValue(Attribute.BackgroundColor);
+			}
+			else
+				styleColor = null;
+			if (styleColor != null)
+				color = styleColor;
+		}
+		if (color == null && defaultColor == null)
+			return null;
+		else
+			return new Color(this, color == null ? defaultColor : color, w.effectiveOpacity() * w.toPDouble(opacityAttr, 1.0d, 1.0d, opacityInherited));
+	}
+
 
 	protected FillRule fillRule(ElementWrapper w)
 	{
@@ -1067,19 +1107,21 @@ public class SVGConverter
 
 	protected Stroke stroke(ElementWrapper w)
 	{
-		Stroke stroke = new Stroke(
-				new Color(this, w.attr(Attribute.Stroke, true),
-						w.effectiveOpacity() * w.toPDouble(Attribute.Stroke_Opacity, 1.0d, 1.0d, true)),
-				w.toLength(Attribute.Stroke_Width, true),
-				w.toLengthList(Attribute.Stroke_DashArray, true),
-				// @TODO: relative widths
-				w.toDouble(Attribute.Stroke_DashOffset, 1, true),
-				LineCap.fromString(w.attr(Attribute.Stroke_LineCap, true)),
-				LineJoin.fromString(w.attr(Attribute.Stroke_LineJoin, true)),
-				// @TODO: relative limits?
-				w.toDouble(Attribute.Stroke_MiterLimit, 1, true)
-		);
-		return stroke;
+		Color color = color(w, Attribute.Stroke, true, Attribute.Stroke_Opacity, true, null);
+		if (color == null)
+			return null;
+		else
+			return new Stroke(
+					color,
+					w.toLength(Attribute.Stroke_Width, true),
+					w.toLengthList(Attribute.Stroke_DashArray, true),
+					// @TODO: relative widths
+					w.toDouble(Attribute.Stroke_DashOffset, 1, true),
+					LineCap.fromString(w.attr(Attribute.Stroke_LineCap, true)),
+					LineJoin.fromString(w.attr(Attribute.Stroke_LineJoin, true)),
+					// @TODO: relative limits?
+					w.toDouble(Attribute.Stroke_MiterLimit, 1, true)
+			);
 	}
 
 	protected Shape clipPath(ElementWrapper w)

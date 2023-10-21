@@ -99,7 +99,7 @@ public final class StyledShape extends AbstractShape
 			g3D.fill(shape_);
 		}
 
-		if (paint_ != null)
+		if (stroke_ != null && paint_ != null)
 		{
 			p = ctx.translatePaint(paint_);
 			if (p != null)

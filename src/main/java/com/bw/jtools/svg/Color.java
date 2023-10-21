@@ -161,12 +161,12 @@ public class Color
 		name2color_.put("white", new PaintWrapper(java.awt.Color.WHITE));
 		name2color_.put("none", new PaintWrapper(Context.NONE));
 		name2color_.put("transparent", new PaintWrapper(new java.awt.Color(0, 0, 0, 0)));
-		name2color_.put("currentColor", new PaintWrapper(Context.CURRENT_COLOR));
+		name2color_.put("currentcolor", new PaintWrapper(Context.CURRENT_COLOR));
 		name2color_.put("context-fill", PaintWrapper.contextFill());
 		name2color_.put("context-stroke", PaintWrapper.contextStroke());
 		// Internal extension to access the background color of the painting component.
 		name2color_.put("background", new PaintWrapper(Context.CURRENT_BACKGROUND));
-		name2color_.put("currentBackground", new PaintWrapper(Context.CURRENT_BACKGROUND));
+		name2color_.put("currentbackground", new PaintWrapper(Context.CURRENT_BACKGROUND));
 	}
 
 	private PaintWrapper paintWrapper_;
@@ -233,13 +233,20 @@ public class Color
 						paintWrapper_ = svg.getPaint(ref[0]);
 						if (paintWrapper_ == null)
 						{
-							// Use fallback if reference doesn't exists.
+							// Use fallback if reference doesn't exist.
 							paintWrapper_ = new Color(svg, ref[1], opacity).paintWrapper_;
 							opacity = 1f;
 						}
 					}
 					else
-						paintWrapper_ = new PaintWrapper(name2color_.getOrDefault(color.toLowerCase(), null));
+					{
+						PaintWrapper predef = getPredefinedPaintWrapper(color);
+						if (predef == null)
+						{
+							predef = getPredefinedPaintWrapper("black");
+						}
+						paintWrapper_ = new PaintWrapper(predef);
+					}
 				}
 			}
 			// Adapt Paint if opacity could not be included.
@@ -248,6 +255,11 @@ public class Color
 		}
 		else
 			paintWrapper_ = null;
+	}
+
+	public static PaintWrapper getPredefinedPaintWrapper(String colorName)
+	{
+		return colorName == null ? null : name2color_.get(colorName.toLowerCase());
 	}
 
 	/**
