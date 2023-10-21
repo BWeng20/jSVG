@@ -1050,7 +1050,7 @@ public class SVGConverter
 				g.fractions_[i] = f;
 
 				final Color cp = color(wrapper, Attribute.StopColor, true, Attribute.StopOpacity, false, null);
-				PaintWrapper pw = cp.getPaintWrapper();
+				PaintWrapper pw = cp == null ? null : cp.getPaintWrapper();
 				g.colors_[i] = (pw != null && pw.getColor() != null) ? pw.getColor() : java.awt.Color.BLACK;
 			}
 		}
