@@ -77,12 +77,9 @@ public final class ShapePainter extends AbstractPainterBase
 		if (areaIgnoresRotation_)
 		{
 			g2D.translate(-area_.x, -area_.y);
-
-
 		}
 		else
 		{
-
 			if (rotation != null)
 			{
 				Rectangle2D a = rotation.createTransformedShape(area_)

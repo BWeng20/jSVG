@@ -120,7 +120,10 @@ public class ShapeIcon implements Icon, Accessible
 				g2d.setPaint(framePaint_);
 				g2d.draw(painter_.getArea());
 			}
-			painter_.paint(g2d, c.getForeground(), c.getBackground(), c.isOpaque(), !c.isEnabled());
+			if ( c == null )
+				painter_.paint(g2d, Color.BLACK, Color.WHITE, false, false);
+			else
+				painter_.paint(g2d, c.getForeground(), c.getBackground(), c.isOpaque(), !c.isEnabled());
 		}
 		finally
 		{
