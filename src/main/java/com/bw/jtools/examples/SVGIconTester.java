@@ -69,6 +69,9 @@ public class SVGIconTester extends SVGAppBase
 	/** True if a border shall be drawn. */
 	protected boolean showBorder_ = true;
 
+	/**
+	 * The current icon size
+	 */
 	protected int iconSize_ = 32;
 	private int[] iconSizes_ = {16, 32, 64, 128};
 
@@ -76,6 +79,8 @@ public class SVGIconTester extends SVGAppBase
 	 * Shows a SVG file.
 	 *
 	 * @param args File name
+	 * @throws SVGException In case the file could not be parsed.
+	 * @throws FileNotFoundException In case the files could not be found.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
 	{
@@ -205,6 +210,10 @@ public class SVGIconTester extends SVGAppBase
 		setMinimumSize(new Dimension(400, 300));
 	}
 
+	/**
+	 * Gets the icon size.
+	 * @return The icon size.
+	 */
 	public int getIconSize()
 	{
 		return iconSize_;
@@ -214,11 +223,23 @@ public class SVGIconTester extends SVGAppBase
 	final static Insets is = new Insets(1, 1, 1, 1);
 
 	JDialog contentViewer_;
+
+	/**
+	 * The pane to show the selected shape in full size.
+	 */
 	ShapePane contentViewerDrawPane_;
 
+	/**
+	 * GridBagConstraints instance for reuse.
+	 */
 	final GridBagConstraints gc = new GridBagConstraints();
 
 
+	/**
+	 * SHows the shape.
+	 * @param name The title.
+	 * @param shape The shape to show.
+	 */
 	protected void showShape(String name, AbstractShape shape)
 	{
 		if (contentViewer_ == null)
@@ -267,7 +288,10 @@ public class SVGIconTester extends SVGAppBase
 		contentViewer_.setVisible(true);
 	}
 
-
+	/**
+	 * Adds a shape to the view.
+	 * @param shapeFile The shape to add.
+	 */
 	protected synchronized void addSVG(ShapeFile shapeFile)
 	{
 		if (gc.gridx >= 20)

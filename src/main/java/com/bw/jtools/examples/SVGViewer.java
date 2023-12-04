@@ -34,11 +34,30 @@ import java.util.List;
  */
 public class SVGViewer extends SVGAppBase
 {
+	/**
+	 * The pane that shows the SVG shape.
+	 */
 	protected ShapePane pane_;
+
+	/**
+	 * The converted shape to show.
+	 */
 	protected AbstractShape shape_;
+
+	/**
+	 * The file to show.
+	 */
 	protected File svgFile_;
 
+	/**
+	 * Lazy created Dialog to show the paint-along-viewer.
+	 * Contains {@link #paintAlongViewer_}
+	 */
 	protected JDialog paintAlongViewer_;
+
+	/**
+	 * Lazy created panel to show the paint-along-viewer.
+	 */
 	protected PaintAlongViewerPanel paintAlongPane_;
 
 	@Override
@@ -85,6 +104,8 @@ public class SVGViewer extends SVGAppBase
 	 * Shows a SVG file.
 	 *
 	 * @param args File name
+	 * @throws SVGException In case the file could not be parsed.
+	 * @throws FileNotFoundException In case the files could not be found.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
 	{
@@ -201,6 +222,9 @@ public class SVGViewer extends SVGAppBase
 		setMinimumSize(new Dimension(400, 300));
 	}
 
+	/**
+	 * Shows the paint-along-dialog for the current shape.
+	 */
 	public void showPaintAlong()
 	{
 		if (paintAlongViewer_ == null)
