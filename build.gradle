@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bweng20"
-version="1.3"
+version="1.4"
 
 repositories {
     mavenCentral()
@@ -45,8 +45,7 @@ processResources {
 }
 
 dependencies {
-    compileOnly 'org.apache.logging.log4j:log4j-api:2.17.2'
-    compileOnly 'org.apache.logging.log4j:log4j-core:2.17.2'
+    compileOnly 'org.netbeans.api:org-openide-util-ui:RELEASE180'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
