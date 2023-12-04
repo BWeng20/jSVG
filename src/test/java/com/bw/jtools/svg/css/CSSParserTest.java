@@ -1,5 +1,6 @@
 package com.bw.jtools.svg.css;
 
+import com.bw.jtools.svg.Attribute;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,9 +23,9 @@ public class CSSParserTest
 		assertEquals("span", selector.rules_.get(0).selectors_.get(1).combinate_.id_);
 		assertEquals(1, selector.rules_.get(0).styles_.size());
 		assertEquals(SelectorType.TAG, selector.rules_.get(0).selectors_.get(0).type_, "Tag selector was not detected");
-		assertEquals("red", selector.rules_.get(0).styles_.get("color"));
+		assertEquals("red", selector.rules_.get(0).styles_.get(Attribute.Color));
 
-		assertEquals("blue", selector.rules_.get(1).styles_.get("color"));
+		assertEquals("blue", selector.rules_.get(1).styles_.get(Attribute.Color));
 		assertEquals(1, selector.rules_.get(1).selectors_.size());
 		assertEquals("a-b+c", selector.rules_.get(1).selectors_.get(0).id_);
 		assertEquals(SelectorType.CLASS, selector.rules_.get(1).selectors_.get(0).type_, "Class selector was not detected");
