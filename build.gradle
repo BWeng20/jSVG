@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bweng20"
-version="1.4"
+version="1.5"
 
 repositories {
     mavenCentral()
