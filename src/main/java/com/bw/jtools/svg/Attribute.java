@@ -81,6 +81,7 @@ public enum Attribute
 	TextLength("textLength"),
 	LengthAdjust("lengthAdjust"),
 	TextAnchor("text-anchor"),
+	TextDecoration("text-decoration"),
 
 	Fx("fx"),
 	Fy("fy"),
