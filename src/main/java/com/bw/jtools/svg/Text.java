@@ -8,12 +8,17 @@ import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class Text extends Parser
@@ -44,6 +49,45 @@ public class Text extends Parser
 		}
 	}
 
+	public enum TextDecoration
+	{
+		Underline,
+		LineThrough,
+		Overline,
+		None;
+
+		public static TextDecoration valueFrom(String textDeco)
+		{
+			if (textDeco != null)
+			{
+				textDeco = textDeco.trim()
+								   .toLowerCase();
+				if (textDeco.equals("underline")) return Underline;
+				if (textDeco.equals("line-through")) return LineThrough;
+				if (textDeco.equals("overline")) return Overline;
+				if (textDeco.equals("none")) return None;
+			}
+			return null;
+		}
+
+		public static List<TextDecoration> valueFromList(String textDecoList)
+		{
+			if (textDecoList == null)
+				return Collections.emptyList();
+			String[] parts = textDecoList.split("\\s");
+			List<TextDecoration> result = new ArrayList<>(parts.length);
+			for (String p : parts)
+			{
+				TextDecoration deco = valueFrom(p);
+				if (deco != null)
+					result.add(deco);
+			}
+			return result;
+		}
+
+	}
+
+
 	public enum LengthAdjust
 	{
 		spacing,
@@ -62,13 +106,49 @@ public class Text extends Parser
 		}
 	}
 
+	/**
+	 * Helper for processing outlines of text fragments.
+	 */
+	protected static final class TextShape
+	{
+
+		final String text;
+		Shape outline;
+
+		/**
+		 * Addition space needed at the end of the outline.
+		 */
+		final double additionalSpace;
+
+		/**
+		 * Creates a new Text Shape.
+		 *
+		 * @param text The text.
+		 * @param font The fint to use.
+		 */
+		TextShape(String text, List<TextDecoration> decorations, Font font)
+		{
+			this.text = text;
+			if (decorations.isEmpty() && (!text.isEmpty()) && ' ' == text.charAt(text.length() - 1))
+			{
+				additionalSpace = font.getStringBounds(" ", frc_)
+									  .getWidth();
+			}
+			else
+			{
+				additionalSpace = 0;
+			}
+			outline = createTextOutline(font, decorations, text);
+		}
+	}
+
 	public Text(SVGConverter svg, ElementWrapper w, Font defaultFont, List<ElementInfo> shapes)
 	{
 		super();
 
 		// @TODO: Multiple values for x/y
-		x_ = w.toPDouble(Attribute.X, w.getViewPortWidth(), false);
-		y_ = w.toPDouble(Attribute.Y, w.getViewPortHeight(), false);
+		x_ = w.toPDouble(Attribute.X, w.getViewPortWidth(), false) + w.toPDouble(Attribute.Dx, w.getViewPortWidth(), false);
+		y_ = w.toPDouble(Attribute.Y, w.getViewPortHeight(), false) + w.toPDouble(Attribute.Dy, w.getViewPortHeight(), false);
 
 		Rectangle2D.Double box = w.getViewPort();
 
@@ -81,36 +161,75 @@ public class Text extends Parser
 		final ElementCache cache = w.getCache();
 		final Font font = w.font(defaultFont);
 
+		StringBuilder textContent = new StringBuilder();
+
+		// tspans aggregate following text content
+		ElementWrapper lastTSpanElement = null;
+		ElementWrapper lastTextPathElement = null;
+
 		for (int idx = 0; idx < nodes.getLength(); ++idx)
 		{
 			childNode = nodes.item(idx);
 			switch (childNode.getNodeType())
 			{
 				case Node.TEXT_NODE:
-					String text = w.text(childNode);
-					if (ElementWrapper.isNotEmpty(text))
-					{
-						w.setShape(createText(font, text, pos));
-						shapes.add(svg.createShapeInfo(w));
-					}
+					textContent.append(w.text(childNode));
 					break;
 				case Node.ELEMENT_NODE:
+					if (lastTSpanElement != null)
+					{
+						parseTSpan(svg, w, lastTSpanElement, textContent, font, pos, box, shapes);
+					}
+					else if (lastTextPathElement != null)
+					{
+						parseTextPath(svg, w, lastTextPathElement, textContent, font, shapes, pos);
+						// Text Path resets position accumulation.
+						pos.x = 0;
+						pos.y = 0;
+					}
+					else
+					{
+						parseTextContent(svg, w, textContent, font, pos, box, shapes);
+					}
+					lastTSpanElement = null;
+					lastTextPathElement = null;
+
 					ElementWrapper cw = cache.getElementWrapper(childNode);
-					final String tag = cw.getTagName();
-					if ("tspan".equals(tag))
-						parseTSpan(svg, cw, font, pos, box, shapes);
-					else if ("textPath".equals(tag))
-						parseTextPath(svg, cw, font, shapes);
+					Type t = cw.getType();
+					if (t == Type.tspan)
+					{
+						lastTSpanElement = cw;
+					}
+					else if (t == Type.textPath)
+					{
+						lastTextPathElement = cw;
+					}
+			}
+		}
+		if (textContent.length() > 0)
+		{
+			if (lastTSpanElement != null)
+			{
+				parseTSpan(svg, w, lastTSpanElement, textContent, font, pos, box, shapes);
+			}
+			else if (lastTextPathElement != null)
+			{
+				parseTextPath(svg, w, lastTextPathElement, textContent, font, shapes, pos);
+			}
+			else
+			{
+				parseTextContent(svg, w, textContent, font, pos, box, shapes);
 			}
 		}
 	}
 
-	protected void parseTSpan(SVGConverter svg, ElementWrapper ew, Font defaultFont, Point2D.Double pos, Rectangle2D.Double box, List<ElementInfo> shapes)
+	protected void parseTextContent(SVGConverter svg, ElementWrapper ew, StringBuilder textContent, Font defaultFont, Point2D.Double pos, Rectangle2D.Double box, List<ElementInfo> shapes)
 	{
-		Length x = ew.toLength(Attribute.X);
-		Length y = ew.toLength(Attribute.Y);
 		Length dx = ew.toLength(Attribute.Dx);
 		Length dy = ew.toLength(Attribute.Dy);
+		TextAnchor anchor = TextAnchor.valueFrom(ew.attr(Attribute.TextAnchor, true));
+		List<TextDecoration> decorations = decorations(ew);
+
 
 		// @TODO: x,y,dx,dy: can contain a list of values
 
@@ -118,21 +237,82 @@ public class Text extends Parser
 		// @TODO: textLength
 		// @TODO: lengthAdjust
 
-		if (x != null)
-			pos.x = x.toPixel(box.getWidth());
-		if (y != null)
-			pos.y = y.toPixel(box.getHeight());
-
 		if (dx != null)
 			pos.x += dx.toPixel(box.getWidth());
 		if (dy != null)
 			pos.y += dy.toPixel(box.getHeight());
 
-		ew.setShape(createText(ew.font(defaultFont), ew.text(), pos));
+		final TextShape textShape = new TextShape(ew.normalizeText(textContent.toString()), decorations, ew.font(defaultFont));
+		adaptPositionForTextOutline(List.of(textShape), pos, anchor);
+		ew.setShape(textShape.outline);
 		shapes.add(svg.createShapeInfo(ew));
+
+		textContent.setLength(0);
 	}
 
-	protected void parseTextPath(SVGConverter svg, ElementWrapper ew, Font defaultFont, List<ElementInfo> shapes)
+	protected void parseTSpan(SVGConverter svg, ElementWrapper parent, ElementWrapper ew, StringBuilder additionalContent, Font defaultFont, Point2D.Double pos, Rectangle2D.Double box, List<ElementInfo> shapes)
+	{
+		Length x = ew.toLength(Attribute.X);
+		Length y = ew.toLength(Attribute.Y);
+		Length dx = ew.toLength(Attribute.Dx);
+		Length dy = ew.toLength(Attribute.Dy);
+		TextAnchor anchor = TextAnchor.valueFrom(ew.attr(Attribute.TextAnchor, true));
+		List<TextDecoration> decorations = decorations(ew);
+
+
+		// @TODO: x,y,dx,dy: can contain a list of values
+
+		// @TODO: rotate
+		// @TODO: textLength
+		// @TODO: lengthAdjust
+
+		if (x == null)
+		{
+			// On X relative mode force anchor to "start"
+			anchor = TextAnchor.start;
+		}
+		else
+		{
+			pos.x = x.toPixel(box.getWidth());
+		}
+		if (y != null)
+		{
+			pos.y = y.toPixel(box.getHeight());
+		}
+
+		if (dx != null)
+		{
+			pos.x += dx.toPixel(box.getWidth());
+		}
+		if (dy != null)
+		{
+			pos.y += dy.toPixel(box.getHeight());
+		}
+
+		TextShape textShape = new TextShape(ew.normalizeText(ew.text()), decorations, ew.font(defaultFont));
+		TextShape additionTextShape;
+
+		List<TextShape> textShapeList = new ArrayList<>(2);
+		textShapeList.add(textShape);
+
+		String additionalText = ew.normalizeText(additionalContent.toString());
+		if (!additionalText.isEmpty())
+		{
+			textShapeList.add(new TextShape(additionalText, decorations(parent), parent.font(defaultFont)));
+		}
+		additionalContent.setLength(0);
+
+		adaptPositionForTextOutline(textShapeList, pos, anchor);
+
+		shapes.add(svg.createShapeInfo(ew, new ShapeHelper(textShapeList.get(0).outline)));
+		if (textShapeList.size() > 1)
+			shapes.add(svg.createShapeInfo(parent, new ShapeHelper(textShapeList.get(1).outline)));
+
+	}
+
+	protected void parseTextPath(SVGConverter svg, ElementWrapper parent, ElementWrapper ew,
+								 StringBuilder additionalContent,
+								 Font defaultFont, List<ElementInfo> shapes, Point2D.Double pos)
 	{
 		String href = ew.href();
 		if (ElementWrapper.isNotEmpty(href))
@@ -159,36 +339,116 @@ public class Text extends Parser
 				// @TODO spacing
 
 				TextAnchor anchor = TextAnchor.valueFrom(ew.attr(Attribute.TextAnchor, true));
+				List<TextDecoration> decorations = decorations(ew);
 
-				// @TODO: Adapt pos
-				ew.setShape(layoutText(ew.font(defaultFont), ew.text(), path, anchor,
-						startOffset == null ? x_ : x_ + startOffset.doubleValue(),
-						textLength == null ? 0 : textLength.doubleValue(), adjust));
-				shapes.add(svg.createShapeInfo(ew));
+				final Font font = ew.font(defaultFont);
+
+				Shape textLayout = layoutText(font, ew.text(), decorations, path, anchor,
+						startOffset == null ? 0 : startOffset.doubleValue(),
+						textLength == null ? 0 : textLength.doubleValue(), adjust);
+				shapes.add(svg.createShapeInfo(ew, new ShapeHelper(textLayout)));
+
+				ShapeHelper.PointOnPath endPoint = path.pointAtLength(path.getOutlineLength() - 0.001);
+
+				String additionalText = ew.normalizeText(additionalContent.toString());
+				if (!additionalText.isEmpty())
+				{
+					TextShape additionTextShape = new TextShape(additionalText, decorations(parent), font);
+					adaptPositionForTextOutline(List.of(additionTextShape), new Point2D.Double(endPoint.x_, endPoint.y_), TextAnchor.start);
+					shapes.add(svg.createShapeInfo(parent, new ShapeHelper(additionTextShape.outline)));
+				}
+				additionalContent.setLength(0);
 			}
 		}
 	}
 
-	protected Shape createText(Font font, String text, Point2D.Double pos)
+	protected List<TextDecoration> decorations(ElementWrapper ew)
+	{
+		return TextDecoration.valueFromList(ew.attr(Attribute.TextDecoration, true));
+	}
+
+	protected static Map<TextAttribute, Object> decorationsToTextAttribute(List<TextDecoration> decorations)
+	{
+		Map<TextAttribute, Object> attributes = new HashMap<>();
+		for (TextDecoration decoration : decorations)
+		{
+			switch (decoration)
+			{
+				case LineThrough:
+					attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+					break;
+				case Overline:
+					// @TODO: do it yourself?
+					break;
+				case Underline:
+					attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+					break;
+				case None:
+					break;
+			}
+		}
+		return attributes;
+	}
+
+
+	/**
+	 * Moved the text outlines to calculated positions.
+	 *
+	 * @param textShapes List of text outlines parts
+	 * @param pos        Base position to move to. Will be adapted
+	 * @param anchor     Anchor mode.
+	 */
+	protected void adaptPositionForTextOutline(List<TextShape> textShapes, Point2D.Double pos, TextAnchor anchor)
+	{
+		double width = 0;
+		for (TextShape s : textShapes)
+		{
+			width += s.outline.getBounds2D()
+							  .getWidth();
+
+		}
+		double offset;
+		switch (anchor)
+		{
+			case end:
+				offset = width;
+				break;
+			case middle:
+				offset = width / 2;
+				break;
+			default: // start
+				offset = 0;
+				break;
+		}
+		pos.x -= offset;
+		for (TextShape s : textShapes)
+		{
+			AffineTransform aft = AffineTransform.getTranslateInstance(pos.x, pos.y);
+			s.outline = aft.createTransformedShape(s.outline);
+			pos.x += s.outline.getBounds2D()
+							  .getWidth() + s.additionalSpace;
+		}
+	}
+
+
+	protected static Shape createTextOutline(Font font, List<TextDecoration> decorations, String text)
 	{
 		if (text == null || text.isEmpty())
 		{
-			return new Rectangle2D.Double(pos.x, pos.y, 0, 0);
+			return new Rectangle2D.Double(0, 0, 0, 0);
 		}
 		else
 		{
-			TextLayout tl = new TextLayout(text, font, frc_);
-			Rectangle2D bounds = tl.getBounds();
-			Shape shape = tl.getOutline(AffineTransform.getTranslateInstance(pos.x, pos.y));
-			pos.x += bounds.getWidth();
-			return shape;
+			Map<TextAttribute, Object> attributes = decorationsToTextAttribute(decorations);
+			attributes.put(TextAttribute.FONT, font);
+			return new TextLayout(text, attributes, frc_).getOutline(null);
 		}
 	}
 
 	/**
 	 * Creates text along a path
 	 */
-	public static Shape layoutText(Font font, String text,
+	public static Shape layoutText(Font font, String text, List<TextDecoration> decorations,
 								   ShapeHelper path, TextAnchor align,
 								   double startOffset,
 								   double textLength,
@@ -198,6 +458,8 @@ public class Text extends Parser
 
 		if (text == null || font == null || path == null || path.getOutlineLength() == 0d)
 			return newPath;
+
+		// TextAttribute seems not to work via GlyphVector and TextLayout can't be used here.
 
 		GlyphVector glyphs = font.createGlyphVector(frc_, text);
 		if (glyphs == null || glyphs.getNumGlyphs() == 0)
@@ -216,9 +478,9 @@ public class Text extends Parser
 		double currentPosition = startOffset;
 
 		if (align == TextAnchor.end)
-			currentPosition += pathLength - textLength;
+			currentPosition -= textLength;
 		else if (align == TextAnchor.middle)
-			currentPosition += (pathLength - textLength) / 2;
+			currentPosition -= textLength / 2;
 
 		AffineTransform glyphTrans = new AffineTransform();
 
@@ -256,6 +518,8 @@ public class Text extends Parser
 			}
 			currentPosition += (lengthAdjustMode == LengthAdjust.spacing) ? (advance * charScale) : advance;
 		}
+
+		// @TODO: Implement somehow decorations.
 
 		return newPath;
 	}

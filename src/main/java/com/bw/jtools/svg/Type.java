@@ -7,7 +7,7 @@ public enum Type
 	g, a,
 	clipPath,
 	path, rect, circle, ellipse,
-	text, textPath,
+	text, textPath, tspan,
 	line, polyline, polygon,
 	use, style,
 	defs, linearGradient, radialGradient,

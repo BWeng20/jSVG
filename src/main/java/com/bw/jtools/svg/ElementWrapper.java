@@ -197,12 +197,14 @@ public final class ElementWrapper
 			parentNode = parentNode.getParentNode();
 		}
 		Type t = Type.valueFrom(node.getTagName());
-		if ( t == null ) {
+		if (t == null)
+		{
 			// @TODO: Currently we don't care about real namespaces....
 			String tn = node.getTagName();
 			int nsIdx = tn.indexOf(':');
-			if ( nsIdx >= 0) {
-				t = Type.valueFrom(tn.substring(nsIdx+1));
+			if (nsIdx >= 0)
+			{
+				t = Type.valueFrom(tn.substring(nsIdx + 1));
 			}
 		}
 		type_ = t;
@@ -499,7 +501,12 @@ public final class ElementWrapper
 	 */
 	public String text(Node node)
 	{
-		String text = node.getTextContent();
+		return normalizeText(node.getTextContent());
+	}
+
+	public String normalizeText(String text)
+	{
+
 		// @TODO: Support all modes of "white-space" correctly.
 		if (text != null && !preserveSpace())
 		{
@@ -517,7 +524,7 @@ public final class ElementWrapper
 						{
 							if (!lastWasWS)
 							{
-								sb.append((char) ch);
+								sb.append(' ');
 								lastWasWS = true;
 							}
 						}

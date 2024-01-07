@@ -902,8 +902,6 @@ public class SVGConverter
 
 	protected void addShapeGroup(ElementWrapper w, List<ElementInfo> shapes, List<ElementInfo> target)
 	{
-		Filter f = filter(w);
-
 		GroupInfo group = new GroupInfo(w.id());
 		group.shapes_.addAll(shapes);
 		group.filter_ = filter(w);
@@ -919,12 +917,20 @@ public class SVGConverter
 	 */
 	protected ElementInfo createShapeInfo(ElementWrapper w)
 	{
+		return createShapeInfo(w, w.getShape());
+	}
+
+
+	/**
+	 * Helper to handle common presentation attributes and create a ShapeInfo-instance.
+	 */
+	protected ElementInfo createShapeInfo(ElementWrapper w, ShapeHelper shapeHelper)
+	{
 		Stroke stroke = stroke(w);
 		Color fill = fill(w);
 		Shape clipPath = clipPath(w);
 
-		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(w.getShape()
-															   .getShape(),
+		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(shapeHelper.getShape(),
 				(stroke == null || stroke.getPaintWrapper() == null) ? null : stroke,
 				(stroke == null) ? null : stroke.getPaintWrapper(),
 				(fill == null) ? null : fill.getPaintWrapper(),
