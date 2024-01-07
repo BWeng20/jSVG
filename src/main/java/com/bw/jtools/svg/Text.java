@@ -407,20 +407,23 @@ public class Text extends Parser
 							  .getWidth();
 
 		}
-		double offset;
-		switch (anchor)
+		if (anchor != null)
 		{
-			case end:
-				offset = width;
-				break;
-			case middle:
-				offset = width / 2;
-				break;
-			default: // start
-				offset = 0;
-				break;
+			double offset;
+			switch (anchor)
+			{
+				case end:
+					offset = width;
+					break;
+				case middle:
+					offset = width / 2;
+					break;
+				default: // start
+					offset = 0;
+					break;
+			}
+			pos.x -= offset;
 		}
-		pos.x -= offset;
 		for (TextShape s : textShapes)
 		{
 			AffineTransform aft = AffineTransform.getTranslateInstance(pos.x, pos.y);
