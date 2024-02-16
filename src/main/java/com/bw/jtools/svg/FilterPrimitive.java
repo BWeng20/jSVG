@@ -29,7 +29,7 @@ public abstract class FilterPrimitive
 	/**
 	 * SVG tag of the filter primitive.
 	 */
-	public final Type type_;
+	public final SvgTagType type_;
 
 	/**
 	 * The color interpolation from attribute "color-interpolation-filters".
@@ -58,12 +58,12 @@ public abstract class FilterPrimitive
 	/**
 	 * Check if a SVG tag is a filter primitive.
 	 */
-	public static boolean isFilterPrimitive(Type type)
+	public static boolean isFilterPrimitive(SvgTagType type)
 	{
-		return type.ordinal() >= Type.feBlend.ordinal();
+		return type.ordinal() >= SvgTagType.feBlend.ordinal();
 	}
 
-	protected FilterPrimitive(Type filterType)
+	protected FilterPrimitive(SvgTagType filterType)
 	{
 		type_ = filterType;
 	}

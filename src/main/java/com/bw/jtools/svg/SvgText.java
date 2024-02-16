@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class Text extends Parser
+public class SvgText extends Parser
 {
 	private static final FontRenderContext frc_ = new FontRenderContext(null, false, false);
 
@@ -142,7 +142,7 @@ public class Text extends Parser
 		}
 	}
 
-	public Text(SVGConverter svg, ElementWrapper w, Font defaultFont, List<ElementInfo> shapes)
+	public SvgText(SVGConverter svg, ElementWrapper w, Font defaultFont, List<ElementInfo> shapes)
 	{
 		super();
 
@@ -195,12 +195,12 @@ public class Text extends Parser
 					lastTextPathElement = null;
 
 					ElementWrapper cw = cache.getElementWrapper(childNode);
-					Type t = cw.getType();
-					if (t == Type.tspan)
+					SvgTagType t = cw.getType();
+					if (t == SvgTagType.tspan)
 					{
 						lastTSpanElement = cw;
 					}
-					else if (t == Type.textPath)
+					else if (t == SvgTagType.textPath)
 					{
 						lastTextPathElement = cw;
 					}
@@ -319,7 +319,7 @@ public class Text extends Parser
 		{
 			ElementWrapper pw = ew.getCache()
 								  .getElementWrapperById(href);
-			if (pw != null && Type.path == pw.getType())
+			if (pw != null && SvgTagType.path == pw.getType())
 			{
 				pw = pw.createReferenceShadow(ew);
 

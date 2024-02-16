@@ -18,6 +18,6 @@ public class MergeFilterPrimitive extends FilterPrimitive
 
 	public MergeFilterPrimitive()
 	{
-		super(Type.feMerge);
+		super(SvgTagType.feMerge);
 	}
 }

@@ -57,7 +57,7 @@ public final class ElementWrapper
 	private Set<String> classes_;
 	private final Element node_;
 	private ElementWrapper parent_;
-	private final Type type_;
+	private final SvgTagType type_;
 	private Boolean preserveSpace_;
 	private ShapeHelper shape_;
 	private AffineTransform aft_;
@@ -196,7 +196,7 @@ public final class ElementWrapper
 			parent_ = elementCache_.getElementWrapper(parentNode);
 			parentNode = parentNode.getParentNode();
 		}
-		Type t = Type.valueFrom(node.getTagName());
+		SvgTagType t = SvgTagType.valueFrom(node.getTagName());
 		if (t == null)
 		{
 			// @TODO: Currently we don't care about real namespaces....
@@ -204,7 +204,7 @@ public final class ElementWrapper
 			int nsIdx = tn.indexOf(':');
 			if (nsIdx >= 0)
 			{
-				t = Type.valueFrom(tn.substring(nsIdx + 1));
+				t = SvgTagType.valueFrom(tn.substring(nsIdx + 1));
 			}
 		}
 		type_ = t;
@@ -215,7 +215,7 @@ public final class ElementWrapper
 		return isShadow_;
 	}
 
-	public Type getType()
+	public SvgTagType getType()
 	{
 		return type_;
 	}
@@ -549,7 +549,7 @@ public final class ElementWrapper
 		{
 			String transform = attr(Attribute.Transform, false);
 			if (isNotEmpty(transform))
-				aft_ = new Transform(null, transform).getTransform();
+				aft_ = new SvgTransform(null, transform).getTransform();
 			else
 				aft_ = new AffineTransform();
 		}

@@ -8,7 +8,7 @@ import java.util.List;
 public class Filter
 {
 	public final String id_;
-	public final Type type_;
+	public final SvgTagType type_;
 
 	public Unit filterUnits_;
 	public Unit primitiveUnits_;
@@ -17,7 +17,7 @@ public class Filter
 
 	public List<FilterPrimitive> primitives_;
 
-	public Filter(String id, Type type)
+	public Filter(String id, SvgTagType type)
 	{
 		id_ = id;
 		type_ = type;

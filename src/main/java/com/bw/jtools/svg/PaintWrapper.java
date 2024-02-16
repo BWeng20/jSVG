@@ -10,7 +10,8 @@ public final class PaintWrapper
 {
 	enum Mode
 	{
-		Gradient,
+		/** Pattern or some gradient */
+		Paint,
 		Color,
 		ContextFill,
 		ContextStroke
@@ -44,10 +45,10 @@ public final class PaintWrapper
 		value_ = color;
 	}
 
-	public PaintWrapper(Gradient gradient)
+	public PaintWrapper(SvgPaint paint)
 	{
-		mode_ = Mode.Gradient;
-		value_ = gradient;
+		mode_ = Mode.Paint;
+		value_ = paint;
 	}
 
 	public static PaintWrapper contextFill()
@@ -66,9 +67,9 @@ public final class PaintWrapper
 			return this;
 		PaintWrapper pw = new PaintWrapper(mode_);
 		if (mode_ == Mode.Color)
-			pw.value_ = Color.adaptOpacity((java.awt.Color) value_, opacity);
-		else if (mode_ == Mode.Gradient)
-			pw.value_ = ((Gradient) value_).adaptOpacity(opacity);
+			pw.value_ = SvgColor.adaptOpacity((java.awt.Color) value_, opacity);
+		else if (mode_ == Mode.Paint)
+			pw.value_ = ((SvgPaint)value_).adaptOpacity(opacity);
 		else
 			// @TODO: What to do for context-modes?
 			pw.value_ = value_;
@@ -86,8 +87,8 @@ public final class PaintWrapper
 		{
 			case Color:
 				return (java.awt.Color) value_;
-			case Gradient:
-				return ((Gradient) value_).createPaint(w);
+			case Paint:
+				return ((SvgPaint) value_).createPaint(w);
 			case ContextFill:
 				// @TODO
 				return null;

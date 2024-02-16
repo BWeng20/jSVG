@@ -6,8 +6,7 @@ import java.awt.geom.Path2D;
 
 /**
  * Parse a path expression.<br>
- * Used references:
- * https://www.w3.org/TR/SVG11/implnote.html#PathElementImplementationNotes
+ * Used references: <a href="https://www.w3.org/TR/SVG11/implnote.html#PathElementImplementationNotes">W3C Path Element Implementation Notes</a>
  */
 public final class Path extends Parser
 {

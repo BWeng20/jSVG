@@ -2,15 +2,31 @@ package com.bw.jtools.svg;
 
 import java.util.HashMap;
 
-public enum Type
+/**
+ * SVG XML Tag Types used.
+ */
+public enum SvgTagType
 {
-	g, a,
+	/**
+	 * A Group. See <a href="https://www.w3.org/TR/SVG2/struct.html#Groups">W3C Groups</a>
+	 */
+	g,
+
+	/**
+	 * A external link. See <a href="https://www.w3.org/TR/SVG2/linking.html#Links">W3C Linking</a>
+	 */
+	a,
 	clipPath,
 	path, rect, circle, ellipse,
 	text, textPath, tspan,
 	line, polyline, polygon,
 	use, style,
-	defs, linearGradient, radialGradient,
+
+	/**
+	 * Definitions,  See <a href="https://www.w3.org/TR/SVG2/struct.html#Head">W3C Defs Element</a>
+	 */
+	defs,
+	linearGradient, radialGradient,
 	filter, marker,
 
 	title,
@@ -32,20 +48,23 @@ public enum Type
 
 	// Sub elements of feDiffuseLighting and feSpecularLighting
 	feDistantLight, fePointLight, feSpotLight,
+	metadata,
 
-	metadata;
+	/**
+	 *  Pattern definition, see <a href="https://www.w3.org/TR/SVG2/pservers.html#PatternElement">W3C Pattern Element</a>
+	 */
+	pattern;
 
-
-	private final static HashMap<String, Type> types_ = new HashMap<>();
+	private final static HashMap<String, SvgTagType> types_ = new HashMap<>();
 
 	// Use map instead of "valueOf" to avoid exceptions for unknown values
 	static
 	{
-		for (Type t : values())
+		for (SvgTagType t : values())
 			types_.put(t.name(), t);
 	}
 
-	public static Type valueFrom(String typeName)
+	public static SvgTagType valueFrom(String typeName)
 	{
 		return types_.get(typeName);
 	}

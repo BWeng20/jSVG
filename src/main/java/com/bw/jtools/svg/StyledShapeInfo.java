@@ -15,7 +15,7 @@ public final class StyledShapeInfo extends ElementInfo
 	/**
 	 * The stroke to render the outline.
 	 */
-	public Stroke stroke_;
+	public SvgStroke stroke_;
 
 	/**
 	 * The Paint to render the outline.<br>
@@ -40,7 +40,7 @@ public final class StyledShapeInfo extends ElementInfo
 	/**
 	 * Constructor to initialize,
 	 */
-	public StyledShapeInfo(Shape shape, Stroke stroke, PaintWrapper paint, PaintWrapper fill, Shape clipping)
+	public StyledShapeInfo(Shape shape, SvgStroke stroke, PaintWrapper paint, PaintWrapper fill, Shape clipping)
 	{
 		this.shape_ = shape;
 		this.stroke_ = stroke;

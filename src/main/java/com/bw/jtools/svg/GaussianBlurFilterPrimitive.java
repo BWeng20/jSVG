@@ -17,7 +17,7 @@ public class GaussianBlurFilterPrimitive extends FilterPrimitive
 
 	public GaussianBlurFilterPrimitive(List<Double> stdDeviation)
 	{
-		super(Type.feGaussianBlur);
+		super(SvgTagType.feGaussianBlur);
 		this.stdDeviation_ = stdDeviation;
 	}
 }

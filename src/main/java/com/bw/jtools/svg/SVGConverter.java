@@ -136,7 +136,7 @@ public class SVGConverter
 	}
 
 	private ShapeGroup finalShape_;
-	private Map<String, Gradient> paintServer_ = new HashMap<>();
+	private Map<String, SvgPaint> paintServer_ = new HashMap<>();
 	private Map<String, PaintWrapper> paints_ = new HashMap<>();
 	private Font defaultFont_ = Font.decode("Arial-PLAIN-12");
 	private final ElementCache elementCache_ = new ElementCache();
@@ -192,7 +192,7 @@ public class SVGConverter
 			elementCache_.scanForIds(doc);
 
 			// Parse styles and apply them
-			NodeList styles = doc.getElementsByTagName(Type.style.name());
+			NodeList styles = doc.getElementsByTagName(SvgTagType.style.name());
 			if (styles.getLength() > 0)
 			{
 				CSSParser cssParser = new CSSParser();
@@ -282,7 +282,7 @@ public class SVGConverter
 	private void parseElement(List<ElementInfo> shapes, ElementWrapper w)
 	{
 		final String e = w.getTagName();
-		Type typ = w.getType();
+		SvgTagType typ = w.getType();
 
 		if (typ == null)
 		{
@@ -307,7 +307,7 @@ public class SVGConverter
 				// Debugging feature
 				if (addPathSegments_)
 				{
-					Stroke s = new Stroke(new Color(this, "yellow", 1d),
+					SvgStroke s = new SvgStroke(new SvgColor(this, "yellow", 1d),
 							null, null, null, null, null, null);
 
 					shapes.add(new StyledShapeInfo(w.getShape()
@@ -359,7 +359,7 @@ public class SVGConverter
 			case text:
 			{
 				List<ElementInfo> g = new ArrayList<>();
-				new Text(this, w, defaultFont_, g);
+				new SvgText(this, w, defaultFont_, g);
 				addShapeGroup(w, g, shapes);
 			}
 			break;
@@ -608,18 +608,26 @@ public class SVGConverter
 	 * @param id The Id of the definition.
 	 * @return The gradient of null.
 	 */
-	public Gradient getPaintServer(String id)
+	public SvgPaint getSvgPaint(String id)
 	{
-		Gradient g = paintServer_.get(id);
+		SvgPaint g = paintServer_.get(id);
 		if (g == null)
 		{
 			ElementWrapper w = elementCache_.getElementWrapperById(id);
 			if (w != null)
 			{
-				if ("linearGradient".equals(w.getTagName()))
-					g = parseLinearGradient(w);
-				else if ("radialGradient".equals(w.getTagName()))
-					g = parseRadialGradient(w);
+				switch (w.getType())
+				{
+					case linearGradient:
+						g = parseLinearGradient(w);
+						break;
+					case radialGradient:
+						g = parseRadialGradient(w);
+						break;
+					case pattern:
+						g = parsePattern(w);
+						break;
+				}
 			}
 			if (g != null)
 				paintServer_.put(g.id_, g);
@@ -638,7 +646,7 @@ public class SVGConverter
 		PaintWrapper pt = paints_.get(id);
 		if (pt == null)
 		{
-			Gradient g = getPaintServer(id);
+			SvgPaint g = getSvgPaint(id);
 			if (g != null)
 				pt = g.getPaintWrapper(this);
 			if (pt == null)
@@ -655,7 +663,7 @@ public class SVGConverter
 		ElementWrapper w = elementCache_.getElementWrapperById(id);
 		if (w != null)
 		{
-			if (w.getType() != Type.clipPath)
+			if (w.getType() != SvgTagType.clipPath)
 			{
 				warn("%s is not a clipPath", w.nodeName());
 			}
@@ -708,7 +716,7 @@ public class SVGConverter
 			ElementWrapper w = elementCache_.getElementWrapperById(id);
 			if (w == null)
 				warn("%s is unknown", id);
-			else if (w.getType() != Type.marker)
+			else if (w.getType() != SvgTagType.marker)
 				warn("%s is not a marker", w.nodeName());
 			else
 			{
@@ -734,7 +742,7 @@ public class SVGConverter
 			{
 				Filter f = new Filter(w.id(), w.getType());
 				// @TODO: handle href references for filters (same as for gradients).
-				if (f.type_ != Type.filter)
+				if (f.type_ != SvgTagType.filter)
 					warn("%s is not a filter", f.id_);
 
 				f.x_ = w.toLength(Attribute.X);
@@ -767,7 +775,7 @@ public class SVGConverter
 
 	public FilterPrimitive filterPrimitive(ElementWrapper w)
 	{
-		Type t = w.getType();
+		SvgTagType t = w.getType();
 		if (FilterPrimitive.isFilterPrimitive(t))
 		{
 			FilterPrimitive fp;
@@ -784,7 +792,7 @@ public class SVGConverter
 					MergeFilterPrimitive merge = new MergeFilterPrimitive();
 					elementCache_.forSubTree(w.getNode(), e ->
 					{
-						if (e.getType() == Type.feMergeNode)
+						if (e.getType() == SvgTagType.feMergeNode)
 						{
 							MergeFilterNode node = new MergeFilterNode();
 							node.id_ = e.id();
@@ -854,6 +862,30 @@ public class SVGConverter
 	public ElementCache getCache()
 	{
 		return elementCache_;
+	}
+
+	private SvgPattern parsePattern(ElementWrapper w)
+	{
+		String id = w.id();
+		if (id != null && !id.isEmpty())
+		{
+			SvgPattern pattern = new SvgPattern(id);
+
+			pattern.href_ = w.href();
+			pattern.x_ = w.toLength(Attribute.X);
+			pattern.y_ = w.toLength(Attribute.Y);
+			pattern.width_ = w.toLength(Attribute.Width);
+			pattern.height_ = w.toLength(Attribute.Height);
+
+			String patternTransform = w.attr(Attribute.PatternTransform, false);
+			if (isNotEmpty(patternTransform))
+				pattern.aft_ = new SvgTransform(null, patternTransform).getTransform();
+
+			parseChildren(pattern.shapes_, w );
+			return pattern;
+		}
+		else
+			return null;
 	}
 
 	private RadialGradient parseRadialGradient(ElementWrapper w)
@@ -926,8 +958,8 @@ public class SVGConverter
 	 */
 	protected ElementInfo createShapeInfo(ElementWrapper w, ShapeHelper shapeHelper)
 	{
-		Stroke stroke = stroke(w);
-		Color fill = fill(w);
+		SvgStroke stroke = stroke(w);
+		SvgColor fill = fill(w);
 		Shape clipPath = clipPath(w);
 
 		StyledShapeInfo styledShapeInfo = new StyledShapeInfo(shapeHelper.getShape(),
@@ -1018,7 +1050,7 @@ public class SVGConverter
 
 		String gradientTransform = w.attr(Attribute.GradientTransform, false);
 		if (isNotEmpty(gradientTransform))
-			g.aft_ = new Transform(null, gradientTransform).getTransform();
+			g.aft_ = new SvgTransform(null, gradientTransform).getTransform();
 
 		NodeList stops = w.getNode()
 						  .getElementsByTagName("stop");
@@ -1055,7 +1087,7 @@ public class SVGConverter
 				}
 				g.fractions_[i] = f;
 
-				final Color cp = color(wrapper, Attribute.StopColor, true, Attribute.StopOpacity, false, null);
+				final SvgColor cp = color(wrapper, Attribute.StopColor, true, Attribute.StopOpacity, false, null);
 				PaintWrapper pw = cp == null ? null : cp.getPaintWrapper();
 				g.colors_[i] = (pw != null && pw.getColor() != null) ? pw.getColor() : java.awt.Color.BLACK;
 			}
@@ -1073,15 +1105,15 @@ public class SVGConverter
 			s.aft_ = t;
 	}
 
-	protected Color fill(ElementWrapper w)
+	protected SvgColor fill(ElementWrapper w)
 	{
 		return color(w, Attribute.Fill, true, Attribute.FillOpacity, true, "black");
 	}
 
-	protected Color color(ElementWrapper w, Attribute attr, boolean inherited, Attribute opacityAttr, boolean opacityInherited, String defaultColor)
+	protected SvgColor color(ElementWrapper w, Attribute attr, boolean inherited, Attribute opacityAttr, boolean opacityInherited, String defaultColor)
 	{
 		String color = w.attr(attr, inherited);
-		PaintWrapper cw = Color.getPredefinedPaintWrapper(color);
+		PaintWrapper cw = SvgColor.getPredefinedPaintWrapper(color);
 		if (cw != null)
 		{
 			String styleColor;
@@ -1101,7 +1133,7 @@ public class SVGConverter
 		if (color == null && defaultColor == null)
 			return null;
 		else
-			return new Color(this, color == null ? defaultColor : color, w.effectiveOpacity() * w.toPDouble(opacityAttr, 1.0d, 1.0d, opacityInherited));
+			return new SvgColor(this, color == null ? defaultColor : color, w.effectiveOpacity() * w.toPDouble(opacityAttr, 1.0d, 1.0d, opacityInherited));
 	}
 
 
@@ -1111,13 +1143,13 @@ public class SVGConverter
 	}
 
 
-	protected Stroke stroke(ElementWrapper w)
+	protected SvgStroke stroke(ElementWrapper w)
 	{
-		Color color = color(w, Attribute.Stroke, true, Attribute.Stroke_Opacity, true, null);
+		SvgColor color = color(w, Attribute.Stroke, true, Attribute.Stroke_Opacity, true, null);
 		if (color == null)
 			return null;
 		else
-			return new Stroke(
+			return new SvgStroke(
 					color,
 					w.toLength(Attribute.Stroke_Width, true),
 					w.toLengthList(Attribute.Stroke_DashArray, true),

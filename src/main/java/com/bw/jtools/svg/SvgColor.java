@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Color
+public class SvgColor
 {
 	private static final HashMap<String, PaintWrapper> name2color_ = new HashMap<>();
 
@@ -173,7 +173,7 @@ public class Color
 
 	private static final Pattern rgbRegEx_ = Pattern.compile("rgb\\(\\s*([\\+\\-\\d+]+%?)\\s*,\\s*([\\+\\-\\d+]+%?)\\s*,\\s*([\\+\\-\\d+]+%?)\\s*\\)", Pattern.CASE_INSENSITIVE);
 
-	public Color(SVGConverter svg, String color, double opacity)
+	public SvgColor(SVGConverter svg, String color, double opacity)
 	{
 		if (opacity < 0)
 			opacity = 0;
@@ -234,7 +234,7 @@ public class Color
 						if (paintWrapper_ == null)
 						{
 							// Use fallback if reference doesn't exist.
-							paintWrapper_ = new Color(svg, ref[1], opacity).paintWrapper_;
+							paintWrapper_ = new SvgColor(svg, ref[1], opacity).paintWrapper_;
 							opacity = 1f;
 						}
 					}

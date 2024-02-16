@@ -2,19 +2,13 @@ package com.bw.jtools.svg;
 
 import java.awt.MultipleGradientPaint;
 import java.awt.Paint;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Abstract base of gradient types.
  */
-public abstract class Gradient implements Cloneable
+public abstract class Gradient extends SvgPaint implements Cloneable
 {
-	public final String id_;
-
-	public String href_;
-	public AffineTransform aft_;
-
 	protected float[] fractions_;
 	protected java.awt.Color[] colors_;
 	public Unit gradientUnit_;
@@ -42,7 +36,7 @@ public abstract class Gradient implements Cloneable
 		{
 			java.awt.Color adaptedColors[] = new java.awt.Color[colors_.length];
 			for (int i = 0; i < adaptedColors.length; ++i)
-				adaptedColors[i] = Color.adaptOpacity(colors_[i], opacity);
+				adaptedColors[i] = SvgColor.adaptOpacity(colors_[i], opacity);
 			return adaptedColors;
 		}
 	}
@@ -51,7 +45,7 @@ public abstract class Gradient implements Cloneable
 	 * Creates adapted copy if opacity != 1.
 	 * Returns this instalce if opacity = 1.
 	 */
-	public Gradient adaptOpacity(float opacity)
+	public SvgPaint adaptOpacity(float opacity)
 	{
 		if (opacity == 1f)
 			return this;
@@ -74,12 +68,19 @@ public abstract class Gradient implements Cloneable
 		return fractions_;
 	}
 
-
+	/**
+	 * Creates a new gradient descriptor.
+	 * @param id The XML id.
+	 */
 	protected Gradient(String id)
 	{
-		id_ = id;
+		super(id);
 	}
 
+	/**
+	 * Copies yet undefined elements from template.
+	 * @param template The template. Must not be null.
+	 */
 	public void copyFromTemplate(Gradient template)
 	{
 		//@TODO: Aggregate or copy? Check specs!
@@ -103,23 +104,14 @@ public abstract class Gradient implements Cloneable
 	{
 		if (href_ != null)
 		{
-			Gradient hrefGradient = svg.getPaintServer(href_);
+			SvgPaint hrefGradient = svg.getSvgPaint(href_);
 			href_ = null;
-			if (hrefGradient != null)
+			if (hrefGradient instanceof Gradient)
 			{
 				hrefGradient.resolveHref(svg);
-				copyFromTemplate(hrefGradient);
+				copyFromTemplate((Gradient)hrefGradient);
 			}
 		}
 	}
-
-	public PaintWrapper getPaintWrapper(SVGConverter svg)
-	{
-		resolveHref(svg);
-		return new PaintWrapper(this);
-	}
-
-
-	public abstract Paint createPaint(ElementWrapper w);
 
 }

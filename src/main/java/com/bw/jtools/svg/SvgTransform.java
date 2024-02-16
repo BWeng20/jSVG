@@ -7,12 +7,15 @@ import java.awt.geom.Rectangle2D;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Transform extends Parser
+/**
+ * A SVG Transformation
+ */
+public class SvgTransform extends Parser
 {
 	private AffineTransform transform_;
 	private static final Pattern transformRE = Pattern.compile("([a-z,A-Z ]+)\\(([^\\(]+)\\)", Pattern.CASE_INSENSITIVE);
 
-	public Transform(StyledShape s, String transform)
+	public SvgTransform(StyledShape s, String transform)
 	{
 		super();
 		Matcher m = transformRE.matcher(transform);

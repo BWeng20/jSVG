@@ -13,6 +13,6 @@ public class NopFilterPrimitive extends FilterPrimitive
 
 	public NopFilterPrimitive()
 	{
-		super(Type.feNop);
+		super(SvgTagType.feNop);
 	}
 }

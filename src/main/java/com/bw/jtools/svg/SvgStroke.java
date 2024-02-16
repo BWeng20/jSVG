@@ -5,10 +5,10 @@ import java.awt.BasicStroke;
 /**
  * Holds all information about a stroke.
  */
-public class Stroke
+public class SvgStroke
 {
-	public Stroke(
-			Color color,
+	public SvgStroke(
+			SvgColor color,
 			Length width,
 			LengthList dasharray,
 			Double dashoffset,

@@ -16,7 +16,7 @@ public class OffsetFilterPrimitive extends FilterPrimitive
 
 	public OffsetFilterPrimitive(Length dx, Length dy)
 	{
-		super(Type.feOffset);
+		super(SvgTagType.feOffset);
 		this.dx_ = dx;
 		this.dy_ = dy;
 	}
