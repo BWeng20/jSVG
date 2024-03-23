@@ -73,6 +73,8 @@ public class ShapeIcon implements Icon, Accessible
 
 	/**
 	 * Draws a border inside the icon with the default stroke and Color.BLACK.
+	 *
+	 * @param draw If true the border is drawn.
 	 */
 	public void setInlineBorder(boolean draw)
 	{
@@ -81,6 +83,9 @@ public class ShapeIcon implements Icon, Accessible
 
 	/**
 	 * Sets X- and Y-Scale factor.
+	 *
+	 * @param scaleX The scale in X direction.
+	 * @param scaleY The scale in Y direction.
 	 */
 	public void setScale(double scaleX, double scaleY)
 	{
@@ -89,6 +94,8 @@ public class ShapeIcon implements Icon, Accessible
 
 	/**
 	 * Gets X-Scale factor.
+	 *
+	 * @return The X-Scale.
 	 */
 	public double getXScale()
 	{
@@ -97,15 +104,23 @@ public class ShapeIcon implements Icon, Accessible
 
 	/**
 	 * Gets Y-Scale factor.
+	 *
+	 * @return The Y-Scale.
 	 */
 	public double getYScale()
 	{
 		return painter_.getYScale();
 	}
 
-
 	/**
 	 * Paints the shapes.
+	 *
+	 * @param c The Component to paint on, can be null.
+	 *          Fore- and background from the component are used as references.
+	 *          If the component is disabled, the icon is painted in gray mode.
+	 * @param g The graphics context to paint. Must not be null.
+	 * @param x The x ordinate.
+	 * @param y The y ordinate.
 	 */
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y)
@@ -120,7 +135,7 @@ public class ShapeIcon implements Icon, Accessible
 				g2d.setPaint(framePaint_);
 				g2d.draw(painter_.getArea());
 			}
-			if ( c == null )
+			if (c == null)
 				painter_.paint(g2d, Color.BLACK, Color.WHITE, false, false);
 			else
 				painter_.paint(g2d, c.getForeground(), c.getBackground(), c.isOpaque(), !c.isEnabled());
@@ -131,11 +146,21 @@ public class ShapeIcon implements Icon, Accessible
 		}
 	}
 
+	/**
+	 * Get the icon width in Java2D units.
+	 *
+	 * @return The width.
+	 */
 	public double getIconWidth2D()
 	{
 		return painter_.getAreaWidth();
 	}
 
+	/**
+	 * Get the icon height Java2D units.
+	 *
+	 * @return The height.
+	 */
 	public double getIconHeight2D()
 	{
 		return painter_.getAreaHeight();
@@ -144,15 +169,20 @@ public class ShapeIcon implements Icon, Accessible
 	@Override
 	public int getIconWidth()
 	{
-		return (int)Math.ceil(painter_.getAreaWidth());
+		return (int) Math.ceil(painter_.getAreaWidth());
 	}
 
 	@Override
 	public int getIconHeight()
 	{
-		return (int)Math.ceil(painter_.getAreaHeight());
+		return (int) Math.ceil(painter_.getAreaHeight());
 	}
 
+	/**
+	 * Gets the internal used painter.
+	 *
+	 * @return The painter, never null.
+	 */
 	public ShapePainter getPainter()
 	{
 		return painter_;
