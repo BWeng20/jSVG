@@ -140,7 +140,16 @@ Specially of the painter-interface.
 * [SVGViewer](src/main/java/com/bw/jtools/SVGViewer.java)<br> 
   Shows one SVG file. The drawing can be rotated and scaled. 
   The app shows time statistics in the status bar.
-
+ 
+  The app has also an option to paint the SVG "along a path" witch demonstrates [PaintAlongShapePainter](src/main/java/com/bw/jtools/shape/PaintAlongShapePainter.java).
+  In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
+  the position and angle to draw some other shape "along" it. With the buttons you can control
+  start-, end- and distance-offsets from the PaintAlongShapePainter-Interface.<br>
+  All transformations on the original painter are kept, you can rotate and scale the source image in the main window until 
+  size and orientation meet the required values.
+  <br>
+  ![PaintAlong_WithArrow.png](doc%2FPaintAlong_WithArrow.png)<br>
+  ![PaintAlong_WithArrow_Rotated.png](doc%2FPaintAlong_WithArrow_Rotated.png)
 
 * [SVGIconTester](src/main/java/com/bw/jtools/SVGIconTester.java)<br>
   Shows multiple SVG files (you can select a directory) as Icons on Buttons.
@@ -165,10 +174,5 @@ Specially of the painter-interface.
 
   You have to select the matching elements from the combos and the rotation center (in the elements user-space).  
 
-
-The demonstration app SVGViewer has an option to paint the SVG "along a path".
-In Java2D the outline of each Shape can be iterated. With some maths it's easy to calculate
-the position and angle to draw some other shape "along" it. With the buttons you can control
-start-, end- and distance-offsets from the Painter-Interface. 
 
 
