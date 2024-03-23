@@ -1,4 +1,4 @@
-# jSVG <a href="http://www.w3.org/Graphics/SVG/" ><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo" style="height:1.5em;float:right;"/></a>
+# jSVG <a href="http://www.w3.org/Graphics/SVG/"><img src="doc/svg-logo-v.svg" alt="W3C SVG Logo"/></a>
 Lightweight SVG rendering to use in Java UI Widgets. 
 
 Some re-usable widgets and examples are provided for Swing. 
@@ -38,18 +38,23 @@ As the real rendering is done by the Java2d-engine this is fast enough to paint 
 
 If you need a feature-complete renderer, use
 * Apache Batik
-* SVG Salamander https://github.com/blackears/svgSalamander
-* JSVG https://github.com/weisJ/jsvg
+* SVG Salamander &rarr;https://github.com/blackears/svgSalamander
+* JSVG &rarr;https://github.com/weisJ/jsvg
 
 Specially jsvg - yes, same name, I discovered this too late, sorry - is nearly feature-complete.
 But all of them a larger and render slower, which - I assume - is normal for real SVG-rendering.
+
+
+### Usage in OpenIde/NetBeans
+Class [com.bw.jtools.ui.OpenIdeSVGLoader](src/main/java/com/bw/jtools/ui/OpenIdeSVGLoader.java) implements &rarr;[org.openide.util.spi.SVGLoader](https://bits.netbeans.org/19/javadoc/org-openide-util-ui/index.html?org/openide/util/spi/class-use/SVGLoader.html) 
+which is used in OpenIde classes to load SVG icons. E.g. in the fabulous &rarr;[org-netbeans-swing-outline](https://mvnrepository.com/artifact/org.netbeans.api/org-netbeans-swing-outline) component.
 
 ### Example
 
 A pretty example for an SVG is the flag of San Marino. 
 It can be completely converted to Java2D-shapes.
 
-The source can be found here: https://upload.wikimedia.org/wikipedia/commons/b/b1/Flag_of_San_Marino.svg
+The source can be found here: &rarr;https://upload.wikimedia.org/wikipedia/commons/b/b1/Flag_of_San_Marino.svg
 
 Converted and drawn with jSVG:<br>
 ![Example_Flag_of_San_Marino.png](doc%2FExample_Flag_of_San_Marino.png) ![Example_Flag_of_San_Marino.png](doc%2FExample_Flag_of_San_Marino_small.png)<br>
@@ -61,11 +66,11 @@ So the actual amount of Java2D-primitives is a bit higher.
 On my 10 years old computer the shapes are drawn in ~20ms for both sizes.
 This time goes up to ~50ms for bigger sizes like 1000x1000.
 
-The San Mariona flag is a bit to detailed to be used as icon.
+The San Marino flag is a bit to detailed to be used as icon.
 SVGs for icons are normally much simpler, so expect less time to draw it.
 
-For a collection of flags, that can be used for icons, check out 
-https://github.com/hampusborgos/country-flags
+For a collection of flags, that can be used for icons, check out
+&rarr;https://github.com/hampusborgos/country-flags
 
 Clone one the repository, then start the icon tester and select the svg directories
 to see how they look at buttons.
@@ -86,7 +91,7 @@ Usages of pixel-based filters are in any case a bad idea, because they are silly
 The very basic filters as "Offset", "Blur" and "Merge" are implemented (somehow and only if [SVGConverter.experimentalFeaturesEnabled_](src/main/java/com/bw/jtools/svg/SVGConverter.java)  is set to true). But please don't use
 them. Safe your computing power and the planet.
 
-See the SVG example for filter-effects at W3.org https://www.w3.org/TR/SVG11/filters.html#AnExample  
+See the SVG example for filter-effects at W3.org &rarr;https://www.w3.org/TR/SVG11/filters.html#AnExample  
 
 jSVG has _feGaussianBlur_ and _feOffset_, but doesn't have _feSpecularLighting_ or _feComposite_, so the output looks a bit simpler.
 
@@ -97,7 +102,7 @@ And some examples may not work at all.
 #### Clipping
 
 Some SVG may use clip-paths to "cut" away parts for the shapes. 
-Java2Ds "clip" doesn't support anti-aliasing for that (the so-called "soft clipping"). The clip-edges 
+Java2Ds "clip" doesn't support antialiasing for that (the so-called "soft clipping"). The clip-edges 
 will get jagged.
 
 The image below shows a rendered circle on the left and the result of a clip-path with the same circle on the right.  
@@ -151,8 +156,8 @@ Specially of the painter-interface.
 * [SVGClock](src/main/java/com/bw/jtools/SVGClock.java)<br>
   Demonstrates animations.<br>
   ![Clock_Demo.png](doc%2FClock_Demo.png)
-  <br> You can get the used file from 
-  https://commons.wikimedia.org/wiki/File:Swiss_railway_clock.svg
+  <br> You can get the used file from
+  &rarr;https://commons.wikimedia.org/wiki/File:Swiss_railway_clock.svg
   In order to show "correct" time with such a clock, you must remove any rotation from the clock hand elements,
   so that the hands show “12:00:00”.<br>
   The animation simply rotates the elements and does not know the original orientation.
