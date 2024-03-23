@@ -137,7 +137,7 @@ The Screenshots here are produced this way.
 The project contains some tools to give examples and demonstrate some features. 
 Specially of the painter-interface.
 
-* [SVGViewer](src/main/java/com/bw/jtools/SVGViewer.java)<br> 
+* [SVGViewer](src/main/java/com/bw/jtools/examples/SVGViewer.java)<br> 
   Shows one SVG file. The drawing can be rotated and scaled. 
   The app shows time statistics in the status bar.
  
@@ -151,7 +151,7 @@ Specially of the painter-interface.
   ![PaintAlong_WithArrow.png](doc%2FPaintAlong_WithArrow.png)<br>
   ![PaintAlong_WithArrow_Rotated.png](doc%2FPaintAlong_WithArrow_Rotated.png)
 
-* [SVGIconTester](src/main/java/com/bw/jtools/SVGIconTester.java)<br>
+* [SVGIconTester](src/main/java/com/bw/jtools/examples/SVGIconTester.java)<br>
   Shows multiple SVG files (you can select a directory) as Icons on Buttons.
   A press on the button will show the original svg in a separate window - using the same painter instance.<br>
   ![SVGIconTester_Demo.png](doc%2FSVGIconTester_Demo.png)<br>
@@ -161,7 +161,7 @@ Specially of the painter-interface.
   ![SVGIconTester_DemoDisabled.png](doc%2FSVGIconTester_DemoDisabled.png)
 
 
-* [SVGClock](src/main/java/com/bw/jtools/SVGClock.java)<br>
+* [SVGClock](src/main/java/com/bw/jtools/examples/SVGClock.java)<br>
   Demonstrates animations.<br>
   ![Clock_Demo.png](doc%2FClock_Demo.png)
   <br> You can get the used file from
