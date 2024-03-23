@@ -44,9 +44,8 @@ If you need a feature-complete renderer, use
 Specially jsvg - yes, same name, I discovered this too late, sorry - is nearly feature-complete.
 But all of them a larger and render slower, which - I assume - is normal for real SVG-rendering.
 
-
 ### Usage in OpenIde/NetBeans
-Class [com.bw.jtools.ui.OpenIdeSVGLoader](src/main/java/com/bw/jtools/ui/OpenIdeSVGLoader.java) implements &rarr;[org.openide.util.spi.SVGLoader](https://bits.netbeans.org/19/javadoc/org-openide-util-ui/index.html?org/openide/util/spi/class-use/SVGLoader.html) 
+Class [com.bw.jtools.ui.OpenIdeSVGLoader](src/main/java/com/bw/jtools/ui/OpenIdeSVGLoader.java) implements &rarr;[org.openide.util.spi.SVGLoader](https://bits.netbeans.org/19/javadoc/org-openide-util-ui/index.html?org/openide/util/spi/SVGLoader.html) 
 which is used in OpenIde classes to load SVG icons. E.g. in the fabulous &rarr;[org-netbeans-swing-outline](https://mvnrepository.com/artifact/org.netbeans.api/org-netbeans-swing-outline) component.
 
 ### Example
