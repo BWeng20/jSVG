@@ -65,6 +65,8 @@ public class Context
 	/**
 	 * Create a new Context as copy from a given one.
 	 * The Graphics2D instance inside is cloned.
+	 *
+	 * @param ctx The source context to copy.
 	 */
 	public Context(Context ctx)
 	{

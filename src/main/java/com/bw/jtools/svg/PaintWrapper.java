@@ -10,7 +10,9 @@ public final class PaintWrapper
 {
 	enum Mode
 	{
-		/** Pattern or some gradient */
+		/**
+		 * Pattern or some gradient
+		 */
 		Paint,
 		Color,
 		ContextFill,
@@ -69,7 +71,7 @@ public final class PaintWrapper
 		if (mode_ == Mode.Color)
 			pw.value_ = SvgColor.adaptOpacity((java.awt.Color) value_, opacity);
 		else if (mode_ == Mode.Paint)
-			pw.value_ = ((SvgPaint)value_).adaptOpacity(opacity);
+			pw.value_ = ((SvgPaint) value_).adaptOpacity(opacity);
 		else
 			// @TODO: What to do for context-modes?
 			pw.value_ = value_;

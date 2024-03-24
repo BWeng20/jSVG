@@ -71,9 +71,9 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>linearGradient (without stop-opacity)</li>
  * <li>radialGradient (without stop-opacity)</li>
  * <li>clipPath</li>
- * <li>filter (partial and only simple scenarios)</li>
+ * <li>filter (partial and only simple scenarios if {@link #experimentalFeaturesEnabled_} is true)
+ * </li>
  * </ul>
- * Filter stuff that needs offline-rendering (like blur) is very slow.
  * Filter stuff that needs offline-rendering (like blur) is very slow.
  * Don't use them if you need to render fast (or draw to an off-screen-buffer).<br>
  * The SVG specification contains a lot of filter cases, but most SVG graphics doesn't
@@ -139,16 +139,37 @@ public class SVGConverter
 	private Map<String, SvgPaint> paintServer_ = new HashMap<>();
 	private Map<String, PaintWrapper> paints_ = new HashMap<>();
 	private Font defaultFont_ = Font.decode("Arial-PLAIN-12");
-	private final ElementCache elementCache_ = new ElementCache();
+	private final ElementCache elementCache_ = new ElementCache(namespaceAware_);
 
-	public static final boolean addPathSegments_ = false;
+	/**
+	 * If true the calculated segments of shapes are added for debugging.
+	 *
+	 * @see ShapeHelper#getSegmentPath()
+	 */
+	public static boolean addPathSegments_ = false;
 
+	/**
+	 * If true details error information is printed. E.g. the stacktrace.
+	 *
+	 * @see #error(Throwable, String, Object...)
+	 */
 	public static boolean detailedErrorInformation_ = false;
 
 	/**
 	 * If true experimental features are enabled.
 	 */
 	public static boolean experimentalFeaturesEnabled_ = false;
+
+	/**
+	 * SVG name space. Name space is only verified if {@link #namespaceAware_} is true.
+	 */
+	public static String SVG_NAME_SPACE = "http://www.w3.org/2000/svg";
+
+	/**
+	 * If true namespaces needed to be used correctly. Otherwise, namespaces are ignored.
+	 */
+	public static boolean namespaceAware_ = false;
+
 
 	/**
 	 * Parse an SVG document and creates shapes.
@@ -174,6 +195,7 @@ public class SVGConverter
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setValidating(false);
 			dbf.setIgnoringComments(true);
+			dbf.setNamespaceAware(namespaceAware_);
 			dbf.setIgnoringElementContentWhitespace(true);
 
 			dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -208,8 +230,7 @@ public class SVGConverter
 			// @TODO patterns
 			// NodeList patterns = doc.getElementsByTagName("pattern");
 
-			ElementWrapper svg = getCache().getElementWrapper(doc.getElementsByTagName("svg")
-																 .item(0));
+			ElementWrapper svg = getCache().getElementWrapper((namespaceAware_ ? doc.getElementsByTagNameNS(SVG_NAME_SPACE, "svg") : doc.getElementsByTagName("svg")).item(0));
 
 			List<ElementInfo> shapes = new ArrayList<>();
 			parseChildren(shapes, svg);
@@ -288,6 +309,7 @@ public class SVGConverter
 		{
 			warnOnce("Unknown command " + e);
 		}
+
 		else switch (typ)
 		{
 			case g:
@@ -656,6 +678,12 @@ public class SVGConverter
 		return pt;
 	}
 
+	/**
+	 * Get a clip-path definitions by id.
+	 *
+	 * @param id The id of the definition.
+	 * @return The clip-path shape or null.
+	 */
 	public Shape getClipPath(String id)
 	{
 		// @TODO: use clip-rule for clipPath elements.
@@ -881,7 +909,7 @@ public class SVGConverter
 			if (isNotEmpty(patternTransform))
 				pattern.aft_ = new SvgTransform(null, patternTransform).getTransform();
 
-			parseChildren(pattern.shapes_, w );
+			parseChildren(pattern.shapes_, w);
 			return pattern;
 		}
 		else

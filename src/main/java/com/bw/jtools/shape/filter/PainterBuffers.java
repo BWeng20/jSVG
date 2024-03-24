@@ -18,17 +18,32 @@ public class PainterBuffers
 	private final Map<String, BufferedImage> buffers_ = new HashMap<>();
 	private final Map<String, BufferedImage> tempBuffers_ = new HashMap<>();
 	private GraphicsConfiguration cfg_;
+
+	/**
+	 * Debugging counter.
+	 */
 	public static long buffersCreated_;
 
+	/**
+	 * Initialize a new instance.
+	 */
 	public PainterBuffers()
 	{
 	}
 
+	/**
+	 * Sets the graphic configuration used to create buffers.
+	 *
+	 * @param cfg The configuration.
+	 */
 	public void setConfiguration(GraphicsConfiguration cfg)
 	{
 		cfg_ = cfg;
 	}
 
+	/**
+	 * Clears all buffers.
+	 */
 	public void clear()
 	{
 		clearBuffers(buffers_);
@@ -42,11 +57,23 @@ public class PainterBuffers
 		buffers.clear();
 	}
 
+	/**
+	 * Adds a buffer by name.
+	 *
+	 * @param name The name of the buffer.
+	 * @param img  The Buffer-Image.
+	 */
 	public void addBuffer(String name, BufferedImage img)
 	{
 		buffers_.put(name, img);
 	}
 
+	/**
+	 * Gets a buffer.
+	 *
+	 * @param name The name.
+	 * @return The buffer or null.
+	 */
 	public BufferedImage getSourceBuffer(String name)
 	{
 		return buffers_.get(name);
@@ -56,6 +83,7 @@ public class PainterBuffers
 	 * Get the source buffer as alpha (rgba with rgb part black).
 	 *
 	 * @param name Name of buffer (without "alpha" in name).
+	 * @return The buffer image or null.
 	 */
 	public BufferedImage getSourceAlphaBuffer(String name)
 	{
@@ -90,7 +118,10 @@ public class PainterBuffers
 	/**
 	 * Get a temporary buffer.
 	 *
-	 * @param idx The index of the buffer. Each index gets it own buffer.
+	 * @param idx    The index of the buffer. Each index gets it own buffer.
+	 * @param width  The width of the buffer.
+	 * @param height The height of the buffer.
+	 * @return The buffer, never null.
 	 */
 	public BufferedImage getTemporaryBuffer(int idx, double width, double height)
 	{
@@ -100,6 +131,14 @@ public class PainterBuffers
 		return getBuffer(key, tempBuffers_, width, height);
 	}
 
+	/**
+	 * Get or create a target buffer.
+	 *
+	 * @param name   The name of the buffer.
+	 * @param width  The width of the buffer.
+	 * @param height The height of the buffer.
+	 * @return The buffer, never null.
+	 */
 	public BufferedImage getTargetBuffer(String name, double width, double height)
 	{
 		return getBuffer(name, buffers_, width, height);

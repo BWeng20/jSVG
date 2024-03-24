@@ -37,7 +37,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -48,25 +47,39 @@ import java.util.function.Consumer;
  */
 public class SVGIconTester extends SVGAppBase
 {
-	/** The panel to show all icons. */
+	/**
+	 * The panel to show all icons.
+	 */
 	protected JPanel pane_;
 
-	/** Scroll-pane inside the svg content viewer (if an icon button is pressed). */
+	/**
+	 * Scroll-pane inside the svg content viewer (if an icon button is pressed).
+	 */
 	protected JScrollPane contentViewerScrollPane_;
 
-	/** Pre-defined icon-sizes to select. */
+	/**
+	 * Pre-defined icon-sizes to select.
+	 */
 	protected javax.swing.ButtonGroup sizeGroup_;
 
-	/** Look-And-Feel button. */
+	/**
+	 * Look-And-Feel button.
+	 */
 	protected javax.swing.ButtonGroup lafGroup_;
 
-	/** True if the file name shall be shown below the icons. */
+	/**
+	 * True if the file name shall be shown below the icons.
+	 */
 	protected boolean showName_ = false;
 
-	/** True if all icons shall be enabled. */
+	/**
+	 * True if all icons shall be enabled.
+	 */
 	protected boolean enabled_ = true;
 
-	/** True if a border shall be drawn. */
+	/**
+	 * True if a border shall be drawn.
+	 */
 	protected boolean showBorder_ = true;
 
 	/**
@@ -79,7 +92,7 @@ public class SVGIconTester extends SVGAppBase
 	 * Shows a SVG file.
 	 *
 	 * @param args File name
-	 * @throws SVGException In case the file could not be parsed.
+	 * @throws SVGException          In case the file could not be parsed.
 	 * @throws FileNotFoundException In case the files could not be found.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException
@@ -212,6 +225,7 @@ public class SVGIconTester extends SVGAppBase
 
 	/**
 	 * Gets the icon size.
+	 *
 	 * @return The icon size.
 	 */
 	public int getIconSize()
@@ -237,7 +251,8 @@ public class SVGIconTester extends SVGAppBase
 
 	/**
 	 * SHows the shape.
-	 * @param name The title.
+	 *
+	 * @param name  The title.
 	 * @param shape The shape to show.
 	 */
 	protected void showShape(String name, AbstractShape shape)
@@ -290,6 +305,7 @@ public class SVGIconTester extends SVGAppBase
 
 	/**
 	 * Adds a shape to the view.
+	 *
 	 * @param shapeFile The shape to add.
 	 */
 	protected synchronized void addSVG(ShapeFile shapeFile)

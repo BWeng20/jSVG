@@ -16,10 +16,17 @@ public class ElementCache
 	private static AtomicLong idGenerator_ = new AtomicLong(9999);
 	private final HashMap<String, Marker> markerById_ = new HashMap<>();
 
+	private final boolean namespaceAware_;
+
 
 	private String generateId()
 	{
 		return "_#" + idGenerator_.incrementAndGet() + "Generated__";
+	}
+
+	public ElementCache(boolean namespaceAware)
+	{
+		namespaceAware_ = namespaceAware;
 	}
 
 	public static boolean isGenerated(String id)
@@ -120,5 +127,10 @@ public class ElementCache
 	public void addMarker(String id, Marker marker)
 	{
 		markerById_.put(id, marker);
+	}
+
+	public boolean isNamespaceAware()
+	{
+		return namespaceAware_;
 	}
 }

@@ -104,6 +104,11 @@ public class GaussianBlur extends FilterBaseSingleSource
 	/**
 	 * Create a new Gaussian Blur filter.
 	 * stdDeviation_ sigma = standard deviation ^2
+	 *
+	 * @param source        Name of source-buffer.
+	 * @param target        Name of target-buffer.
+	 * @param stdDeviationX Gaussian Standard Deviation in X-direction.
+	 * @param stdDeviationY Gaussian Standard Deviation in Y-direction.
 	 */
 	public GaussianBlur(String source, String target, double stdDeviationX, double stdDeviationY)
 	{

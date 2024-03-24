@@ -8,7 +8,15 @@ import java.awt.image.BufferedImage;
  */
 public class Offset extends FilterBaseSingleSource
 {
+
+	/**
+	 * The offset in X-direction.
+	 */
 	public double dx_;
+
+	/**
+	 * The offset in Y-direction.
+	 */
 	public double dy_;
 
 	@Override
@@ -23,6 +31,14 @@ public class Offset extends FilterBaseSingleSource
 		src.copyData(target.getRaster());
 	}
 
+	/**
+	 * Initialize a new instance.
+	 *
+	 * @param source Name of source-buffer.
+	 * @param target Name of target-buffer.
+	 * @param dx     The offset in X-direction.
+	 * @param dy     The offset in Y-direction.
+	 */
 	public Offset(String source, String target, double dx, double dy)
 	{
 		super(source, target);

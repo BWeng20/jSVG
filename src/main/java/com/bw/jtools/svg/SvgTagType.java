@@ -51,7 +51,7 @@ public enum SvgTagType
 	metadata,
 
 	/**
-	 *  Pattern definition, see <a href="https://www.w3.org/TR/SVG2/pservers.html#PatternElement">W3C Pattern Element</a>
+	 * Pattern definition, see <a href="https://www.w3.org/TR/SVG2/pservers.html#PatternElement">W3C Pattern Element</a>
 	 */
 	pattern;
 

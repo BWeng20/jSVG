@@ -1000,13 +1000,16 @@ public final class ElementWrapper
 				child = child.getNextSibling();
 			if (child != null)
 			{
-				ElementWrapper w = elementCache_.getElementWrapper(child);
-				if (isShadow_)
+				if ((!elementCache_.isNamespaceAware()) || SVGConverter.SVG_NAME_SPACE.equals(child.getNamespaceURI()))
 				{
-					w = w.createReferenceShadowChild(this);
-					w.parent_ = this;
+					ElementWrapper w = elementCache_.getElementWrapper(child);
+					if (isShadow_)
+					{
+						w = w.createReferenceShadowChild(this);
+						w.parent_ = this;
+					}
+					children.add(w);
 				}
-				children.add(w);
 				child = child.getNextSibling();
 			}
 		}

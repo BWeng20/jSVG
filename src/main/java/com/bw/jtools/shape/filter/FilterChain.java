@@ -13,6 +13,14 @@ public class FilterChain
 {
 	private List<FilterBase> filters_;
 
+	/**
+	 * Renders the filter-chain.
+	 *
+	 * @param buffers The buffer-cache to use in case additional sources are needed.
+	 * @param scaleX  The scale in X-direction.
+	 * @param scaleY  The scale in Y-direction.
+	 * @return The rendered image.
+	 */
 	public FilteredImage render(PainterBuffers buffers, double scaleX, double scaleY)
 	{
 		FilteredImage result = new FilteredImage();
@@ -35,6 +43,8 @@ public class FilterChain
 
 	/**
 	 * Create a chain of filters.
+	 *
+	 * @param filter THe list of filters.
 	 */
 	public FilterChain(List<FilterBase> filter)
 	{

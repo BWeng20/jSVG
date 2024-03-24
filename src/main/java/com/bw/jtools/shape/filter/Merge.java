@@ -8,10 +8,16 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * Moves the source.
+ * Merged multiple sources.
  */
 public class Merge extends FilterBase
 {
+	/**
+	 * Initialize a new instance.
+	 *
+	 * @param nodes  List of source descriptions.
+	 * @param target Name of target-buffer.
+	 */
 	public Merge(List<MergeFilterNode> nodes, String target)
 	{
 		super(null, target);

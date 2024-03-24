@@ -1,7 +1,6 @@
 package com.bw.jtools.svg;
 
 import java.awt.MultipleGradientPaint;
-import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -70,6 +69,7 @@ public abstract class Gradient extends SvgPaint implements Cloneable
 
 	/**
 	 * Creates a new gradient descriptor.
+	 *
 	 * @param id The XML id.
 	 */
 	protected Gradient(String id)
@@ -79,6 +79,7 @@ public abstract class Gradient extends SvgPaint implements Cloneable
 
 	/**
 	 * Copies yet undefined elements from template.
+	 *
 	 * @param template The template. Must not be null.
 	 */
 	public void copyFromTemplate(Gradient template)
@@ -109,7 +110,7 @@ public abstract class Gradient extends SvgPaint implements Cloneable
 			if (hrefGradient instanceof Gradient)
 			{
 				hrefGradient.resolveHref(svg);
-				copyFromTemplate((Gradient)hrefGradient);
+				copyFromTemplate((Gradient) hrefGradient);
 			}
 		}
 	}

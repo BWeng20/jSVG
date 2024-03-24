@@ -3,7 +3,7 @@ package com.bw.jtools.shape.filter;
 import java.awt.image.BufferedImage;
 
 /**
- * Does nothing.
+ * Does nothing. Simply copies the source to target.
  */
 public class Nop extends FilterBaseSingleSource
 {
@@ -14,6 +14,12 @@ public class Nop extends FilterBaseSingleSource
 		src.copyData(target.getRaster());
 	}
 
+	/**
+	 * Initialize a new instance.
+	 *
+	 * @param source Name of source-buffer.
+	 * @param target Name of target-buffer.
+	 */
 	public Nop(String source, String target)
 	{
 		super(source, target);

@@ -22,9 +22,11 @@ public class SvgPattern extends SvgPaint
 
 	/**
 	 * Creates a new pattern descriptor.
+	 *
 	 * @param id The XML id.
 	 */
-	public SvgPattern(String id) {
+	public SvgPattern(String id)
+	{
 		super(id);
 	}
 
@@ -52,13 +54,14 @@ public class SvgPattern extends SvgPaint
 			if (hrefGradient instanceof SvgPattern)
 			{
 				hrefGradient.resolveHref(svg);
-				copyFromTemplate((SvgPattern)hrefGradient);
+				copyFromTemplate((SvgPattern) hrefGradient);
 			}
 		}
 	}
 
 	/**
 	 * Copies yet undefined elements from template.
+	 *
 	 * @param template The template. Must not be null.
 	 */
 	public void copyFromTemplate(SvgPattern template)
@@ -66,12 +69,13 @@ public class SvgPattern extends SvgPaint
 		//@TODO: Aggregate or copy? Check specs!
 		if (aft_ == null) aft_ = template.aft_;
 
-		if ( x_ == null) x_ = template.x_;
-		if ( y_ == null) y_ = template.y_;
-		if ( width_ == null) y_ = template.width_;
-		if ( height_ == null) y_ = template.height_;
+		if (x_ == null) x_ = template.x_;
+		if (y_ == null) y_ = template.y_;
+		if (width_ == null) y_ = template.width_;
+		if (height_ == null) y_ = template.height_;
 
-		if ( shapes_.isEmpty() ) {
+		if (shapes_.isEmpty())
+		{
 			shapes_.addAll(template.shapes_);
 		}
 

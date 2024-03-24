@@ -104,7 +104,7 @@ public class SVGViewer extends SVGAppBase
 	 * Shows a SVG file.
 	 *
 	 * @param args File name
-	 * @throws SVGException In case the file could not be parsed.
+	 * @throws SVGException          In case the file could not be parsed.
 	 * @throws FileNotFoundException In case the files could not be found.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, SVGException

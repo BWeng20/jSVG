@@ -30,6 +30,7 @@ public abstract class SvgPaint
 
 	/**
 	 * Creates a Paint Wrapper for this element.
+	 *
 	 * @param svg The Converter to use for resolving references.
 	 * @return The new Paint-Wrapper. Never null.
 	 */
@@ -42,12 +43,12 @@ public abstract class SvgPaint
 	/**
 	 * Creates adapted copy if opacity != 1.
 	 * Returns this instance if opacity = 1.
+	 *
 	 * @param opacity The opacity
 	 */
 	public abstract SvgPaint adaptOpacity(float opacity);
 
 	/**
-	 *
 	 * @param w The Wrapper to create paint for
 	 * @return
 	 */

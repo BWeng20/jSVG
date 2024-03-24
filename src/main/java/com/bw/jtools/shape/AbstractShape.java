@@ -34,6 +34,11 @@ public abstract class AbstractShape
 		this.id_ = id;
 	}
 
+	/**
+	 * Paints the shape.
+	 *
+	 * @param ctx The context to draw into.
+	 */
 	public abstract void paint(Context ctx);
 
 	/**
@@ -41,14 +46,24 @@ public abstract class AbstractShape
 	 */
 	public abstract Rectangle2D getTransformedBounds();
 
+	/**
+	 * Gives state of clipping.
+	 *
+	 * @return tree if clipping is enabled.
+	 */
 	public boolean isClippingEnabled()
 	{
 		return enableClipping_;
 	}
 
-	public void setClippingEnabled(boolean enableClipping_)
+	/**
+	 * Activates clipping.
+	 *
+	 * @param enableClipping the new values.
+	 */
+	public void setClippingEnabled(boolean enableClipping)
 	{
-		this.enableClipping_ = enableClipping_;
+		this.enableClipping_ = enableClipping;
 	}
 
 	public abstract AbstractShape getShapeById(String id);

@@ -4,7 +4,6 @@ import com.bw.jtools.shape.AbstractShape;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
@@ -132,60 +131,60 @@ public class Animator
 		final int animatorId = animationThreadId_;
 
 
-			Thread animationThread = new Thread(() ->
+		Thread animationThread = new Thread(() ->
+		{
+			while (animatorId == animationThreadId_)
 			{
-				while (animatorId == animationThreadId_)
+				long nextTick;
+				boolean repaint = false;
+				long tick = System.currentTimeMillis();
+				for (Map.Entry<String, AnimationItem> i : animations_.entrySet())
 				{
-					long nextTick;
-					boolean repaint = false;
-					long tick = System.currentTimeMillis();
-					for (Map.Entry<String, AnimationItem> i : animations_.entrySet())
+					AnimationItem s = i.getValue();
+					for (Animation a : s.animation_)
 					{
-						AnimationItem s = i.getValue();
-						for (Animation a : s.animation_)
+						if (a.tick(tick))
 						{
-							if (a.tick(tick))
-							{
-								repaint = true;
-							}
-						}
-						if (repaint)
-						{
-							if (s.shape_.aft_ == null)
-								s.shape_.aft_ = new AffineTransform(s.orgAft_);
-							else
-								s.shape_.aft_.setTransform(s.orgAft_);
-							s.animation_.forEach(a -> a.apply(s.shape_));
+							repaint = true;
 						}
 					}
 					if (repaint)
 					{
-						SwingUtilities.invokeLater(() ->
-						{
-							if ( component_ instanceof JComponent)
-							{
-								((JComponent) component_).paintImmediately(0, 0, component_.getWidth(), component_.getHeight());
-								Toolkit.getDefaultToolkit()
-									   .sync();
-							}
-							else
-								component_.repaint();
-						});
-					}
-					nextTick = timerTick_ - (System.currentTimeMillis() - tick);
-					if (nextTick <= 0)
-						nextTick = 1;
-					try
-					{
-						Thread.sleep((int) nextTick);
-					}
-					catch (Exception e)
-					{
+						if (s.shape_.aft_ == null)
+							s.shape_.aft_ = new AffineTransform(s.orgAft_);
+						else
+							s.shape_.aft_.setTransform(s.orgAft_);
+						s.animation_.forEach(a -> a.apply(s.shape_));
 					}
 				}
-				;
-			}, "Animator-" + animatorId);
-			animationThread.start();
+				if (repaint)
+				{
+					SwingUtilities.invokeLater(() ->
+					{
+						if (component_ instanceof JComponent)
+						{
+							((JComponent) component_).paintImmediately(0, 0, component_.getWidth(), component_.getHeight());
+							Toolkit.getDefaultToolkit()
+								   .sync();
+						}
+						else
+							component_.repaint();
+					});
+				}
+				nextTick = timerTick_ - (System.currentTimeMillis() - tick);
+				if (nextTick <= 0)
+					nextTick = 1;
+				try
+				{
+					Thread.sleep((int) nextTick);
+				}
+				catch (Exception e)
+				{
+				}
+			}
+			;
+		}, "Animator-" + animatorId);
+		animationThread.start();
 	}
 
 	/**

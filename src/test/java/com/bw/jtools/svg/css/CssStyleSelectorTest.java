@@ -20,7 +20,7 @@ public class CssStyleSelectorTest
 {
 
 	DocumentBuilder db;
-	ElementCache elementCache_ = new ElementCache();
+	ElementCache elementCache_ = new ElementCache(false);
 
 	@BeforeEach
 	protected void initParser() throws ParserConfigurationException

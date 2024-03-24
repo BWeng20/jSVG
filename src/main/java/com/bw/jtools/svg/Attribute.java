@@ -87,9 +87,9 @@ public enum Attribute
 	Fy("fy"),
 	Fr("fr"),
 
-	PatternTransform("patternTransform" ),
-	PatternUnits( "patternUnits" ),
-	PreserveAspectRatio("preserveAspectRatio" );
+	PatternTransform("patternTransform"),
+	PatternUnits("patternUnits"),
+	PreserveAspectRatio("preserveAspectRatio");
 
 	private final static HashMap<String, Attribute> attributes_ = new HashMap<>();
 

@@ -33,6 +33,7 @@ public abstract class FilterBase
 
 	/**
 	 * Get the list of source buffers from the buffer-cache.
+	 *
 	 * @param buffers The buffer-cache to use.
 	 * @return The source images.
 	 */
@@ -93,6 +94,7 @@ public abstract class FilterBase
 	/**
 	 * Gets the offset of the filter.
 	 * The default implementation returns 0,0.
+	 *
 	 * @param scaleX The scale in X-direction to use.
 	 * @param scaleY The scale in Y-direction to use.
 	 * @return The calculated point.
@@ -104,18 +106,20 @@ public abstract class FilterBase
 
 	/**
 	 * Renders the filter.
-	 * @param buffers The buffer-cache to use in case additional sources are needed.
+	 *
+	 * @param buffers    The buffer-cache to use in case additional sources are needed.
 	 * @param targetName The name of the target buffer.
-	 * @param src The list of source-buffer-names.
-	 * @param target The target image.
-	 * @param scaleX The scale in X-direction.
-	 * @param scaleY The scale in Y-direction.
+	 * @param src        The list of source-buffer-names.
+	 * @param target     The target image.
+	 * @param scaleX     The scale in X-direction.
+	 * @param scaleY     The scale in Y-direction.
 	 */
 	protected abstract void render(PainterBuffers buffers, String targetName, List<BufferedImage> src, BufferedImage target, double scaleX, double scaleY);
 
 
 	/**
 	 * C'tor for simple use cases with one source and one target.
+	 *
 	 * @param source The name of the source-buffer.
 	 * @param target The name of the target-buffer.
 	 */
@@ -129,7 +133,8 @@ public abstract class FilterBase
 	/**
 	 * Get the target pixel-units according to the transformation.
 	 * E.g. if the transformation is scale(2,4) you will get (2,4).
-	 * @param aft  The Transformation to use. Must not be null.
+	 *
+	 * @param aft The Transformation to use. Must not be null.
 	 * @return The X- and Y-scale for one unit.
 	 */
 	public static Point2D.Double getUnits(final AffineTransform aft)
