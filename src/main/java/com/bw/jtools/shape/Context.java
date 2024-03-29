@@ -58,6 +58,11 @@ public class Context
 	public static final Color CURRENT_BACKGROUND = new Color(0xce, 0xce, 0xce);
 
 	/**
+	 * Placeholder for "inherit".
+	 */
+	public static final Color INHERIT = new Color(0, 0, 0 );
+
+	/**
 	 * Placeholder for "none" color.
 	 */
 	public static final Color NONE = new Color(0, 0, 0, 0);

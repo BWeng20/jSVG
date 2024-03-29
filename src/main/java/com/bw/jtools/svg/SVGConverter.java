@@ -43,9 +43,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -66,12 +68,13 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * <li>line</li>
  * <li>polyline</li>
  * <li>polygon</li>
+ * <li>symbol</li>
  * <li>text (with tspan and textPath, only single x,y,dx,dy length values, no textLength, no lengthAdjust, no rotate, no content area)</li>
  * <li>use</li>
  * <li>linearGradient (without stop-opacity)</li>
  * <li>radialGradient (without stop-opacity)</li>
  * <li>clipPath</li>
- * <li>filter (partial and only simple scenarios if {@link #experimentalFeaturesEnabled_} is true)
+ * <li>filter (partial and only simple scenarios if {@link SVGConverterFlags#experimentalFeaturesEnabled_} is true)
  * </li>
  * </ul>
  * Filter stuff that needs offline-rendering (like blur) is very slow.
@@ -82,7 +85,7 @@ import static com.bw.jtools.svg.ElementWrapper.isNotEmpty;
  * See {@link com.bw.jtools.shape.ShapePainter} and {@link ShapeIcon}.<br>
  * For usage see the example {@link SVGViewer}.
  */
-public class SVGConverter
+public class SVGConverter implements SVGConverterFlags
 {
 
 	/**
@@ -141,34 +144,71 @@ public class SVGConverter
 	private Font defaultFont_ = Font.decode("Arial-PLAIN-12");
 	private final ElementCache elementCache_ = new ElementCache(namespaceAware_);
 
-	/**
-	 * If true the calculated segments of shapes are added for debugging.
-	 *
-	 * @see ShapeHelper#getSegmentPath()
-	 */
-	public static boolean addPathSegments_ = false;
+	private final String userLanguage_;
+
+	private static final Set<String> features_;
+	private static Set<String> extensions_;
+
+	static
+	{
+		// @TODO: any? At least add some API to set it.
+		extensions_ = Collections.emptySet();
+
+		if (requiredFeaturesEnabled_)
+		{
+			features_ = new HashSet<>();
+			features_.add("http://www.w3.org/TR/SVG11/feature#CoreAttribute");
+			features_.add("http://www.w3.org/TR/SVG11/feature#Structure");
+			features_.add("http://www.w3.org/TR/SVG11/feature#BasicStructure");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#ContainerAttribute" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#ConditionalProcessing");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#Image" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#Style");
+			features_.add("http://www.w3.org/TR/SVG11/feature#ViewportAttribute");
+			features_.add("http://www.w3.org/TR/SVG11/feature#Shape");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#Text" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#BasicText");
+			features_.add("http://www.w3.org/TR/SVG11/feature#PaintAttribute");
+			features_.add("http://www.w3.org/TR/SVG11/feature#BasicPaintAttribute");
+			features_.add("http://www.w3.org/TR/SVG11/feature#OpacityAttribute");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#GraphicsAttribute" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#BasicGraphicsAttribute");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#Marker" );
+			// features.add( "http://www.w3.org/TR/SVG11/feature#ColorProfile" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#Gradient");
+			features_.add("http://www.w3.org/TR/SVG11/feature#Pattern");
+			features_.add("http://www.w3.org/TR/SVG11/feature#Clip");
+			features_.add("http://www.w3.org/TR/SVG11/feature#BasicClip");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#Mask" );
+			if (experimentalFeaturesEnabled_)
+			{
+				// features.add("http://www.w3.org/TR/SVG11/feature#Filter");
+				features_.add("http://www.w3.org/TR/SVG11/feature#BasicFilter");
+			}
+			features_.add("http://www.w3.org/TR/SVG11/feature#XlinkAttribute");
+			// features.add( "http://www.w3.org/TR/SVG11/feature#Font" );
+			// features.add( "http://www.w3.org/TR/SVG11/feature#BasicFont" );
+			features_.add("http://www.w3.org/TR/SVG11/feature#Extensibility");
+			// features.add("http://www.w3.org/TR/SVG11/feature#DocumentEventsAttribute");
+			// features.add("http://www.w3.org/TR/SVG11/feature#GraphicalEventsAttribute");
+			// features.add("http://www.w3.org/TR/SVG11/feature#AnimationEventsAttribute");
+			// features.add("http://www.w3.org/TR/SVG11/feature#Cursor");
+			// features.add("http://www.w3.org/TR/SVG11/feature#Hyperlinking");
+			// features.add("http://www.w3.org/TR/SVG11/feature#ExternalResourcesRequired");
+			features_.add("http://www.w3.org/TR/SVG11/feature#View");
+			// features.add("http://www.w3.org/TR/SVG11/feature#Script");
+			// features.add("http://www.w3.org/TR/SVG11/feature#Animation");
+		}
+		else
+		{
+			features_ = Collections.emptySet();
+		}
+	}
 
 	/**
-	 * If true details error information is printed. E.g. the stacktrace.
-	 *
-	 * @see #error(Throwable, String, Object...)
-	 */
-	public static boolean detailedErrorInformation_ = false;
-
-	/**
-	 * If true experimental features are enabled.
-	 */
-	public static boolean experimentalFeaturesEnabled_ = false;
-
-	/**
-	 * SVG name space. Name space is only verified if {@link #namespaceAware_} is true.
+	 * SVG name space. Name space is only verified if {@link SVGConverterFlags#namespaceAware_} is true.
 	 */
 	public static String SVG_NAME_SPACE = "http://www.w3.org/2000/svg";
-
-	/**
-	 * If true namespaces needed to be used correctly. Otherwise, namespaces are ignored.
-	 */
-	public static boolean namespaceAware_ = false;
 
 
 	/**
@@ -192,6 +232,9 @@ public class SVGConverter
 	{
 		try
 		{
+			userLanguage_ = Locale.getDefault()
+								  .getLanguage();
+
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setValidating(false);
 			dbf.setIgnoringComments(true);
@@ -302,6 +345,17 @@ public class SVGConverter
 
 	private void parseElement(List<ElementInfo> shapes, ElementWrapper w)
 	{
+		parseElement(shapes, w, false);
+	}
+
+	private void parseElement(List<ElementInfo> shapes, ElementWrapper w, boolean use)
+	{
+		if (systemLanguageEnabled_)
+		{
+			if (!w.hasSystemLanguage(userLanguage_))
+				return;
+		}
+
 		final String e = w.getTagName();
 		SvgTagType typ = w.getType();
 
@@ -309,7 +363,6 @@ public class SVGConverter
 		{
 			warnOnce("Unknown command " + e);
 		}
-
 		else switch (typ)
 		{
 			case g:
@@ -399,7 +452,7 @@ public class SVGConverter
 						ElementWrapper uw = refOrgW.createReferenceShadow(w);
 						{
 							List<ElementInfo> g = new ArrayList<>();
-							parseElement(g, uw);
+							parseElement(g, uw, true);
 							addShapeGroup(w, g, group.shapes_);
 						}
 
@@ -459,6 +512,38 @@ public class SVGConverter
 			case metadata:
 			{
 				// @TODO: Add this somehow to the data?
+			}
+			break;
+			case symbol:
+			{
+				if (use)
+				{
+					// @TODO x,y, width, height, refX,refY
+					List<ElementInfo> symbol = new ArrayList<>();
+					parseChildren(symbol, w);
+					addShapeGroup(w, symbol, shapes);
+				}
+			}
+			break;
+			case Switch:
+			{
+				if (switchEnabled_)
+				{
+					for (ElementWrapper child : w.getChildren())
+					{
+						if (child.hasSystemLanguage(userLanguage_) && child.requiredFeatureCovered(features_) && child.requiredExtensionsCovered(extensions_))
+						{
+							parseElement(shapes, child, use);
+							break;
+						}
+					}
+				}
+				else
+				{
+					List<ElementInfo> swt = new ArrayList<>();
+					parseChildren(swt, w);
+					addShapeGroup(w, swt, shapes);
+				}
 			}
 			break;
 
@@ -1145,7 +1230,16 @@ public class SVGConverter
 		if (cw != null)
 		{
 			String styleColor;
-			if (cw.getColor() == Context.CURRENT_COLOR)
+			if (cw.getColor() == Context.INHERIT)
+			{
+				ElementWrapper wp = w.getParent();
+				if (wp != null)
+				{
+					return color(wp, attr, inherited, opacityAttr, opacityInherited, defaultColor);
+				}
+				styleColor = defaultColor;
+			}
+			else if (cw.getColor() == Context.CURRENT_COLOR)
 			{
 				styleColor = w.getStyleValue(Attribute.Color);
 			}

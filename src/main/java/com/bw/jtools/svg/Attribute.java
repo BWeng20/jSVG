@@ -89,7 +89,11 @@ public enum Attribute
 
 	PatternTransform("patternTransform"),
 	PatternUnits("patternUnits"),
-	PreserveAspectRatio("preserveAspectRatio");
+	PreserveAspectRatio("preserveAspectRatio"),
+
+	RequiredFeatures("requiredFeatures"),
+	RequiredExtensions("requiredExtensions"),
+	SystemLanguage("systemLanguage");
 
 	private final static HashMap<String, Attribute> attributes_ = new HashMap<>();
 

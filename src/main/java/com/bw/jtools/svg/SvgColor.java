@@ -167,6 +167,7 @@ public class SvgColor
 		// Internal extension to access the background color of the painting component.
 		name2color_.put("background", new PaintWrapper(Context.CURRENT_BACKGROUND));
 		name2color_.put("currentbackground", new PaintWrapper(Context.CURRENT_BACKGROUND));
+		name2color_.put("inherit", new PaintWrapper(Context.INHERIT));
 	}
 
 	private PaintWrapper paintWrapper_;

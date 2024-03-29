@@ -53,7 +53,14 @@ public enum SvgTagType
 	/**
 	 * Pattern definition, see <a href="https://www.w3.org/TR/SVG2/pservers.html#PatternElement">W3C Pattern Element</a>
 	 */
-	pattern;
+	pattern,
+
+	/**
+	 * A Symbol. See <a href="https://www.w3.org/TR/SVG2/struct.html#SymbolElement">W3C Symbol Element</a>
+	 */
+	symbol,
+
+	Switch;
 
 	private final static HashMap<String, SvgTagType> types_ = new HashMap<>();
 
@@ -62,6 +69,9 @@ public enum SvgTagType
 	{
 		for (SvgTagType t : values())
 			types_.put(t.name(), t);
+
+		types_.remove(Switch.name(), Switch);
+		types_.put("switch", Switch);
 	}
 
 	public static SvgTagType valueFrom(String typeName)

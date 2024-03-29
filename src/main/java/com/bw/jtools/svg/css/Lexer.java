@@ -165,14 +165,53 @@ public class Lexer
 		if (stringDelimiter < 0)
 		{
 			int c;
-			while (Character.isWhitespace(c = nextChar())) ;
+			do
+			{
+				while (Character.isWhitespace(c = nextChar())) ;
 
+				if (c == '/')
+				{
+					int nc = nextChar();
+					if (nc == '*')
+					{
+						// A "/*..*/" Commend
+						eatUntilCommentEnd();
+						continue;
+					}
+					else
+					{
+						pushBack(nc);
+					}
+				}
+				break;
+			} while (true);
 			if (isStringDelimiter(c))
 				stringDelimiter = c;
 			else if (c > 0)
+			{
 				pushBack(c);
+			}
 		}
 	}
+
+	/**
+	 * eats until "&#x2A;/" comment-end
+	 */
+	protected void eatUntilCommentEnd()
+	{
+		int lastC = 0;
+		do
+		{
+			int c = nextChar();
+			if (c == '/')
+			{
+				if (lastC == '*')
+					break;
+			}
+			lastC = c;
+		} while (lastC > 0);
+	}
+
 
 	/**
 	 * Push back stack.

@@ -3,6 +3,7 @@ package com.bw.jtools.svg;
 import com.bw.jtools.svg.css.CSSParser;
 import com.bw.jtools.svg.css.Specificity;
 import com.bw.jtools.svg.css.StyleValue;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -14,6 +15,7 @@ import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
  */
 public final class ElementWrapper
 {
+
 	static class OverrideItem
 	{
 
@@ -73,6 +76,7 @@ public final class ElementWrapper
 
 	private static final Pattern unitRegExp_ = Pattern.compile("(\\s*[+-]?[\\d\\.]+(?:e[+-]?\\d+)?)\\s*(rem|pt|px|em|%|in|cm|mm|m|ex|pc)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern urlRegExp = Pattern.compile("url\\(['\"]?\\s*#([^\\\"')]+)['\"]?\\)(.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern spaceSepRegExp = Pattern.compile("\\s");
 
 	private static final HashMap<String, Float> fontWeights_ = new HashMap<>();
 	private static final float FONT_WEIGHT_FACTOR = TextAttribute.WEIGHT_BOLD / 700;
@@ -794,6 +798,162 @@ public final class ElementWrapper
 		return effectiveOpacity_.doubleValue();
 	}
 
+	/**
+	 * Gets the list of languages from attribute "systemLanguage".
+	 * Will return always an empty list if {@link SVGConverterFlags#systemLanguageEnabled_} is set to false.
+	 *
+	 * @return the list of languages or null if attribute is not available.
+	 */
+	public List<String> getSystemLanguage()
+	{
+		if (SVGConverterFlags.systemLanguageEnabled_)
+		{
+			Attr attr = node_.getAttributeNode(Attribute.SystemLanguage.xmlName());
+			if (attr != null)
+			{
+				String sysLang = attr.getValue();
+				if (sysLang.isEmpty())
+				{
+					return Collections.emptyList();
+				}
+				String[] langs = sysLang.split(",");
+				for (int i = 0; i < langs.length; ++i)
+				{
+					langs[i] = langs[i].trim();
+				}
+				return Arrays.asList(langs);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if the language is supported by the element.<br>
+	 * If the element has attribute "systemLanguage" the values must be contained, if not, all language are supported.<br>
+	 * Will return always true if {@link SVGConverterFlags#systemLanguageEnabled_} is set to false.
+	 *
+	 * @param lang The language prefix to check.
+	 * @return true if supported.
+	 */
+	public boolean hasSystemLanguage(String lang)
+	{
+		if (SVGConverterFlags.systemLanguageEnabled_)
+		{
+			List<String> sysLang = getSystemLanguage();
+			if (sysLang != null)
+			{
+				final int langLength = lang.length();
+				boolean f = false;
+				for (String l : sysLang)
+				{
+					if (l.startsWith(lang) && (l.length() == langLength || l.charAt(langLength) == '-'))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Gets the list of required features from attribute "requiredFeatures".
+	 * Will return always null if {@link SVGConverterFlags#requiredFeaturesEnabled_} is set to false.
+	 *
+	 * @return the list of features or null if attribute is not available.
+	 */
+	public List<String> getRequiredFeatures()
+	{
+		if (SVGConverterFlags.requiredFeaturesEnabled_)
+		{
+			Attr attr = node_.getAttributeNode(Attribute.RequiredFeatures.xmlName());
+			if (attr != null)
+			{
+				String reqFeatures = attr.getValue();
+				if (reqFeatures.isEmpty())
+				{
+					return Collections.emptyList();
+				}
+				return Arrays.asList(spaceSepRegExp.split(reqFeatures));
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if we support all required features of the element.<br>
+	 * If the element has attribute "requiredFeatures" all values must be contained.<br>
+	 * Will return always true if {@link SVGConverterFlags#requiredFeaturesEnabled_} is set to false.
+	 *
+	 * @param features The supported features.
+	 * @return true if all features are supported.
+	 */
+	public boolean requiredFeatureCovered(Set<String> features)
+	{
+		if (SVGConverterFlags.requiredFeaturesEnabled_)
+		{
+			List<String> requiredFeatures = getRequiredFeatures();
+			if (requiredFeatures != null)
+			{
+				for (String r : requiredFeatures)
+				{
+					if (!features.contains(r))
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Gets the list of required extensions from attribute "requiredExtensions".
+	 * Will return always null if {@link SVGConverterFlags#requiredExtensionsEnabled_} is set to false.
+	 *
+	 * @return the list of features or null if attribute is not available.
+	 */
+	public List<String> getRequiredExtensions()
+	{
+		if (SVGConverterFlags.requiredExtensionsEnabled_)
+		{
+			Attr attr = node_.getAttributeNode(Attribute.RequiredExtensions.xmlName());
+			if (attr != null)
+			{
+				String reqExtensions = attr.getValue();
+				if (reqExtensions.isEmpty())
+				{
+					return Collections.emptyList();
+				}
+				return Arrays.asList(spaceSepRegExp.split(reqExtensions));
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if we support all required extensions of the element.<br>
+	 * If the element has attribute "requiredExtensions" all values must be contained.<br>
+	 * Will return always true if {@link SVGConverterFlags#requiredExtensionsEnabled_} is set to false.
+	 *
+	 * @param extensions The supported extensions.
+	 * @return true if all extensions are supported.
+	 */
+	public boolean requiredExtensionsCovered(Set<String> extensions)
+	{
+		if (SVGConverterFlags.requiredExtensionsEnabled_)
+		{
+			List<String> requiredExtensions = getRequiredExtensions();
+			if (requiredExtensions != null)
+			{
+				for (String r : requiredExtensions)
+				{
+					if (!extensions.contains(r))
+						return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Checks if the node has white-space-preservation on.
@@ -825,7 +985,9 @@ public final class ElementWrapper
 	 * style-attribute.<br>
 	 * Values from "style" (direct style-attribute or via style-sheet) have higher priority than attributes.
 	 *
+	 * @param attribute The attribute to retrieve.
 	 * @param inherited If true the attribute can be inherited.
+	 * @return The value, possibly empty but never null.
 	 */
 	public String attr(Attribute attribute, boolean inherited)
 	{
