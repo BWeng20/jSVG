@@ -28,28 +28,28 @@ public interface SVGConverterFlags
 	/**
 	 * If true namespaces needed to be used correctly. Otherwise, namespaces are ignored.
 	 */
-	boolean namespaceAware_ = false;
+	boolean namespaceAware_ = ${Config.NamespaceAware};
 
 	/**
 	 * If enabled, attribute "requiredFeatures" is supported (with SVG1.1 feature strings).
 	 */
-	boolean requiredFeaturesEnabled_ = false;
+	boolean requiredFeaturesEnabled_ = ${Config.RequiredFeaturesEnabled};
 
 	/**
 	 * If enabled, attribute "requiredExtensions" is supported.
 	 */
-	boolean requiredExtensionsEnabled_ = false;
+	boolean requiredExtensionsEnabled_ = ${Config.RequiredExtensionsEnabled};
 
 	/**
 	 * If enabled, attribute "systemLanguage" is supported.
 	 */
-	boolean systemLanguageEnabled_ = false;
+	boolean systemLanguageEnabled_ = ${Config.SystemLanguageEnabled};
 
 	/**
 	 * If enabled, switch tag is enabled.
-	 * Make sonly sense if "requiredFeatures" or "systemLanguage" is also enabled.
+	 * Makes only sense if "requiredFeatures" or "systemLanguage" is also enabled.
 	 */
-	boolean switchEnabled_ = true && (requiredFeaturesEnabled_ || systemLanguageEnabled_);
+	boolean switchEnabled_ = ${Config.SwitchEnabled} && (requiredFeaturesEnabled_ || systemLanguageEnabled_);
 
 
 }

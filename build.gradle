@@ -1,152 +1,46 @@
-plugins {
-    id 'java'
-    id 'maven-publish'
-    id 'signing'
-}
-
 group = "io.github.bweng20"
 version="1.5"
 
-repositories {
-    mavenCentral()
-}
-
-plugins.withType(JavaPlugin).configureEach {
+subprojects {
+    apply plugin: 'java'
     java {
         modularity.inferModulePath = true
-        sourceCompatibility= JavaVersion.VERSION_1_9
-        targetCompatibility= JavaVersion.VERSION_1_9
+        sourceCompatibility = JavaVersion.VERSION_1_9
+        targetCompatibility = JavaVersion.VERSION_1_9
     }
-}
 
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-}
-
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
-
-println "Configure $project.name, Gradle version $project.gradle.gradleVersion"
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-    duplicatesStrategy = 'exclude'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-processResources {
-    duplicatesStrategy = 'exclude'
-}
-
-dependencies {
-    compileOnly 'org.netbeans.api:org-openide-util-ui:RELEASE180'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-}
-
-
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-        }
-        resources {
-        }
-    }
-}
-
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'A minimalistic SVG renderer',
-                'Implementation-Version': project.version,
-                'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-                'Main-Class': 'com.bw.jtools.svg.SVGConverter'
-    }
-    archiveBaseName = 'jSVG'
-    includeEmptyDirs = false
-
-    from "${rootProject.projectDir}/LICENSE"
-    from "${rootProject.projectDir}/README.md"
-    exclude('com/bw/jtools/examples')
-    exclude('com/bw/jtools/SVGIcon.svg')
-}
-
-task examplesJar (type: Jar, dependsOn: classes) {
-    group = 'build'
-    manifest {
-        attributes 'Implementation-Title': 'Examples for jSVG',
-                'Implementation-Version': project.version,
-                'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-                'Main-Class': 'com.bw.jtools.examples.SVGViewer'
-    }
-    archiveBaseName = 'jSVG'
-    archiveClassifier = 'examples'
-    includeEmptyDirs = false
-
-    from sourceSets.main.output
-    from "${rootProject.projectDir}/LICENSE"
-    include( 'LICENSE', 'com/bw/jtools/examples/**')
-}
-
-
-publishing {
     repositories {
-        maven {
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                // Place this two variable with the correct values in your
-                // <Gradle-User-Home>/gradle.properties
-                //  ossrhUsername=ID
-                //  ossrhPassword=TOKEN
-                //
-                username = findProperty("ossrhUsername")
-                password = findProperty("ossrhPassword")
+        mavenCentral()
+    }
+
+    println "Configure $project.name, Gradle version $project.gradle.gradleVersion"
+
+    project.ext.'configureGenDir' = layout.buildDirectory.dir('generated/sources/configuration').get()
+
+    // Create the interface SVGConverterFlags that contains boolean flags to control
+    // compile-time features.
+    tasks.register('generateFlagsClass', Copy) {
+        println "Create SVGConverterConfig for " + project
+        println " at ${project.configureGenDir}"
+        println " with ${project.SVGConverterConfig}"
+
+        from("${rootProject.rootDir}/src/main/templates/") {
+            include 'SVGConverterFlags.template'
+        }
+        into project.layout.buildDirectory.dir('generated/sources/configuration/com/bw/jtools/svg')
+        expand(['Config': project.SVGConverterConfig])
+        rename {
+            file -> "SVGConverterFlags.java"
+        }
+    }
+
+    afterEvaluate {
+        if ( project.hasProperty('SVGConverterConfig')) {
+            tasks.findByName(sourceSets.main.compileJavaTaskName).dependsOn(tasks.generateFlagsClass)
+
+            tasks.withType(Test).configureEach {
+                useJUnitPlatform()
             }
         }
     }
-    publications {
-        jSVG(MavenPublication) {
-            from components.java
-
-            artifacts = [jar, sourcesJar, javadocJar, examplesJar]
-
-            pom {
-                name = 'jSVG'
-                artifactId = 'jSVG'
-                packaging = 'jar'
-                description = 'Draw icons and simple graphics from SVG that look great even on high-resolution screens.'
-                url = 'https://github.com/BWeng20/jSVG'
-                licenses {
-                    license {
-                        name = 'unlicense'
-                        url = 'https://unlicense.org'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'bweng20'
-                        name = 'Bernd Wengenroth'
-                        email = 'Bernd.Wengenrot@gmail.com'
-                    }
-                }
-                scm {
-                    connection = 'https://github.com:BWeng20/jSVG.git'
-                    developerConnection = 'https://github.com:BWeng20/jSVG.git'
-                    url = 'https://github.com/BWeng20/jSVG'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    sign publishing.publications.jSVG
 }

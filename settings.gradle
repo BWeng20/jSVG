@@ -1,1 +1,14 @@
 rootProject.name = 'jSVG'
+include 'minimalBuild'
+include 'allFeaturesBuild'
+include 'publishBuild'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            library('openide-util', 'org.netbeans.api:org-openide-util-ui:RELEASE180')
+            library('junit-api', 'org.junit.jupiter:junit-jupiter-api:5.8.2')
+            library('junit-engine', 'org.junit.jupiter:junit-jupiter-engine:5.8.2')
+        }
+    }
+}

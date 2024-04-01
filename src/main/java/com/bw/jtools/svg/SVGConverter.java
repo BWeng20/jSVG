@@ -531,8 +531,10 @@ public class SVGConverter implements SVGConverterFlags
 				{
 					for (ElementWrapper child : w.getChildren())
 					{
+						// Check all direct childs.
 						if (child.hasSystemLanguage(userLanguage_) && child.requiredFeatureCovered(features_) && child.requiredExtensionsCovered(extensions_))
 						{
+							// First matching child is used.
 							parseElement(shapes, child, use);
 							break;
 						}

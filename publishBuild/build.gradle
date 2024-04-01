@@ -1,0 +1,68 @@
+/**
+ * Build Script for publishing to maven.
+ */
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+}
+
+group = project.getRootProject().group
+version= project.getRootProject().version
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+publishing {
+    repositories {
+        maven {
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                // Place this two variable with the correct values in your
+                // <Gradle-User-Home>/gradle.properties
+                //  ossrhUsername=ID
+                //  ossrhPassword=TOKEN
+                //
+                username = findProperty("ossrhUsername")
+                password = findProperty("ossrhPassword")
+            }
+        }
+    }
+    publications {
+        jSVG(MavenPublication) {
+
+            artifacts = [project(':minimalBuild').jar, project(':minimalBuild').sourcesJar, project(':minimalBuild').javadocJar, project(':minimalBuild').examplesJar, project(':allFeaturesBuild').jar]
+
+            pom {
+                name = 'jSVG'
+                artifactId = 'jSVG'
+                packaging = 'jar'
+                description = 'Draw icons and simple graphics from SVG that look great even on high-resolution screens.'
+                url = 'https://github.com/BWeng20/jSVG'
+                licenses {
+                    license {
+                        name = 'unlicense'
+                        url = 'https://unlicense.org'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'bweng20'
+                        name = 'Bernd Wengenroth'
+                        email = 'Bernd.Wengenroth@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'https://github.com:BWeng20/jSVG.git'
+                    developerConnection = 'https://github.com:BWeng20/jSVG.git'
+                    url = 'https://github.com/BWeng20/jSVG'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.jSVG
+}
