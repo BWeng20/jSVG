@@ -8,6 +8,37 @@ any framework that uses Java Graphics2D.
 In SWT it can be used... but only via some Java2D integration. 
 SWT does not directly support Java2D and the SWT graphics system itself lacks some necessary basic functions.
 
+### Usage
+
+The library is available as maven artifact.
+
+#### Maven
+```xml
+<dependency>
+ <groupId>io.github.bweng20</groupId>
+ <artifactId>jSVG</artifactId>
+ <version>1.5</version>
+</dependency>
+```
+
+#### Gradle
+```
+implementation 'io.github.bweng20:jSVG:1.5'
+```
+
+The artifact has different classifier.
+
+| Classifier   | Description                                                                 |
+|--------------|-----------------------------------------------------------------------------|
+| *none*       | The default jar contains the minimalistic implementation of the renderer.   |
+| allFeatures  | Contains the renderer with all features turned on.                          |
+| examples     | Contains the demos and tools. See "_Included Tools & Demos_" below.                                 |
+| javadoc      | Contains the documentation, downloaded by most IDE automatically if needed. |
+| sources      | Contains the sources, downloaded by most IDE automatically if needed.       |
+
+For programmatic usage see sources below [Examples](src/main/java/com/bw/jtools/examples) 
+
+
 ### Motivation
 
 Most Icons used are based on bitmap images that doesn't scale well 
@@ -48,7 +79,7 @@ But all of them a larger and render slower, which - I assume - is normal for rea
 Class [com.bw.jtools.ui.OpenIdeSVGLoader](src/main/java/com/bw/jtools/ui/OpenIdeSVGLoader.java) implements &rarr;[org.openide.util.spi.SVGLoader](https://bits.netbeans.org/19/javadoc/org-openide-util-ui/index.html?org/openide/util/spi/SVGLoader.html) 
 which is used in OpenIde classes to load SVG icons. E.g. in the fabulous &rarr;[org-netbeans-swing-outline](https://mvnrepository.com/artifact/org.netbeans.api/org-netbeans-swing-outline) component.
 
-### Example
+### SVG Examples
 
 A pretty example for an SVG is the flag of San Marino. 
 It can be completely converted to Java2D-shapes.
@@ -71,7 +102,7 @@ SVGs for icons are normally much simpler, so expect less time to draw it.
 For a collection of flags, that can be used for icons, check out
 &rarr;https://github.com/hampusborgos/country-flags
 
-Clone one the repository, then start the icon tester and select the svg directories
+Clone the repository, then start the icon tester and select the svg directories
 to see how they look at buttons.
 
 
@@ -132,7 +163,7 @@ Nevertheless, ShapePainter has a method to export a BufferedImage that
 can be used this way (and can also be written to file via ImageIO). 
 The Screenshots here are produced this way.
 
-### Examples
+### Included Tools & Demos
 
 The project contains some tools to give examples and demonstrate some features. 
 Specially of the painter-interface.
