@@ -5,9 +5,7 @@ import com.bw.jtools.shape.filter.FilterChain;
 import com.bw.jtools.shape.filter.FilteredImage;
 import com.bw.jtools.shape.filter.PainterBuffers;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Shape;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
@@ -33,6 +31,10 @@ public final class ShapeGroup extends AbstractShape
 
 	private PainterBuffers buffers_;
 	private Rectangle2D transformedBounds_;
+
+	/**
+	 * Clipping shape. Applied after aft
+	 */
 	private Shape clipping_;
 
 
@@ -146,8 +148,9 @@ public final class ShapeGroup extends AbstractShape
 		if (clipping_ != null && enableClipping_)
 		{
 			orgClip = g2D.getClip();
-			g2D.clip(clipping_);
+				g2D.clip(clipping_);
 		}
+
 		AffineTransform orgAft = g2D.getTransform();
 		aftTemp_.setTransform(orgAft);
 		if (aft_ != null)
@@ -159,7 +162,7 @@ public final class ShapeGroup extends AbstractShape
 			shape.paint(ctx);
 
 		g2D.setTransform(orgAft);
-		if (clipping_ != null && enableClipping_)
+		if (orgClip != null)
 			ctx.g2D_.setClip(orgClip);
 	}
 
@@ -193,12 +196,7 @@ public final class ShapeGroup extends AbstractShape
 		{
 			if (clipping_ != null)
 			{
-				Area area = new Area(clipping_);
-				if (aft_ != null)
-					transformedBounds_ = aft_.createTransformedShape(clipping_)
-											 .getBounds2D();
-				else
-					transformedBounds_ = clipping_.getBounds2D();
+				transformedBounds_ = clipping_.getBounds2D();
 			}
 			else
 			{
@@ -213,12 +211,6 @@ public final class ShapeGroup extends AbstractShape
 				}
 				if (transformedBounds_ == null)
 					transformedBounds_ = new Rectangle2D.Double(0, 0, 0, 0);
-				if (clipping_ != null)
-				{
-					Area area = new Area(transformedBounds_);
-					area.intersect(new Area(clipping_));
-					transformedBounds_ = area.getBounds2D();
-				}
 			}
 		}
 		return transformedBounds_;
