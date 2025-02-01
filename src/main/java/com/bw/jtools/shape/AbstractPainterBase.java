@@ -32,10 +32,9 @@ public abstract class AbstractPainterBase
 	protected double rotationAngleDegree_ = 0;
 
 	/**
-	 * If true, clipping of the top-most view-box is applied.
+	 * If true, clipping of the top-most view is applied.
 	 */
 	protected boolean enableClipping_ = true;
-	protected boolean areaIgnoresRotation_ = true;
 
 	/**
 	 * Enable paint time measurement.
@@ -119,18 +118,7 @@ public abstract class AbstractPainterBase
 		}
 		if (areaTransformed_ == null)
 		{
-			if (!areaIgnoresRotation_)
-			{
-				AffineTransform rotation = getRotation();
-				if (rotation != null)
-				{
-					Rectangle2D rotArea = rotation.createTransformedShape(new Rectangle2D.Double(area_.x, area_.y, area_.width, area_.height))
-												  .getBounds2D();
-					areaTransformed_ = new Rectangle2D.Double(0, 0, rotArea.getWidth() * scaleX_, rotArea.getHeight() * scaleY_);
-				}
-			}
-			if (areaTransformed_ == null)
-				areaTransformed_ = new Rectangle2D.Double(0, 0, area_.width * scaleX_, area_.height * scaleY_);
+			areaTransformed_ = new Rectangle2D.Double(0, 0, area_.width * scaleX_, area_.height * scaleY_);
 		}
 	}
 
@@ -227,35 +215,6 @@ public abstract class AbstractPainterBase
 	public void setClippingEnabled(boolean enabled)
 	{
 		this.enableClipping_ = enabled;
-	}
-
-	/**
-	 * Checks if "area ignores rotation" is on.
-	 * If on, the value returned by "getArea" will ignore the additional rotation and return the scaled view-box without rotation.<br>
-	 * This is meaningful if the shape doesn't fill the view-box (e.g. is round).<br>
-	 * If off, area will give the bounding box of the rotated view-box.
-	 *
-	 * @return Current value of area-ignores-rotation_.
-	 */
-	public boolean isAreaIgnoresRotation()
-	{
-		return areaIgnoresRotation_;
-	}
-
-	/**
-	 * Sets "area ignores rotation".
-	 *
-	 * @param areaIgnoresRotation The new value.
-	 * @see #isAreaIgnoresRotation()
-	 */
-	public void setAreaIgnoresRotation(boolean areaIgnoresRotation)
-	{
-		if (areaIgnoresRotation_ != areaIgnoresRotation)
-		{
-			areaIgnoresRotation_ = areaIgnoresRotation;
-			// Force re-calculation.
-			areaTransformed_ = null;
-		}
 	}
 
 	/**

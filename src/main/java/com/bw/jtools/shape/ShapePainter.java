@@ -71,32 +71,16 @@ public final class ShapePainter extends AbstractPainterBase
 		Context lct = new Context(ctx, false);
 		final Graphics2D g2D = lct.g2D_;
 
-		final AffineTransform rotation = getRotation();
 		g2D.scale(scaleX_, scaleY_);
 
-		if (areaIgnoresRotation_)
-		{
-			g2D.translate(-area_.x, -area_.y);
-		}
-		else
-		{
-			if (rotation != null)
-			{
-				Rectangle2D a = rotation.createTransformedShape(area_)
-										.getBounds2D();
-				g2D.translate(-a.getX(), -a.getY());
-			}
-			else
-			{
-				g2D.translate(-area_.x, -area_.y);
-			}
-		}
+		g2D.translate(-area_.x, -area_.y);
 		if (clearArea)
 		{
 			g2D.setPaint(lct.currentBackground_);
 			g2D.fill(area_);
 		}
 
+		final AffineTransform rotation = getRotation();
 		if (rotation != null)
 		{
 			g2D.transform(rotation);
